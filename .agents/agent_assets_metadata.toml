@@ -1,0 +1,295 @@
+uploads = []
+
+[[generated]]
+id = "hQO6Vn5CkYPQOejm-f4fz"
+uri = "file://artifacts/chiara-spettro-web/public/images/hero-bg.png"
+type = "image"
+title = "hacker terminal hero background"
+
+[[generated]]
+id = "gmqgl1iyGIF1T8N5BqVbE"
+uri = "file://artifacts/chiara-spettro-web/public/images/instructor.png"
+type = "image"
+title = "hacker mentor portrait"
+
+[[generated]]
+id = "HbKBlbNSmOiZ-gq4LSotn"
+uri = "file://artifacts/chiara-spettro-web/public/images/texture.png"
+type = "image"
+title = "abstract cyberpunk circuit texture"
+
+[[generated]]
+id = "4dQpxttXX02s5GzwfmXmV"
+uri = "file://attached_assets/spettroweb_logo_square.png"
+type = "image"
+title = "SpettroWeb cyberpunk logo square"
+
+[[generated]]
+id = "snYd0gJX8FRzS-p71tQ3w"
+uri = "file://attached_assets/spettroweb_logo_banner.png"
+type = "image"
+title = "SpettroWeb cyberpunk logo banner"
+
+[[generated]]
+id = "Ppu9da-qa0xdXT1Q666OW"
+uri = "file://attached_assets/spettroweb_icon.png"
+type = "image"
+title = "SpettroWeb icon favicon"
+
+[[generated]]
+id = "9M4m4eOQK32rA1UjVMUZW"
+uri = "file://artifacts/chiara-spettro-web/public/androids/android-01.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "Q-DyK2MVL4tSvxp9SFe6T"
+uri = "file://artifacts/chiara-spettro-web/public/androids/android-02.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "1ZCzyGv5q3_5ii5EyxhI8"
+uri = "file://artifacts/chiara-spettro-web/public/androids/android-03.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "F1BA7Au-Pd33NcsakXSEF"
+uri = "file://artifacts/chiara-spettro-web/public/androids/android-04.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "8kQRIG2Kfe-_gqVDoWp0U"
+uri = "file://artifacts/chiara-spettro-web/public/androids/android-05.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "5rzIQ6SbfmbWq6Zs6A-Xc"
+uri = "file://artifacts/chiara-spettro-web/public/androids/android-06.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "QK56uME-g19mnBaC_AYw9"
+uri = "file://artifacts/chiara-spettro-web/public/androids/android-07.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "2eHcFJVrxOqdNjJc969qQ"
+uri = "file://artifacts/chiara-spettro-web/public/androids/android-08.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "hGLMHHhCyawbzSE4PDuO-"
+uri = "file://artifacts/chiara-spettro-web/public/androids/android-09.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "xIsLZiznkEsMDj3viwuqT"
+uri = "file://artifacts/chiara-spettro-web/public/androids/android-10.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "0Wc0SXxY1LXRzkBRwy7Z4"
+uri = "file://artifacts/chiara-spettro-web/public/androids/android-11.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "H5yKdINSybwLfZQdgpth2"
+uri = "file://artifacts/chiara-spettro-web/public/androids/android-12.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "fQeXCrxq2zmBao7XmKpJ9"
+uri = "file://artifacts/chiara-spettro-web/public/androids/android-13.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "NFNBmxvI5_RtAJzwbuN25"
+uri = "file://artifacts/chiara-spettro-web/public/androids/android-14.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "yNFCN0XpOw4GKOAzs3W6z"
+uri = "file://artifacts/chiara-spettro-web/public/androids/android-15.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "l2YJCwXp--XYs4aKDPkHV"
+uri = "file://artifacts/chiara-spettro-web/public/androids/android-16.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "3sZbPIrBEb_zfLzunov5P"
+uri = "file://artifacts/chiara-spettro-web/public/androids/android-17.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "KD4cygIAuIVTkS-aK_UpY"
+uri = "file://artifacts/chiara-spettro-web/public/androids/android-18.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "X6pnoJy0rB8Dz_qyzrnsi"
+uri = "file://artifacts/chiara-spettro-web/public/androids/android-19.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "HYFKGoH2etl3fLEjVjLh7"
+uri = "file://artifacts/chiara-spettro-web/public/androids/android-20.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "L5m_xCZDgNnhlAfx-cwQl"
+uri = "file://artifacts/chiara-spettro-web/public/androids/android-21.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "gTjYEZtOVeC0aa094akja"
+uri = "file://artifacts/chiara-spettro-web/public/androids/android-22.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "nICrCvY1r3Jne3xcb1D-Y"
+uri = "file://artifacts/chiara-spettro-web/public/androids/android-23.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "-cIAcxt3deNJ2KFm_e5p9"
+uri = "file://artifacts/chiara-spettro-web/public/androids/android-24.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "Z9_82KwSBCZsw_FwLc3Dp"
+uri = "file://artifacts/chiara-spettro-web/public/androids/android-25.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "IT0kKVEsoOzzIQoo-XkZ7"
+uri = "file://artifacts/chiara-spettro-web/public/androids/android-26.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "ZTSy3x_N2I7nH0Gt_tbpT"
+uri = "file://artifacts/chiara-spettro-web/public/androids/android-27.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "o8pCaWB3RseNIMn8lDkku"
+uri = "file://artifacts/chiara-spettro-web/public/androids/android-28.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "TTO-rPoPfvus3RKZI_WJf"
+uri = "file://artifacts/chiara-spettro-web/public/androids/android-29.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "-fzY0YBWjxiwwfhHk5ucs"
+uri = "file://artifacts/chiara-spettro-web/public/androids/android-30.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "nnl7I_uense6ztLGyxfY_"
+uri = "file://artifacts/chiara-spettro-web/public/androids/android-31.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "ixbZPLeCKoTMFd6ROTfYv"
+uri = "file://artifacts/chiara-spettro-web/public/androids/android-32.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "tzF1EExGz5ewz5a9ez_F7"
+uri = "file://artifacts/chiara-spettro-web/public/androids/android-33.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "_gXVWd1MafVuIb6U1lSxi"
+uri = "file://artifacts/chiara-spettro-web/public/androids/android-34.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "Vk3SMOYg4qkguHh9MqMsW"
+uri = "file://artifacts/chiara-spettro-web/public/androids/android-35.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "XkbKPqpnHwBcMahh_iL0G"
+uri = "file://artifacts/chiara-spettro-web/public/androids/android-36.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "xnkKHRBK8DnryHsIuuQZo"
+uri = "file://artifacts/chiara-spettro-web/public/androids/android-37.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "c9v_vBAqzrI_l2pY4PxMr"
+uri = "file://artifacts/chiara-spettro-web/public/androids/android-38.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "KBjmaxx-ztgzNMB8ZzHMU"
+uri = "file://artifacts/chiara-spettro-web/public/androids/android-39.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "boGCOC8nlw2pShluLt8LC"
+uri = "file://artifacts/chiara-spettro-web/public/androids/android-40.png"
+type = "image"
+title = "generated_image"
+
+[[outputs]]
+id = "yoPYrowE0hFqlYPZikri7"
+uri = "file://attached_assets/spettroweb_logo_banner.png"
+type = "image"
+title = "SpettroWeb — Logo Banner (horizontal, para portadas y redes)"
+
+[[outputs]]
+id = "k1jBolaniixVYD62b5xcC"
+uri = "file://attached_assets/spettroweb_logo_square.png"
+type = "image"
+title = "SpettroWeb — Logo Cuadrado (para posts y thumbnails)"
+
+[[outputs]]
+id = "NkhNp60ayXlqmSexxTdu1"
+uri = "file://attached_assets/spettroweb_icon.png"
+type = "image"
+title = "SpettroWeb — Icono / Favicon (para app icon y tab del navegador)"

@@ -1,0 +1,38 @@
+kind = "web"
+  previewPath = "/"
+  title = "Chiara Spettro Web - Academia Hacking"
+  version = "1.0.0"
+  id = "artifacts/chiara-spettro-web"
+  router = "path"
+
+  [[integratedSkills]]
+  name = "react-vite"
+  version = "1.0.0"
+
+  [[services]]
+  name = "web"
+  paths = [ "/" ]
+  localPort = 25494
+
+  [services.development]
+  run = "pnpm --filter @workspace/chiara-spettro-web run dev"
+
+  [services.production]
+  publicDir = "artifacts/chiara-spettro-web/dist/public"
+  serve = "static"
+
+  [services.production.build]
+  args = ["pnpm", "--filter", "@workspace/chiara-spettro-web", "run", "build"]
+
+  [services.production.build.env]
+  BASE_PATH = "/"
+  NODE_ENV = "production"
+
+  [[services.production.rewrites]]
+  from = "/*"
+  to = "/index.html"
+
+  [services.env]
+  PORT = "25494"
+  BASE_PATH = "/"
+  

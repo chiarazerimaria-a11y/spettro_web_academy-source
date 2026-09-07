@@ -1,0 +1,38 @@
+import { Router, type IRouter } from "express";
+import healthRouter from "./health";
+import adminRouter from "./admin";
+import labRouter from "./lab";
+import authRouter from "./auth";
+import applicationsRouter from "./applications";
+import coursesRouter from "./courses";
+import publicCoursesRouter from "./publiccourses";
+import subscriptionsRouter from "./subscriptions";
+import payoutsRouter from "./payouts";
+import streamsRouter from "./streams";
+import squadsRouter from "./squads";
+import walletRouter from "./wallet";
+import tournamentRouter from "./tournament";
+import spcRouter from "./spc";
+import marketplaceRouter from "./marketplace";
+import lessonsRouter from "./lessons";
+
+const router: IRouter = Router();
+
+router.use(healthRouter);
+router.use(adminRouter);
+router.use(labRouter);
+router.use(authRouter);
+router.use(applicationsRouter);
+router.use(coursesRouter);
+router.use(publicCoursesRouter);
+router.use(subscriptionsRouter);
+router.use(payoutsRouter);
+router.use(streamsRouter);
+router.use(squadsRouter);
+router.use(walletRouter);
+router.use(tournamentRouter);
+router.use(spcRouter);
+router.use(marketplaceRouter);
+router.use(lessonsRouter);
+
+export default router;
