@@ -16,8 +16,7 @@ if (Number.isNaN(port) || port <= 0) {
   throw new Error(`Invalid PORT value: "${rawPort}"`);
 }
 
-// Run seed before starting — ensures production DB always has required data
-runSeed().then(() => {
+const startServer = () => {
   app.listen(port, (err) => {
     if (err) {
       logger.error({ err }, "Error listening on port");
@@ -25,9 +24,14 @@ runSeed().then(() => {
     }
     logger.info({ port }, "Server listening");
   });
-}).catch((err) => {
-  logger.error({ err }, "Fatal seed error — starting server anyway");
-  app.listen(port, () => {
-    logger.info({ port }, "Server listening (seed failed)");
+};
+
+// El seed SOLO corre si RUN_SEED=true en el .env (datos de ejemplo opcionales)
+if (process.env["RUN_SEED"] === "true") {
+  runSeed().then(startServer).catch((err) => {
+    logger.error({ err }, "Fatal seed error — starting server anyway");
+    startServer();
   });
-});
+} else {
+  startServer();
+}

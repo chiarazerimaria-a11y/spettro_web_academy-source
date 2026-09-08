@@ -47,3 +47,11 @@ Thumbs.db
 # Replit
 .cache/
 .local/
+
+# secretos - NUNCA subir
+.env
+.env.*
+*.pem
+*.key
+*.db
+*.sqlite
