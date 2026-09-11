@@ -1,3 +1,4 @@
+import tutoringRouter from "./tutoring";
 import { Router, type IRouter } from "express";
 import healthRouter from "./health";
 import adminRouter from "./admin";
@@ -34,5 +35,7 @@ router.use(tournamentRouter);
 router.use(spcRouter);
 router.use(marketplaceRouter);
 router.use(lessonsRouter);
+router.use(tutoringRouter);
+router.use(tutoringRouter);
 
 export default router;
