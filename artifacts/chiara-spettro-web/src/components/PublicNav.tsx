@@ -136,7 +136,7 @@ export function PublicNav() {
       <nav className="sticky top-0 z-50 w-full border-b border-primary/20 bg-[#0a0a0f]/90 backdrop-blur-md">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2.5 cursor-pointer shrink-0 group mr-6">
-            <img src="/images/logo_icon.png" alt="SpettroWeb"
+            <img src={`${import.meta.env.BASE_URL}images/logo_icon.png`} alt="SpettroWeb"
               className="h-10 w-10 rounded-md object-cover opacity-90 group-hover:opacity-100 transition-opacity" />
             <span className="font-mono font-black text-xl glitch-hover hidden sm:inline-flex items-center gap-0"
               style={{ background: "linear-gradient(90deg,#ffffff,#d8b4fe)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>

@@ -127,7 +127,7 @@ export default function Home() {
 
       {/* Hero Section */}
       <section className="relative pt-12 pb-16 overflow-hidden">
-        <div className="absolute inset-0 z-0 opacity-20 bg-[url('/images/hero-bg.png')] bg-cover bg-center" />
+        <div className="absolute inset-0 z-0 opacity-20 bg-cover bg-center" style={{ backgroundImage: `url(${import.meta.env.BASE_URL}images/hero-bg.png)` }} />
         <div className="absolute bottom-0 left-0 w-full h-24 bg-gradient-to-t from-background to-transparent z-0" />
         <div className="container mx-auto px-4 relative z-10">
           <div className="grid lg:grid-cols-2 gap-10 items-center">
@@ -268,7 +268,7 @@ export default function Home() {
 
       {/* Instructor */}
       <section className="py-24 border-t border-border/50 relative">
-        <div className="absolute inset-0 z-0 opacity-5 bg-[url('/images/texture.png')] bg-cover" />
+        <div className="absolute inset-0 z-0 opacity-5 bg-cover" style={{ backgroundImage: `url(${import.meta.env.BASE_URL}images/texture.png)` }} />
         <div className="container mx-auto px-4 relative z-10">
           <div className="grid md:grid-cols-2 gap-12 items-center max-w-5xl mx-auto">
             <motion.div 
@@ -279,7 +279,7 @@ export default function Home() {
             >
               <div className="absolute inset-0 bg-primary/20 rounded-xl blur-xl" />
               <img 
-                src="/images/instructor.png" 
+                src={`${import.meta.env.BASE_URL}images/instructor.png`} 
                 alt="Chiara Spettro" 
                 className="w-full max-w-md mx-auto rounded-xl border border-primary/30 relative z-10 object-cover aspect-square shadow-[0_0_30px_rgba(255,77,184,0.1)] grayscale hover:grayscale-0 transition-all duration-500"
               />
