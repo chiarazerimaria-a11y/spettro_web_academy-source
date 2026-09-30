@@ -1,3 +1,6 @@
+
+   import path from "node:path";
+
 import express, { type Express, type Request, type Response, type NextFunction } from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
@@ -53,5 +56,13 @@ app.use(express.json({ limit: "5mb" }));
 app.use(express.urlencoded({ extended: true, limit: "5mb" }));
 
 app.use("/api", router);
+
+
+   const webDist = path.resolve(process.cwd(), "artifacts/chiara-spettro-web/dist/public");
+   app.use(express.static(webDist));
+   app.get(/^\/(?!api).*/, (_req, res) => {
+     res.sendFile(path.join(webDist, "index.html"));
+   });
+
 
 export default app;
