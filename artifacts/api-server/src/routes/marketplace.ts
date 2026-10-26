@@ -8,8 +8,7 @@ import {
 import { eq, desc, and } from "drizzle-orm";
 import {
   sanitizeStr, sanitizeOptional, safeInt, safeFloat,
-  ALLOWED_CATEGORIES, ALLOWED_PAYOUT_METHODS, internalKeyGuard,
-} from "../middleware/sanitize";
+  ALLOWED_CATEGORIES, ALLOWED_PAYOUT_METHODS, internalKeyGuard,, sanitizeAvatarUrl } from "../middleware/sanitize";
 import { DOWNLOADS } from "../downloads";
 
 const router = Router();
@@ -91,7 +90,7 @@ router.post("/marketplace/products", async (req, res) => {
   const category       = sanitizeStr(raw.category, 30) || "writeup";
   const price          = safeInt(raw.price, 0, 1, 100_000);
   const downloadUrl    = sanitizeOptional(raw.downloadUrl, 500);
-  const thumbnailUrl   = sanitizeOptional(raw.thumbnailUrl, 500);
+  const thumbnailUrl   = sanitizeAvatarUrl(raw.thumbnailUrl);
   const previewText    = sanitizeOptional(raw.previewText, 1000);
   const tags           = Array.isArray(raw.tags)
     ? (raw.tags as unknown[]).slice(0, 10).map(t => sanitizeStr(t, 30)).filter(Boolean)

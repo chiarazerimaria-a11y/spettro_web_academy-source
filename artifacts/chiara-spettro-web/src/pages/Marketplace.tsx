@@ -972,10 +972,44 @@ export default function Marketplace() {
               </div>
 
               <div>
-                <label className="text-xs font-mono text-muted-foreground mb-1 block">MINIATURA (URL de imagen)</label>
-                <input value={form.thumbnailUrl} onChange={e => setForm(f => ({ ...f, thumbnailUrl: e.target.value }))}
-                  placeholder="https://images.unsplash.com/... o imgur..."
-                  className="w-full px-3 py-2 bg-background border border-primary/20 rounded-lg font-mono text-sm focus:outline-none focus:border-primary/50" />
+                <label className="text-xs font-mono text-muted-foreground mb-1 block">MINIATURA (imagen)</label>
+                <div className="flex items-center gap-2">
+                  <label className="cursor-pointer px-3 py-2 bg-background border border-primary/20 rounded-lg font-mono text-sm hover:border-primary/50 transition-colors">
+                    SELECCIONAR IMAGEN
+                    <input type="file" accept="image/png,image/jpeg,image/webp,image/gif" className="hidden"
+                      onChange={e => {
+                        const file = e.target.files?.[0];
+                        e.target.value = "";
+                        if (!file) return;
+                        if (!file.type.startsWith("image/")) { alert("Selecciona un archivo de imagen"); return; }
+                        const reader = new FileReader();
+                        reader.onload = () => {
+                          const img = new Image();
+                          img.onload = () => {
+                            const MAX = 400;
+                            const scale = Math.min(1, MAX / Math.max(img.width, img.height));
+                            const canvas = document.createElement("canvas");
+                            canvas.width = Math.max(1, Math.round(img.width * scale));
+                            canvas.height = Math.max(1, Math.round(img.height * scale));
+                            const ctx = canvas.getContext("2d");
+                            if (!ctx) return;
+                            ctx.fillStyle = "#0b0b0b";
+                            ctx.fillRect(0, 0, canvas.width, canvas.height);
+                            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                            const dataUrl = canvas.toDataURL("image/jpeg", 0.75);
+                            setForm(f => ({ ...f, thumbnailUrl: dataUrl }));
+                          };
+                          img.onerror = () => alert("No se pudo leer la imagen");
+                          img.src = reader.result as string;
+                        };
+                        reader.readAsDataURL(file);
+                      }} />
+                  </label>
+                  {form.thumbnailUrl && (
+                    <button type="button" onClick={() => setForm(f => ({ ...f, thumbnailUrl: "" }))}
+                      className="px-3 py-2 border border-red-500/30 text-red-400 rounded-lg font-mono text-xs">QUITAR</button>
+                  )}
+                </div>
                 {form.thumbnailUrl && (
                   <div className="mt-2 h-20 rounded-lg overflow-hidden border border-primary/20 bg-black/30">
                     <img src={form.thumbnailUrl} alt="preview" className="w-full h-full object-cover"
