@@ -474,12 +474,17 @@ router.post("/lab/machines/:slug/submit-flag", async (req, res) => {
     }
 
     // Upsert submission (AFTER rewarding to avoid race condition)
-    await db.execute(sql`
-      INSERT INTO flag_submissions (user_id, machine_slug, flag_type, is_correct, submitted_at)
-      VALUES (${userId}, ${slug}, ${flagType}, ${isCorrect}, now())
-      ON CONFLICT (user_id, machine_slug, flag_type)
-      DO UPDATE SET is_correct = EXCLUDED.is_correct, submitted_at = EXCLUDED.submitted_at
-    `);
+    const existing = await db.select({ id: flagSubmissionsTable.id, isCorrect: flagSubmissionsTable.isCorrect })
+      .from(flagSubmissionsTable)
+      .where(and(eq(flagSubmissionsTable.userId, userId), eq(flagSubmissionsTable.machineSlug, slug), eq(flagSubmissionsTable.flagType, flagType)))
+      .limit(1);
+    if (existing[0]) {
+      await db.update(flagSubmissionsTable)
+        .set({ isCorrect: existing[0].isCorrect || isCorrect, submittedAt: new Date() })
+        .where(eq(flagSubmissionsTable.id, existing[0].id));
+    } else {
+      await db.insert(flagSubmissionsTable).values({ userId, machineSlug: slug, flagType, isCorrect });
+    }
 
     res.json({ correct: isCorrect, flagType, message: isCorrect ? "¡Flag correcta! 🎉" : "Flag incorrecta. Sigue intentando." });
   } catch (e) {
