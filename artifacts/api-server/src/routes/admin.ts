@@ -223,8 +223,8 @@ router.post("/admin/lab-machines", async (req, res) => {
     vulnerability: b.vulnerability || "",
     techniques: b.techniques || "",
     hints: b.hints || null,
-    userFlag: b.userFlag || null,
-    rootFlag: b.rootFlag || null,
+    userFlag: b.userFlag?.trim() || null,
+    rootFlag: b.rootFlag?.trim() || null,
     ip: b.ip || null,
     thumbnailUrl: b.thumbnailUrl || null,
     downloadUrl: b.downloadUrl || null,
@@ -248,8 +248,8 @@ router.patch("/admin/lab-machines/:id", async (req, res) => {
   if (b.vulnerability !== undefined) updateData.vulnerability = b.vulnerability;
   if (b.techniques !== undefined) updateData.techniques = b.techniques;
   if (b.hints !== undefined) updateData.hints = b.hints;
-  if (b.userFlag !== undefined) updateData.userFlag = b.userFlag;
-  if (b.rootFlag !== undefined) updateData.rootFlag = b.rootFlag;
+  if (b.userFlag !== undefined) updateData.userFlag = b.userFlag?.trim() || null;
+  if (b.rootFlag !== undefined) updateData.rootFlag = b.rootFlag?.trim() || null;
   if (b.ip !== undefined) updateData.ip = b.ip || null;
   if (b.thumbnailUrl !== undefined) updateData.thumbnailUrl = b.thumbnailUrl;
   if (b.downloadUrl !== undefined) updateData.downloadUrl = b.downloadUrl;

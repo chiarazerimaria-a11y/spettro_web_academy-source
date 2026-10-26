@@ -430,7 +430,7 @@ router.post("/lab/machines/:slug/submit-flag", async (req, res) => {
     if (!machine[0]) return res.status(404).json({ error: "Máquina no encontrada" });
 
     const correctFlag = flagType === "user" ? machine[0].userFlag : machine[0].rootFlag;
-    const isCorrect   = flag.trim().toLowerCase() === (correctFlag ?? "").toLowerCase();
+    const isCorrect   = flag.trim().toLowerCase() === (correctFlag ?? "").trim().toLowerCase();
 
     if (isCorrect) {
       // Check BEFORE upsert if user already had this flag correct
