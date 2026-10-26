@@ -974,7 +974,7 @@ export default function Marketplace() {
               <div>
                 <label className="text-xs font-mono text-muted-foreground mb-1 block">MINIATURA (imagen)</label>
                 <div className="flex items-center gap-2">
-                  <label className="cursor-pointer px-3 py-2 bg-background border border-primary/20 rounded-lg font-mono text-sm hover:border-primary/50 transition-colors">
+                  <label className="cursor-pointer px-4 py-2 bg-primary/20 text-primary border border-primary/60 rounded-lg font-mono text-sm font-bold hover:bg-primary/30 hover:border-primary transition-colors">
                     SELECCIONAR IMAGEN
                     <input type="file" accept="image/png,image/jpeg,image/webp,image/gif" className="hidden"
                       onChange={e => {
