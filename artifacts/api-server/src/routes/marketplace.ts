@@ -8,7 +8,7 @@ import {
 import { eq, desc, and } from "drizzle-orm";
 import {
   sanitizeStr, sanitizeOptional, safeInt, safeFloat,
-  ALLOWED_CATEGORIES, ALLOWED_PAYOUT_METHODS, internalKeyGuard,, sanitizeAvatarUrl } from "../middleware/sanitize";
+  ALLOWED_CATEGORIES, ALLOWED_PAYOUT_METHODS, internalKeyGuard, sanitizeAvatarUrl } from "../middleware/sanitize";
 import { DOWNLOADS } from "../downloads";
 
 const router = Router();
