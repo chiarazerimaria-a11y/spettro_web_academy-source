@@ -868,6 +868,8 @@ export default function Profile() {
                 </Link>
               </div>
             </div>
+
+            <MisPublicaciones />
           </motion.div>
         )}
 
@@ -1046,6 +1048,69 @@ export default function Profile() {
           </motion.div>
         )}
       </AnimatePresence>
+    </div>
+  );
+}
+
+function MisPublicaciones() {
+  const { user } = useAuth();
+  const [items, setItems] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [busyId, setBusyId] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (!user) return;
+    fetch(`${BASE}api/marketplace/products?sellerId=${user.id}`)
+      .then(r => r.json())
+      .then(d => setItems(Array.isArray(d) ? d : []))
+      .catch(() => setItems([]))
+      .finally(() => setLoading(false));
+  }, [user?.id]);
+
+  const borrar = async (p: any) => {
+    if (!user) return;
+    if (!window.confirm(`¿Borrar la publicación "${p.title}"?`)) return;
+    setBusyId(p.id);
+    try {
+      const r = await fetch(`${BASE}api/marketplace/products/${p.id}`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId: user.id }),
+      });
+      if (r.ok) setItems(list => list.filter(x => x.id !== p.id));
+      else alert("No se pudo borrar la publicación");
+    } catch {
+      alert("No se pudo borrar la publicación");
+    }
+    setBusyId(null);
+  };
+
+  return (
+    <div className="rounded-xl border border-white/8 bg-[#06060f] p-5">
+      <p className="font-mono text-[10px] text-muted-foreground tracking-widest mb-3">MIS PUBLICACIONES (MARKETPLACE)</p>
+      {loading ? (
+        <p className="font-mono text-xs text-muted-foreground">Cargando...</p>
+      ) : items.length === 0 ? (
+        <p className="font-mono text-xs text-muted-foreground">Aún no has publicado nada.</p>
+      ) : (
+        <div className="space-y-2">
+          {items.map(p => (
+            <div key={p.id} className="flex items-center gap-3 rounded-lg border border-white/8 bg-black/30 p-3">
+              <div className="h-12 w-12 rounded-md overflow-hidden bg-black/40 shrink-0">
+                {p.thumbnailUrl && <img src={p.thumbnailUrl} alt="" className="w-full h-full object-cover" />}
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="font-mono text-sm text-white truncate">{p.title}</p>
+                <p className="font-mono text-[10px] text-muted-foreground">{p.price} SPC · {p.salesCount ?? 0} ventas</p>
+              </div>
+              <button type="button" onClick={() => borrar(p)} disabled={busyId === p.id}
+                className="px-3 py-1.5 border border-red-500/40 text-red-400 rounded-lg font-mono text-[11px] font-bold hover:bg-red-500/10 disabled:opacity-50">
+                BORRAR
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
