@@ -432,59 +432,61 @@ router.post("/lab/machines/:slug/submit-flag", async (req, res) => {
     const correctFlag = flagType === "user" ? machine[0].userFlag : machine[0].rootFlag;
     const isCorrect   = flag.trim().toLowerCase() === (correctFlag ?? "").trim().toLowerCase();
 
-    if (isCorrect) {
-      // Check BEFORE upsert if user already had this flag correct
-      const prev = await db.select({ isCorrect: flagSubmissionsTable.isCorrect })
+    const [userRow] = await db.select({ id: usersTable.id }).from(usersTable).where(eq(usersTable.id, userId)).limit(1);
+    if (!userRow) return res.status(404).json({ error: "Usuario no encontrado" });
+
+    const m = machine[0];
+
+    // Todo en una transaccion y con el usuario bloqueado: dos envios simultaneos de la
+    // misma flag se ponen en cola y solo el primero cobra. Si algo falla, no se paga nada.
+    await db.transaction(async (tx) => {
+      await tx.execute(sql`SELECT id FROM ${usersTable} WHERE id = ${userId} FOR UPDATE`);
+
+      const prev = await tx.select({ id: flagSubmissionsTable.id, isCorrect: flagSubmissionsTable.isCorrect })
         .from(flagSubmissionsTable)
         .where(and(eq(flagSubmissionsTable.userId, userId), eq(flagSubmissionsTable.machineSlug, slug), eq(flagSubmissionsTable.flagType, flagType)))
         .limit(1);
-      const alreadyHad = prev.length > 0 && prev[0].isCorrect;
+      const alreadyHad = !!prev[0]?.isCorrect;
 
-      if (!alreadyHad) {
-        const pts = flagType === "root" ? machine[0].points : Math.floor(machine[0].points / 2);
-
-        // Update user total points
-        await db.update(usersTable)
-          .set({ totalPoints: sql`total_points + ${pts}` })
-          .where(eq(usersTable.id, userId));
-
-        // Increment machinesSolved on root flag
-        if (flagType === "root") {
-          await db.update(usersTable)
-            .set({ machinesSolved: sql`machines_solved + 1` })
-            .where(eq(usersTable.id, userId));
-          // Increment machine solve count
-          await db.update(labMachinesTable)
-            .set({ solveCount: sql`solve_count + 1` })
-            .where(eq(labMachinesTable.slug, slug));
-        }
-
-        // Give SPC to wallet
-        await db.update(spettroWalletsTable)
-          .set({ balance: sql`balance + ${pts}`, totalEarned: sql`total_earned + ${pts}`, updatedAt: new Date() })
-          .where(eq(spettroWalletsTable.userId, userId));
-
-        // Record SPC transaction
-        await db.insert(spettroTransactionsTable).values({
-          userId, amount: pts, type: "earned",
-          description: `${flagType === "root" ? "Root" : "User"} flag — ${machine[0].name}`,
-          referenceId: `${slug}:${flagType}`,
-        });
+      if (prev[0]) {
+        await tx.update(flagSubmissionsTable)
+          .set({ isCorrect: alreadyHad || isCorrect, submittedAt: new Date() })
+          .where(eq(flagSubmissionsTable.id, prev[0].id));
+      } else {
+        await tx.insert(flagSubmissionsTable).values({ userId, machineSlug: slug, flagType, isCorrect });
       }
-    }
 
-    // Upsert submission (AFTER rewarding to avoid race condition)
-    const existing = await db.select({ id: flagSubmissionsTable.id, isCorrect: flagSubmissionsTable.isCorrect })
-      .from(flagSubmissionsTable)
-      .where(and(eq(flagSubmissionsTable.userId, userId), eq(flagSubmissionsTable.machineSlug, slug), eq(flagSubmissionsTable.flagType, flagType)))
-      .limit(1);
-    if (existing[0]) {
-      await db.update(flagSubmissionsTable)
-        .set({ isCorrect: existing[0].isCorrect || isCorrect, submittedAt: new Date() })
-        .where(eq(flagSubmissionsTable.id, existing[0].id));
-    } else {
-      await db.insert(flagSubmissionsTable).values({ userId, machineSlug: slug, flagType, isCorrect });
-    }
+      if (!isCorrect || alreadyHad) return;
+
+      const pts = flagType === "root" ? m.points : Math.floor(m.points / 2);
+
+      await tx.update(usersTable)
+        .set({ totalPoints: sql`total_points + ${pts}` })
+        .where(eq(usersTable.id, userId));
+
+      if (flagType === "root") {
+        await tx.update(usersTable)
+          .set({ machinesSolved: sql`machines_solved + 1` })
+          .where(eq(usersTable.id, userId));
+        await tx.update(labMachinesTable)
+          .set({ solveCount: sql`solve_count + 1` })
+          .where(eq(labMachinesTable.slug, slug));
+      }
+
+      const wallet = await tx.update(spettroWalletsTable)
+        .set({ balance: sql`balance + ${pts}`, totalEarned: sql`total_earned + ${pts}`, updatedAt: new Date() })
+        .where(eq(spettroWalletsTable.userId, userId))
+        .returning({ id: spettroWalletsTable.id });
+      if (wallet.length === 0) {
+        await tx.insert(spettroWalletsTable).values({ userId, balance: pts, totalEarned: pts });
+      }
+
+      await tx.insert(spettroTransactionsTable).values({
+        userId, amount: pts, type: "earned",
+        description: `${flagType === "root" ? "Root" : "User"} flag — ${m.name}`,
+        referenceId: `${slug}:${flagType}`,
+      });
+    });
 
     res.json({ correct: isCorrect, flagType, message: isCorrect ? "¡Flag correcta! 🎉" : "Flag incorrecta. Sigue intentando." });
   } catch (e) {
