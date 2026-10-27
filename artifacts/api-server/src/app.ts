@@ -48,7 +48,7 @@ app.use(cors({
   origin: true,
   credentials: true,
   methods: ["GET", "POST", "PATCH", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization", "X-Internal-Key"],
+  allowedHeaders: ["Content-Type", "Authorization", "X-Internal-Key", "X-Admin-Key"],
 }));
 
 // ─── Body parsing (5mb to support base64 avatar uploads) ─────────────────────

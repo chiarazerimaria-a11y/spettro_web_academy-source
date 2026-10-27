@@ -9,6 +9,7 @@ import { eq, desc, and } from "drizzle-orm";
 import {
   sanitizeStr, sanitizeOptional, safeInt, safeFloat,
   ALLOWED_CATEGORIES, ALLOWED_PAYOUT_METHODS, internalKeyGuard, sanitizeAvatarUrl } from "../middleware/sanitize";
+import { adminGuard } from "../middleware/adminGuard";
 import { DOWNLOADS } from "../downloads";
 
 const router = Router();
@@ -319,7 +320,7 @@ router.post("/payouts/requests", async (req, res) => {
 });
 
 // GET /api/payouts/requests — admin: all requests (internal key required)
-router.get("/payouts/requests", internalKeyGuard, async (_req, res) => {
+router.get("/payouts/requests", adminGuard, async (_req, res) => {
   try {
     const requests = await db.select().from(payoutRequestsTable)
       .orderBy(desc(payoutRequestsTable.createdAt));
@@ -328,7 +329,7 @@ router.get("/payouts/requests", internalKeyGuard, async (_req, res) => {
 });
 
 // PATCH /api/payouts/requests/:id — admin: approve/reject (internal key required)
-router.patch("/payouts/requests/:id", internalKeyGuard, async (req, res) => {
+router.patch("/payouts/requests/:id", adminGuard, async (req, res) => {
   const id = safeInt(req.params.id, 0, 1);
   if (!id) return res.status(400).json({ error: "ID inválido" });
   const raw       = req.body as Record<string, unknown>;

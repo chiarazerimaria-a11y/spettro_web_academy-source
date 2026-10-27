@@ -13,9 +13,15 @@ export default function AdminAccess() {
     if (open) setTimeout(() => inputRef.current?.focus(), 50);
   }, [open]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (pw === "chiara@3012") {
+    let ok = false;
+    try {
+      const r = await fetch(`${import.meta.env.BASE_URL}api/admin/summary`, { headers: { "X-Admin-Key": pw } });
+      ok = r.ok;
+    } catch { /* sin conexion */ }
+    if (ok) {
+      sessionStorage.setItem("adminKey", pw);
       setOpen(false);
       setPw("");
       navigate("/admin");

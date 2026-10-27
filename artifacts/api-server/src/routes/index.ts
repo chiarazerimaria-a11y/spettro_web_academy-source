@@ -2,6 +2,7 @@ import tutoringRouter from "./tutoring";
 import { Router, type IRouter } from "express";
 import healthRouter from "./health";
 import adminRouter from "./admin";
+import { adminGuard } from "../middleware/adminGuard";
 import labRouter from "./lab";
 import authRouter from "./auth";
 import applicationsRouter from "./applications";
@@ -19,6 +20,7 @@ import lessonsRouter from "./lessons";
 
 const router: IRouter = Router();
 
+router.use("/admin", adminGuard);
 router.use(healthRouter);
 router.use(adminRouter);
 router.use(labRouter);
