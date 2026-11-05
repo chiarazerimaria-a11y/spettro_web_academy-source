@@ -120,27 +120,38 @@ export const CATEGORIES: { id: string; label: string; color: string; keywords: s
     keywords: ["sql", "sqli", "xss", "lfi", "rfi", "ssrf", "csrf", "xxe", "idor", "ssti", "rce",
       "injection", "inyeccion", "upload", "web", "php", "wordpress", "joomla", "drupal", "http",
       "cms", "deserialization", "traversal", "cookie", "jwt", "api", "burp", "gobuster", "nikto",
-      "tomcat", "flask"],
+      "tomcat", "flask", "redirect", "admin panel", "shellshock", "cgi", "nibbleblog", "war shell"],
   },
   {
-    id: "network", label: "Network & Pivoting", color: "#ff4db8",
+    id: "network", label: "Network & Pivoting", color: "#60a5fa",
     keywords: ["smb", "samba", "ftp", "ssh", "nfs", "snmp", "dns", "ldap", "kerberos",
       "active directory", "rdp", "pivot", "tunnel", "network", "smtp", "telnet", "rpc", "nmap",
-      "vpn", "port forwarding", "proxychains", "chisel", "ligolo", "winrm"],
+      "vpn", "port forwarding", "proxychains", "chisel", "ligolo", "winrm", "hydra", "eternalblue",
+      "ms17", "netcat"],
+  },
+  {
+    id: "windows", label: "Windows & Active Directory", color: "#34d399",
+    keywords: ["bloodhound", "crackmapexec", "kerberos", "active directory", "ldap", "winrm", "ms17",
+      "eternalblue", "mimikatz", "psexec", "windows", "powershell", "smb"],
+  },
+  {
+    id: "privesc", label: "Escalada de privilegios", color: "#fb923c",
+    keywords: ["linpeas", "winpeas", "sudo", "cron", "privilege", "privesc", "suid", "capabilities",
+      "escalada", "kernel exploit", "dirtycow", "dirty cow"],
   },
   {
     id: "binary", label: "Binary / Reversing", color: "#9b55f9",
     keywords: ["buffer", "overflow", "binary", "binario", "reverse engineering", "reversing",
       "ingenieria inversa", "rop", "pwn", "format string", "assembly", "shellcode", "gdb", "ghidra",
-      "elf", "stack", "heap", "ret2libc"],
+      "elf", "stack", "heap", "ret2libc", "bof"],
   },
   {
-    id: "crypto", label: "Criptografía", color: "#9b55f9",
+    id: "crypto", label: "Criptografía", color: "#a78bfa",
     keywords: ["crypto", "cripto", "rsa", "aes", "hash", "cipher", "cifrad", "descifr", "base64",
       "xor", "encrypt", "decrypt"],
   },
   {
-    id: "forensic", label: "Forense Digital", color: "#ff4db8",
+    id: "forensic", label: "Forense Digital", color: "#f472b6",
     keywords: ["forens", "memory dump", "volatility", "pcap", "wireshark", "steg", "esteg",
       "autopsy", "disk image", "logs", "evidence", "evidencia", "malware analysis"],
   },
@@ -161,10 +172,13 @@ function matches(text: string, words: string[], kw: string): boolean {
   return words.some((w) => w.startsWith(kw));
 }
 
-export function categoriesOf(vulnerability: string, techniques: string): string[] {
+export function categoriesOf(vulnerability: string, techniques: string, os = ""): string[] {
   const text = normalize(`${vulnerability} ${techniques}`);
   const words = text.split(/[^a-z0-9]+/).filter(Boolean);
-  return CATEGORIES.filter((c) => c.keywords.some((k) => matches(text, words, k))).map((c) => c.id);
+  const isWindows = normalize(os) === "windows";
+  return CATEGORIES.filter(
+    (c) => (c.id === "windows" && isWindows) || c.keywords.some((k) => matches(text, words, k)),
+  ).map((c) => c.id);
 }
 
 const DAY_MS = 86_400_000;
@@ -206,7 +220,7 @@ export function buildProfileStats(input: ProfileInput): ProfileStats {
   const { user, machines, submissions, certifications, sessions, usersAhead } = input;
 
   const bySlug = new Map(machines.map((m) => [m.slug, m]));
-  const catsBySlug = new Map(machines.map((m) => [m.slug, categoriesOf(m.vulnerability, m.techniques)]));
+  const catsBySlug = new Map(machines.map((m) => [m.slug, categoriesOf(m.vulnerability, m.techniques, m.os)]));
 
   const correct = submissions.filter((s) => s.isCorrect);
   const rootSubs = correct.filter((s) => s.flagType === "root");

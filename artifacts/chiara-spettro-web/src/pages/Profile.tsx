@@ -2,7 +2,7 @@ import { useEffect, useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link } from "wouter";
 import {
-  Terminal, Shield, Zap, Clock, Lock, Unlock, Users, LogOut,
+  Terminal, Shield, Clock, Users, LogOut,
   ChevronDown, ChevronUp, MessageSquare, Camera, X, Check,
   Wallet, TrendingUp, Percent, ArrowRight, Gift, Coins,
   BarChart3, ShoppingBag, Trophy, Swords, BookOpen, UserPlus,
@@ -13,6 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuery } from "@tanstack/react-query";
+import { useProfileStats, SkillTree, TrophyHall, CertificationProgress, LevelMilestones, ActivityLines } from "@/components/ProfileStats";
 
 const BASE = import.meta.env.BASE_URL;
 
@@ -28,12 +29,6 @@ const RANK_CONFIG: Record<string, { color: string; glow: string; label: string }
   Master:  { color: "text-yellow-400", glow: "#facc15", label: "MASTER HACKER" },
 };
 
-const RARITY: Record<string, { border: string; glow: string; textColor: string; icon: string; bg: string }> = {
-  Común:      { border: "border-gray-600/30",   glow: "#6b7280", textColor: "text-gray-400",   icon: "🏅", bg: "bg-gray-800/10" },
-  Raro:       { border: "border-blue-500/50",   glow: "#3b82f6", textColor: "text-blue-400",   icon: "💎", bg: "bg-blue-900/10" },
-  Épico:      { border: "border-purple-500/60", glow: "#a855f7", textColor: "text-purple-400", icon: "🔮", bg: "bg-purple-900/10" },
-  Legendario: { border: "border-yellow-500/70", glow: "#eab308", textColor: "text-yellow-400", icon: "⭐", bg: "bg-yellow-900/10" },
-};
 
 // ── Fee structure ──────────────────────────────────────────────────────────────
 const FEE_TABLE = [
@@ -59,23 +54,6 @@ const TX_ICONS: Record<string, { icon: string; color: string; label: string }> =
   affiliate:  { icon: "🤝", color: "#fb923c", label: "Afiliado" },
 };
 
-// ── Trophy card ────────────────────────────────────────────────────────────────
-const TrophyCard = ({ trophy, index }: { trophy: { name: string; date: string; rarity: string }; index: number }) => {
-  const r = RARITY[trophy.rarity] || RARITY.Común;
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 20, scale: 0.9 }} animate={{ opacity: 1, y: 0, scale: 1 }}
-      transition={{ delay: index * 0.07, duration: 0.4 }} whileHover={{ y: -6, scale: 1.06 }}
-      className={`relative rounded-xl border ${r.border} ${r.bg} p-4 flex flex-col items-center text-center gap-1.5 overflow-hidden`}
-      style={{ boxShadow: `0 0 10px ${r.glow}20` }}
-    >
-      <span className="text-2xl">{r.icon}</span>
-      <span className={`font-mono text-xs font-bold ${r.textColor}`}>{trophy.name}</span>
-      <span className="font-mono text-[9px] text-muted-foreground">{trophy.date}</span>
-      <span className={`font-mono text-[9px] px-2 py-0.5 rounded border ${r.border} ${r.textColor} opacity-70`}>{trophy.rarity}</span>
-    </motion.div>
-  );
-};
 
 const BreadcrumbNav = () => (
   <nav className="px-4 py-3 border-b border-white/5">
@@ -90,7 +68,6 @@ const BreadcrumbNav = () => (
 
 // ─── Main ─────────────────────────────────────────────────────────────────────
 export default function Profile() {
-  const [certifications, setCertifications] = useState<any[]>([]);
   const [expandedMsg, setExpandedMsg] = useState<number | null>(null);
   const [editOpen, setEditOpen] = useState(false);
   const [editAlias, setEditAlias] = useState("");
@@ -130,6 +107,7 @@ export default function Profile() {
   const userSquad = squadsAll.find(
     s => s.captainName === username || s.captainName === user?.username
   ) || null;
+  const { data: pstats } = useProfileStats(user?.id);
 
   // ── Payout requests ──────────────────────────────────────────────────────────
   const { data: payouts = [] } = useQuery<any[]>({
@@ -192,30 +170,9 @@ export default function Profile() {
 
   useEffect(() => {
     document.documentElement.classList.add("dark");
-    fetch(`${BASE}api/lab/certifications`)
-      .then(r => r.json()).then(d => setCertifications(d || [])).catch(() => {});
   }, []);
 
-  const trophies = [
-    { name: "Primer Pwn",       date: "15/01/2024", rarity: "Común" },
-    { name: "Master de Linux",  date: "22/01/2024", rarity: "Raro" },
-    { name: "Speed Hacker",     date: "05/02/2024", rarity: "Épico" },
-    { name: "Cazador de Flags", date: "18/02/2024", rarity: "Legendario" },
-    { name: "Sin Pistas",       date: "01/03/2024", rarity: "Raro" },
-    { name: "10 días seguidos", date: "15/03/2024", rarity: "Épico" },
-    { name: "Web Wizard",       date: "28/03/2024", rarity: "Legendario" },
-    { name: "Iniciado VulnYX",  date: "10/04/2024", rarity: "Común" },
-  ];
 
-  const activities = [
-    { time: "10:23:45", action: "pwned: Medusa (Fácil)",               pts: "+20pts", type: "pwn" },
-    { time: "09:15:12", action: "pwned: Thor (Medio)",                 pts: "+30pts", type: "pwn" },
-    { time: "08:45:00", action: 'trofeo: "Master de Linux" desbloq.',  pts: "",       type: "trophy" },
-    { time: "08:10:33", action: "intentó: Cerberus (Difícil) — fail",  pts: "",       type: "fail" },
-    { time: "Ayer",     action: "pwned: Basic_Auth (Fácil)",           pts: "+15pts", type: "pwn" },
-    { time: "Ayer",     action: "inició sesión",                       pts: "",       type: "login" },
-    { time: "Hace 2d",  action: "pwned: LFI_Basics (Medio)",          pts: "+30pts", type: "pwn" },
-  ];
 
   const mockMessages = [
     { id:1, sender:"Ghost Protocol",  initials:"GP", color:"bg-primary/20 text-primary",     preview:"Necesitamos un web wizard para el torneo...", full:"Compañero, estamos organizando la estrategia para la Infiltration Cup. Necesitamos a alguien que domine Web Exploitation — los primeros retos apuntan a LFI y SSRF. ¿Contamos contigo?", unread:true,  time:"Hace 2h", tag:"ESCUADRA" },
@@ -247,17 +204,7 @@ export default function Profile() {
   const allMessages = [...mockMessages, ...txMessages];
   const unreadCount = mockMessages.filter(m => m.unread).length;
 
-  const actColor = { pwn:"text-primary", trophy:"text-yellow-400", fail:"text-red-400", login:"text-muted-foreground" };
-  const actIcon  = { pwn:"▶▶", trophy:"★", fail:"✕", login:"→" };
 
-  const skillBars = [
-    { label:"Web Exploitation",   pct:85, color:"#ff4db8" },
-    { label:"Network & Pivoting", pct:72, color:"#ff4db8" },
-    { label:"Binary / Reversing", pct:58, color:"#9b55f9" },
-    { label:"Criptografía",       pct:65, color:"#9b55f9" },
-    { label:"Forense Digital",    pct:78, color:"#ff4db8" },
-    { label:"OSINT",              pct:91, color:"#facc15" },
-  ];
 
   const TABS = [
     { id: "stats",    label: "ESTADÍSTICAS",  icon: <BarChart3 className="h-3.5 w-3.5" /> },
@@ -333,7 +280,7 @@ export default function Profile() {
                       ◈ {rankCfg.label}
                     </span>
                     <span className="text-xs text-muted-foreground font-mono flex items-center gap-1">
-                      <Clock className="h-3 w-3" /> Desde 14/01/2024
+                      <Clock className="h-3 w-3" /> Desde {pstats ? new Date(pstats.user.joinedAt).toLocaleDateString("es-ES") : "—"}
                     </span>
                   </div>
                 </div>
@@ -378,7 +325,7 @@ export default function Profile() {
                 {[
                   { emoji:"🎯", label:"PWNS",    value:machinesSolved.toString(), color:"text-primary" },
                   { emoji:"⚡", label:"PUNTOS",  value:totalPoints.toLocaleString(), color:"text-secondary" },
-                  { emoji:"🏆", label:"GLOBAL",  value:"#234", color:"text-yellow-400" },
+                  { emoji:"🏆", label:"GLOBAL",  value: pstats ? `#${pstats.user.globalRank}` : "—", color:"text-yellow-400" },
                   { emoji:"🪙", label:"SPC",     value:wallet ? balance.toLocaleString() : "—", color:"text-pink-400" },
                 ].map(({ emoji, label, value, color }) => (
                   <div key={label} className="flex flex-col items-center p-2.5 rounded-lg border border-white/5 bg-white/[0.02]">
@@ -470,114 +417,13 @@ export default function Profile() {
             {/* LEFT */}
             <div className="lg:col-span-2 space-y-6">
 
-              {/* SKILLS */}
-              <motion.section initial={{ opacity:0, y:20 }} animate={{ opacity:1, y:0 }} transition={{ duration:0.4 }}>
-                <h2 className="text-base font-mono font-bold mb-4 text-primary flex items-center gap-2">
-                  <span className="text-secondary">&gt;</span> ÁRBOL_DE_HABILIDADES
-                </h2>
-                <div className="rounded-xl border border-white/8 bg-[#060610] p-5 space-y-4">
-                  {skillBars.map(({ label, pct, color }, idx) => (
-                    <div key={label}>
-                      <div className="flex justify-between items-center mb-1.5">
-                        <span className="font-mono text-xs text-muted-foreground">{label}</span>
-                        <div className="flex items-center gap-2">
-                          <div className="flex gap-0.5">
-                            {Array.from({length:5}, (_, i) => (
-                              <div key={i} className="w-2 h-2 rounded-sm"
-                                style={{ background: i < Math.round(pct/20) ? color : "rgba(255,255,255,0.06)", boxShadow: i < Math.round(pct/20) ? `0 0 4px ${color}` : "none" }} />
-                            ))}
-                          </div>
-                          <span className="font-mono text-xs font-bold w-8 text-right" style={{ color }}>{pct}%</span>
-                        </div>
-                      </div>
-                      <div className="h-2 w-full bg-white/5 rounded-full overflow-hidden">
-                        <motion.div initial={{ width:0 }} animate={{ width:`${pct}%` }}
-                          transition={{ duration:1, delay:0.3 + idx * 0.07, ease:"easeOut" }}
-                          className="h-full rounded-full"
-                          style={{ background:`linear-gradient(90deg, ${color}40, ${color})`, boxShadow:`0 0 8px ${color}60` }} />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </motion.section>
+              <SkillTree stats={pstats} />
 
-              {/* TROPHIES */}
-              <motion.section initial={{ opacity:0, y:20 }} animate={{ opacity:1, y:0 }} transition={{ duration:0.4, delay:0.05 }}>
-                <h2 className="text-base font-mono font-bold mb-4 text-primary flex items-center gap-2">
-                  <span className="text-secondary">&gt;</span> SALA_DE_TROFEOS
-                  <span className="ml-auto text-xs text-muted-foreground font-normal">{trophies.length} desbloqueados</span>
-                </h2>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                  {trophies.map((t, i) => <TrophyCard key={i} trophy={t} index={i} />)}
-                </div>
-              </motion.section>
+              <TrophyHall stats={pstats} />
 
-              {/* CERTIFICATIONS */}
-              <motion.section initial={{ opacity:0, y:20 }} animate={{ opacity:1, y:0 }} transition={{ duration:0.4, delay:0.1 }}>
-                <h2 className="text-base font-mono font-bold mb-4 text-primary flex items-center gap-2">
-                  <span className="text-secondary">&gt;</span> PROGRESO_CERTIFICACIONES
-                </h2>
-                <div className="space-y-2">
-                  {certifications.length > 0 ? certifications.map((cert, i) => {
-                    const done = i < 2;
-                    return (
-                      <div key={cert.id}
-                        className={`p-4 rounded-xl border flex items-center gap-4 transition-all ${done ? "border-primary/25 bg-primary/[0.04]" : "border-white/5 bg-white/[0.015]"}`}>
-                        <div className={`p-2.5 rounded-lg shrink-0 ${done ? "bg-primary/20 text-primary" : "bg-white/5 text-muted-foreground"}`}>
-                          {done ? <Unlock className="h-4 w-4" /> : <Lock className="h-4 w-4" />}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex justify-between items-center mb-1.5">
-                            <span className={`font-mono text-sm font-bold truncate ${done ? "text-white" : "text-muted-foreground"}`}>
-                              {cert.code} — {cert.name}
-                            </span>
-                            <span className="font-mono text-xs ml-3 shrink-0" style={{ color: done ? "#ff4db8" : undefined }}>
-                              {done ? "100%" : "0%"}
-                            </span>
-                          </div>
-                          <div className="h-1.5 w-full bg-black/60 rounded-full overflow-hidden border border-white/5">
-                            <motion.div initial={{ width:0 }} animate={{ width: done ? "100%" : "0%" }}
-                              transition={{ duration:1.2, delay: i * 0.15 }}
-                              className="h-full rounded-full"
-                              style={{ background: done ? "linear-gradient(90deg,#ff4db860,#ff4db8)" : "transparent", boxShadow: done ? "0 0 10px #ff4db8" : "none" }} />
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  }) : (
-                    <div className="font-mono text-sm text-muted-foreground border border-white/5 p-4 rounded-xl bg-white/[0.02]">
-                      Cargando certificaciones...
-                    </div>
-                  )}
-                </div>
-              </motion.section>
+              <CertificationProgress stats={pstats} />
 
-              {/* LEVEL TASKS */}
-              <motion.section initial={{ opacity:0, y:20 }} animate={{ opacity:1, y:0 }} transition={{ duration:0.4, delay:0.15 }}>
-                <div className="rounded-xl border border-white/8 bg-[#060610] p-5">
-                  <div className="flex items-center justify-between mb-5">
-                    <h3 className="font-mono font-bold text-primary flex items-center gap-2 text-sm">
-                      <Zap className="h-4 w-4" /> MISIONES DE NIVEL
-                    </h3>
-                    <span className="text-xs font-mono text-muted-foreground">→ Nivel {level + 1}</span>
-                  </div>
-                  <div className="space-y-3">
-                    {[
-                      { label:"Completa tu perfil",  xp:"+50 XP",  done:true },
-                      { label:"Únete a un equipo",   xp:"+100 XP", done:!!userSquad },
-                      { label:"Gana un torneo",      xp:"+500 XP", done:false },
-                    ].map(({ label, xp, done }) => (
-                      <div key={label} className="flex items-center gap-3">
-                        <div className={`w-5 h-5 rounded border-2 flex items-center justify-center shrink-0 font-mono text-[10px] ${done ? "bg-primary/20 border-primary text-primary" : "border-white/20"}`}>
-                          {done && "✓"}
-                        </div>
-                        <span className={`text-sm font-mono flex-1 ${done ? "text-muted-foreground line-through" : "text-foreground"}`}>{label}</span>
-                        <span className={`text-xs font-mono ${done ? "text-primary/50" : "text-secondary"}`}>{xp}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </motion.section>
+              <LevelMilestones stats={pstats} hasSquad={!!userSquad} level={level} />
             </div>
 
             {/* RIGHT — activity terminal */}
@@ -599,14 +445,7 @@ export default function Profile() {
                       <span className="text-muted-foreground">:~# </span>
                       <span className="text-white">cat activity.log | tail -20</span>
                     </div>
-                    {activities.map((act, i) => (
-                      <div key={i} className="flex gap-2 items-start group">
-                        <span className="text-muted-foreground/30 shrink-0 text-[9px] leading-5">[{act.time}]</span>
-                        <span className="shrink-0 leading-5" style={{ color:(actColor as any)[act.type] }}>{(actIcon as any)[act.type]}</span>
-                        <span className="text-foreground/75 flex-1 group-hover:text-foreground/95 transition-colors">{act.action}</span>
-                        {act.pts && <span className="text-primary shrink-0 font-bold">{act.pts}</span>}
-                      </div>
-                    ))}
+                    <ActivityLines stats={pstats} />
                     <div className="flex gap-2 items-center pt-1">
                       <span className="text-primary">$</span>
                       <span className="w-2 h-4 bg-primary/80 animate-pulse" />
