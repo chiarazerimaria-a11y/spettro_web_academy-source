@@ -17,6 +17,7 @@ import tournamentRouter from "./tournament";
 import spcRouter from "./spc";
 import marketplaceRouter from "./marketplace";
 import lessonsRouter from "./lessons";
+import profileRouter from "./profile";
 
 const router: IRouter = Router();
 
@@ -37,6 +38,7 @@ router.use(tournamentRouter);
 router.use(spcRouter);
 router.use(marketplaceRouter);
 router.use(lessonsRouter);
+router.use(profileRouter);
 router.use(tutoringRouter);
 router.use(tutoringRouter);
 

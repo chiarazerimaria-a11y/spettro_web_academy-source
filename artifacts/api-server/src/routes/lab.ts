@@ -449,9 +449,11 @@ router.post("/lab/machines/:slug/submit-flag", async (req, res) => {
       const alreadyHad = !!prev[0]?.isCorrect;
 
       if (prev[0]) {
-        await tx.update(flagSubmissionsTable)
-          .set({ isCorrect: alreadyHad || isCorrect, submittedAt: new Date() })
-          .where(eq(flagSubmissionsTable.id, prev[0].id));
+        if (!alreadyHad) {
+          await tx.update(flagSubmissionsTable)
+            .set({ isCorrect, submittedAt: new Date() })
+            .where(eq(flagSubmissionsTable.id, prev[0].id));
+        }
       } else {
         await tx.insert(flagSubmissionsTable).values({ userId, machineSlug: slug, flagType, isCorrect });
       }
