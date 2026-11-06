@@ -32,12 +32,12 @@ const RANK_CONFIG: Record<string, { color: string; glow: string; label: string }
 
 // ── Fee structure ──────────────────────────────────────────────────────────────
 const FEE_TABLE = [
-  { icon: <Trophy className="h-3.5 w-3.5" />, label: "Torneos — premio ganado",       plat: 15, you: 85,  color: "#facc15" },
-  { icon: <Swords className="h-3.5 w-3.5" />,  label: "Batallas PvP — bote",          plat: 10, you: 90,  color: "#ff4db8" },
-  { icon: <BookOpen className="h-3.5 w-3.5" />, label: "Cursos vendidos (instructora)",plat: 30, you: 70,  color: "#9b55f9" },
-  { icon: <ShoppingBag className="h-3.5 w-3.5" />, label: "Marketplace — ventas",     plat: 25, you: 75,  color: "#34d399" },
-  { icon: <UserPlus className="h-3.5 w-3.5" />, label: "Afiliados — comisión",         plat: 90, you: 10,  color: "#fb923c", note: "tú recibes el 10% del primer pago del referido" },
-  { icon: <Download className="h-3.5 w-3.5" />, label: "Retiro a € (cashout)",         plat: 5,  you: 95,  color: "#60a5fa", note: "5% de comisión por conversión" },
+  { icon: <Trophy className="h-3.5 w-3.5" />, label: "Torneos — apuestas",            plat: 0,  you: 100, color: "#facc15", note: "el ganador recibe el doble de su apuesta" },
+  { icon: <Swords className="h-3.5 w-3.5" />,  label: "Batallas PvP — premio",         plat: 0,  you: 100, color: "#ff4db8", note: "el premio completo va al ganador" },
+  { icon: <BookOpen className="h-3.5 w-3.5" />, label: "Cursos vendidos (instructora)",plat: 30, you: 70,  color: "#9b55f9", note: "comisión por defecto; la administración puede ajustarla" },
+  { icon: <ShoppingBag className="h-3.5 w-3.5" />, label: "Marketplace — ventas",     plat: 10, you: 90,  color: "#34d399" },
+  { icon: <Users className="h-3.5 w-3.5" />,    label: "Tutorías — sesiones",          plat: 10, you: 90,  color: "#60a5fa" },
+  { icon: <Download className="h-3.5 w-3.5" />, label: "Retiro a € (cashout)",         plat: 0,  you: 100, color: "#fb923c", note: "1,000 SPC = €1 · mínimo 5,000 SPC" },
   { icon: <Send className="h-3.5 w-3.5" />,     label: "Transferencias SPC (P2P)",    plat: 0,  you: 100, color: "#a3e635" },
 ];
 
@@ -712,7 +712,7 @@ export default function Profile() {
               <div className="px-5 py-3 flex items-start gap-2 bg-white/[0.01]">
                 <AlertCircle className="h-3 w-3 text-muted-foreground/50 shrink-0 mt-0.5" />
                 <p className="font-mono text-[9px] text-muted-foreground/50 leading-relaxed">
-                  Los porcentajes aplican sobre el importe bruto. El retiro mínimo es de 10,000 SPC (≈ €10.00). Los pagos se procesan en 3–5 días hábiles. SpettroWeb retiene la comisión automáticamente en el momento de la transacción.
+                  Los porcentajes aplican sobre el importe bruto y se descuentan automáticamente en el momento de la venta. El retiro mínimo es de 5,000 SPC (≈ €5.00) y cada solicitud la aprueba manualmente la administración. El programa de afiliados todavía no está activo.
                 </p>
               </div>
             </div>
