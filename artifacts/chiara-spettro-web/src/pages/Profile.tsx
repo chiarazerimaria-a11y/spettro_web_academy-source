@@ -174,16 +174,29 @@ export default function Profile() {
 
 
 
-  const mockMessages = [
-    { id:1, sender:"Ghost Protocol",  initials:"GP", color:"bg-primary/20 text-primary",     preview:"Necesitamos un web wizard para el torneo...", full:"Compañero, estamos organizando la estrategia para la Infiltration Cup. Necesitamos a alguien que domine Web Exploitation — los primeros retos apuntan a LFI y SSRF. ¿Contamos contigo?", unread:true,  time:"Hace 2h", tag:"ESCUADRA" },
-    { id:2, sender:"CipherPunks",     initials:"CP", color:"bg-secondary/20 text-secondary", preview:"Invitación de colaboración",                  full:"Buen pwn en Cerberus. Estamos armando equipo para las máquinas Insane. ¿Te apuntas?",                                                                                                     unread:false, time:"Ayer",     tag:"EQUIPO" },
-    { id:3, sender:"CHIARA_SPETTRO",  initials:"CS", color:"bg-green-500/20 text-green-400", preview:"Actualización de plataforma v2.4",            full:"Se ha añadido el nuevo módulo de Active Directory con 5 nuevas máquinas de entrenamiento. Revisa el laboratorio.",                                                                    unread:false, time:"Ayer",     tag:"SISTEMA" },
-    { id:4, sender:"RedStorm_X",      initials:"RS", color:"bg-red-500/20 text-red-400",     preview:"Desafío de torneo recibido",                  full:"La escuadra Red Storm ha enviado un desafío formal para la máquina Zeus. El reto expira en 24 horas.",                                                                          unread:false, time:"Hace 3d",  tag:"COMBATE" },
-    { id:5, sender:"Sistema",         initials:"SY", color:"bg-muted text-muted-foreground", preview:"Certificación desbloqueada",                  full:"¡Enhorabuena! Has completado los requisitos para la certificación CJE-101. Ya puedes descargar tu insignia.",                                                                  unread:false, time:"Hace 1sem",tag:"SISTEMA" },
-  ];
+  // ── Avisos reales: marcar como vistos al salir de la pestaña ──
+  const SEEN_KEY = "spettro_msg_seen";
+  const [msgFilter, setMsgFilter] = useState<string>("TODOS");
+  const [seenAt, setSeenAt] = useState<number>(() => {
+    try {
+      const v = localStorage.getItem(SEEN_KEY);
+      if (v) return Number(v) || 0;
+      const now = Date.now();
+      localStorage.setItem(SEEN_KEY, String(now));
+      return now;
+    } catch { return Date.now(); }
+  });
+  useEffect(() => {
+    if (profileTab !== "mensajes") return;
+    return () => {
+      const now = Date.now();
+      try { localStorage.setItem(SEEN_KEY, String(now)); } catch { /* sin storage */ }
+      setSeenAt(now);
+    };
+  }, [profileTab]);
 
   // Build notification messages from real transactions
-  const txMessages = transactions.slice(0, 5).map((tx, i) => {
+  const txMessages = transactions.slice(0, 10).map((tx, i) => {
     const info = TX_ICONS[tx.type] || TX_ICONS.earned;
     const sign = tx.amount > 0 ? "+" : "";
     return {
@@ -194,15 +207,48 @@ export default function Profile() {
       colorStyle: info.color,
       preview: tx.description,
       full: `${tx.description}. Movimiento: ${sign}${tx.amount.toLocaleString()} SPC. Tipo: ${info.label}.`,
-      unread: false,
+      unread: new Date(tx.createdAt).getTime() > seenAt,
       time: new Date(tx.createdAt).toLocaleDateString("es-ES", { day:"2-digit", month:"short" }),
-      tag: info.label.toUpperCase(),
+      tag: "SPC",
+      at: new Date(tx.createdAt).getTime(),
       amount: tx.amount,
     };
   });
 
-  const allMessages = [...mockMessages, ...txMessages];
-  const unreadCount = mockMessages.filter(m => m.unread).length;
+  // Avisos de logros reales (trofeos y certificaciones desbloqueados)
+  const achMessages = [
+    ...(pstats?.trophies ?? []).filter(t => t.unlocked && t.date).map((t, i) => {
+      const at = new Date(t.date as string).getTime();
+      return {
+        id: 1000 + i,
+        sender: "Logros",
+        initials: "🏆",
+        colorStyle: "#facc15",
+        preview: `Trofeo desbloqueado: ${t.name}`,
+        full: `${t.description}. Rareza: ${t.rarity}.`,
+        unread: at > seenAt,
+        time: new Date(at).toLocaleDateString("es-ES", { day: "2-digit", month: "short" }),
+        tag: "LOGROS",
+        at,
+      };
+    }),
+    ...(pstats?.certifications ?? []).filter(c => c.unlocked).map((c, i) => ({
+      id: 2000 + i,
+      sender: "Certificaciones",
+      initials: "🎓",
+      colorStyle: c.badgeColor || "#ff4db8",
+      preview: `Certificación desbloqueada: ${c.code}`,
+      full: `Has cumplido los requisitos de ${c.code} — ${c.name}.`,
+      unread: false,
+      time: "",
+      tag: "LOGROS",
+      at: 0,
+    })),
+  ];
+
+  const allMessages = [...achMessages, ...txMessages].sort((a, b) => b.at - a.at);
+  const shownMessages = msgFilter === "TODOS" ? allMessages : allMessages.filter(m => m.tag === msgFilter);
+  const unreadCount = allMessages.filter(m => m.unread).length;
 
 
 
@@ -384,7 +430,7 @@ export default function Profile() {
               </Link>
               {userSquad && (
                 <Button variant="outline" className="font-mono border-red-500/30 text-red-400 hover:bg-red-500/10 text-xs"
-                  onClick={() => toast({ title:"¿Seguro?", description:`Abandonarás ${userSquad.name}.`, variant:"destructive" })}>
+                  onClick={() => toast({ title:"Próximamente", description:"Abandonar escuadra aún no está disponible. Contacta con la administración." })}>
                   <LogOut className="h-3.5 w-3.5 md:mr-1.5" />
                   <span className="hidden md:inline">ABANDONAR</span>
                 </Button>
@@ -684,6 +730,7 @@ export default function Profile() {
                   Refiere a nuevas hackers y gana el <span className="text-orange-400 font-bold">10% de su primer pago</span>. Sin límite de referidos.
                 </p>
                 <Button className="w-full font-mono text-xs font-bold"
+                  onClick={() => toast({ title:"Programa de afiliados en preparación", description:"Todavía no hay códigos de afiliado para usuarios. Te avisaremos cuando esté activo." })}
                   style={{ background:"rgba(251,146,60,0.15)", border:"1px solid rgba(251,146,60,0.3)", color:"#fb923c" }}>
                   <UserPlus className="h-3.5 w-3.5 mr-1.5" /> VER MI CÓDIGO AFILIADO
                 </Button>
@@ -719,12 +766,13 @@ export default function Profile() {
 
             <div className="flex items-center justify-between">
               <p className="font-mono text-xs text-muted-foreground">
-                {unreadCount > 0 ? `${unreadCount} sin leer · ` : ""}{allMessages.length} mensajes en total
+                {unreadCount > 0 ? `${unreadCount} sin leer · ` : ""}{shownMessages.length} avisos
               </p>
               <div className="flex gap-1">
-                {["TODOS", "ESCUADRA", "SISTEMA", "SPC"].map(f => (
+                {["TODOS", "LOGROS", "SPC"].map(f => (
                   <button key={f}
-                    className="font-mono text-[10px] px-2 py-1 rounded border border-white/10 text-muted-foreground hover:text-foreground hover:border-white/20 transition-colors">
+                    onClick={() => setMsgFilter(f)}
+                    className={`font-mono text-[10px] px-2 py-1 rounded border transition-colors ${msgFilter === f ? "border-primary/50 text-primary bg-primary/10" : "border-white/10 text-muted-foreground hover:text-foreground hover:border-white/20"}`}>
                     {f}
                   </button>
                 ))}
@@ -732,7 +780,12 @@ export default function Profile() {
             </div>
 
             <div className="rounded-xl border border-white/5 bg-[#050510] overflow-hidden divide-y divide-white/5">
-              {allMessages.map(msg => (
+              {shownMessages.length === 0 && (
+                <div className="p-6 text-center font-mono text-xs text-muted-foreground">
+                  Sin avisos todavía. Aquí aparecerán tus ventas, retiros, flags y logros.
+                </div>
+              )}
+              {shownMessages.map(msg => (
                 <div key={msg.id}>
                   <div
                     onClick={() => setExpandedMsg(expandedMsg === msg.id ? null : msg.id)}
@@ -787,12 +840,7 @@ export default function Profile() {
                       <motion.div initial={{ height:0, opacity:0 }} animate={{ height:"auto", opacity:1 }} exit={{ height:0, opacity:0 }}>
                         <div className="p-4 pl-16 border-t border-white/5 bg-black/30">
                           <p className="text-xs text-foreground/80 leading-relaxed mb-3">{msg.full}</p>
-                          {!(msg as any).amount && (
-                            <button className="text-[10px] font-mono text-secondary hover:text-secondary/80 flex items-center gap-1 transition-colors">
-                              <span>↩</span> RESPONDER
-                            </button>
-                          )}
-                        </div>
+                                                  </div>
                       </motion.div>
                     )}
                   </AnimatePresence>
