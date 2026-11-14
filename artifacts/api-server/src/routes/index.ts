@@ -18,6 +18,7 @@ import spcRouter from "./spc";
 import marketplaceRouter from "./marketplace";
 import lessonsRouter from "./lessons";
 import profileRouter from "./profile";
+import ghcRouter from "./ghc";
 
 const router: IRouter = Router();
 
@@ -39,6 +40,7 @@ router.use(spcRouter);
 router.use(marketplaceRouter);
 router.use(lessonsRouter);
 router.use(profileRouter);
+router.use(ghcRouter);
 router.use(tutoringRouter);
 router.use(tutoringRouter);
 
