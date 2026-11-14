@@ -6,6 +6,7 @@ import {
 } from "@workspace/db/schema";
 import { eq, desc, and } from "drizzle-orm";
 import { sanitizeStr, sanitizeOptional, safeInt, rateLimit } from "../middleware/sanitize";
+import { adminGuard } from "../middleware/adminGuard";
 
 const router = Router();
 
@@ -92,7 +93,8 @@ router.get("/spc/packs", (_req, res) => {
   res.json(PACKS);
 });
 
-router.post("/spc/purchase", async (req, res) => {
+// Cerrado: acredita SPC sin pago real. Solo administración hasta que exista pasarela de pago.
+router.post("/spc/purchase", adminGuard, async (req, res) => {
   const raw    = req.body as Record<string, unknown>;
   const userId = safeInt(raw.userId, 0, 1, 1_000_000);
   const packId = sanitizeStr(raw.packId, 20) as PackId;
