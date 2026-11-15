@@ -8,9 +8,9 @@ import { getSessionUserId } from "../middleware/requireUser";
 const router = Router();
 
 // Precios en GHC por 30 dias. Cambialos aqui.
-const PLANS: Record<string, { label: string; price: number; rank: number }> = {
-  hacker: { label: "HACKER", price: 100, rank: 1 },
-  elite:  { label: "ELITE",  price: 250, rank: 2 },
+const PLANS: Record<string, { label: string; price: number; rank: number; bonus: number }> = {
+  hacker: { label: "HACKER", price: 100, rank: 1, bonus: 100 },
+  elite:  { label: "ELITE",  price: 250, rank: 2, bonus: 300 },
 };
 const PERIOD_DAYS = 30;
 const DAY = 24 * 60 * 60 * 1000;
@@ -111,8 +111,19 @@ router.post("/admin/subscription/grant", adminGuard, async (req, res) => {
     const now = Date.now();
     const base = row.subscription_tier === planKey && exp && exp.getTime() > now ? exp.getTime() : now;
     const newExp = new Date(base + days * DAY);
-    await db.execute(sql`UPDATE users SET subscription_tier = ${planKey}, subscription_expires_at = ${newExp.toISOString()} WHERE id = ${userId}`);
-    res.json({ ok: true, userId, tier: planKey, expiresAt: newExp.toISOString() });
+    // Bonus en GHC (moneda libre) por 30 dias. "bonus" en el cuerpo lo fija a mano (0 = sin bonus).
+    const bonus = raw.bonus !== undefined
+      ? safeInt(raw.bonus, 0, 0, 1_000_000)
+      : Math.floor(PLANS[planKey].bonus * days / PERIOD_DAYS);
+    await db.transaction(async (tx) => {
+      await tx.execute(sql`UPDATE users SET subscription_tier = ${planKey}, subscription_expires_at = ${newExp.toISOString()} WHERE id = ${userId}`);
+      if (bonus > 0) {
+        await tx.execute(sql`INSERT INTO spettro_wallets (user_id, balance, total_earned, total_spent) VALUES (${userId}, 0, 0, 0) ON CONFLICT (user_id) DO NOTHING`);
+        await tx.execute(sql`UPDATE spettro_wallets SET ghc_balance = ghc_balance + ${bonus}, updated_at = now() WHERE user_id = ${userId}`);
+        await tx.execute(sql`INSERT INTO ghc_transactions (user_id, amount, description) VALUES (${userId}, ${bonus}, ${"Bonus suscripción " + PLANS[planKey].label})`);
+      }
+    });
+    res.json({ ok: true, userId, tier: planKey, expiresAt: newExp.toISOString(), bonusGhc: bonus });
   } catch (e) {
     req.log.error(e);
     res.status(500).json({ error: "Error interno del servidor" });
