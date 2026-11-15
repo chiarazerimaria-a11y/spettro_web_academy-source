@@ -355,7 +355,8 @@ export default function Marketplace() {
 
   const [form, setForm] = useState({
     title: "", description: "", category: "writeup",
-    price: 100, downloadUrl: "", thumbnailUrl: "", previewText: "", tags: "",
+    price: 100, currency: "SPC" as "SPC" | "GHC",
+    downloadUrl: "", thumbnailUrl: "", previewText: "", tags: "",
   });
 
   const { data: products = [], isLoading } = useQuery<Product[]>({
@@ -432,7 +433,7 @@ export default function Marketplace() {
         body: JSON.stringify({
           sellerId: user.id, sellerUsername: user.username,
           title: form.title, description: form.description,
-          category: form.category, price: form.price,
+          category: form.category, price: form.price, currency: form.currency,
           downloadUrl: form.downloadUrl || null,
           thumbnailUrl: form.thumbnailUrl || null,
           previewText: form.previewText || null,
@@ -443,7 +444,7 @@ export default function Marketplace() {
       if (!r.ok) throw new Error(d.error);
       toast({ title: "Producto publicado", description: "Tu contenido ya está en el marketplace" });
       setShowCreate(false);
-      setForm({ title: "", description: "", category: "writeup", price: 100, downloadUrl: "", thumbnailUrl: "", previewText: "", tags: "" });
+      setForm({ title: "", description: "", category: "writeup", price: 100, currency: "SPC", downloadUrl: "", thumbnailUrl: "", previewText: "", tags: "" });
       qc.invalidateQueries({ queryKey: ["marketplace-products"] });
     } catch (e: any) {
       toast({ title: "Error", description: e.message, variant: "destructive" });
@@ -953,7 +954,23 @@ export default function Marketplace() {
               </div>
 
               <div>
-                <label className="text-xs font-mono text-muted-foreground mb-1 block">PRECIO (SPC) *</label>
+                <label className="text-xs font-mono text-muted-foreground mb-1 block">MONEDA DE COBRO *</label>
+                <div className="flex gap-2">
+                  <button type="button" onClick={() => setForm(f => ({ ...f, currency: "SPC" }))}
+                    className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg font-mono text-xs font-bold border transition-all
+                      ${form.currency === "SPC" ? "bg-primary/20 border-primary text-primary" : "bg-background border-primary/20 text-muted-foreground hover:border-primary/40"}`}>
+                    💶 SPC (retirable)
+                  </button>
+                  <button type="button" onClick={() => setForm(f => ({ ...f, currency: "GHC" }))}
+                    className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg font-mono text-xs font-bold border transition-all
+                      ${form.currency === "GHC" ? "bg-purple-500/20 border-purple-400 text-purple-300" : "bg-background border-primary/20 text-muted-foreground hover:border-primary/40"}`}>
+                    👻 GhostCoin (plataforma)
+                  </button>
+                </div>
+              </div>
+
+              <div>
+                <label className="text-xs font-mono text-muted-foreground mb-1 block">PRECIO ({form.currency}) *</label>
                 <div className="flex gap-2 items-center">
                   <input type="number" min={10} value={form.price} onChange={e => setForm(f => ({ ...f, price: parseInt(e.target.value) || 100 }))}
                     className="w-32 px-3 py-2 bg-background border border-primary/20 rounded-lg font-mono text-sm focus:outline-none focus:border-primary/50" />
@@ -966,9 +983,15 @@ export default function Marketplace() {
                     ))}
                   </div>
                 </div>
-                <p className="text-[10px] text-muted-foreground font-mono mt-1">
-                  Tú recibirás: <span className="text-green-400">{Math.floor(form.price * 0.9).toLocaleString()} SPC</span> (comisión plataforma 10%)
-                </p>
+                {form.currency === "SPC" ? (
+                  <p className="text-[10px] text-muted-foreground font-mono mt-1">
+                    Tú recibirás: <span className="text-green-400">{Math.floor(form.price * 0.9).toLocaleString()} SPC</span> (comisión plataforma 10%)
+                  </p>
+                ) : (
+                  <p className="text-[10px] text-muted-foreground font-mono mt-1">
+                    Tú recibirás: <span className="text-purple-300">{form.price.toLocaleString()} GHC</span> (sin comisión, no retirable)
+                  </p>
+                )}
               </div>
 
               <div>
