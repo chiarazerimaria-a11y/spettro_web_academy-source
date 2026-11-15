@@ -247,6 +247,12 @@ export default function Wallet() {
     enabled: !!user,
   });
 
+  const { data: ghcData } = useQuery({
+    queryKey: ["ghc", user?.id],
+    queryFn: () => fetch(`${BASE}api/ghc/${user!.id}`).then(r => r.json()),
+    enabled: !!user,
+  });
+
   const { data: leaderboard = [] } = useQuery<LeaderEntry[]>({
     queryKey: ["wallet-leaderboard"],
     queryFn: () => fetch(`${BASE}api/wallet/leaderboard`).then(r => r.json()),
@@ -254,6 +260,7 @@ export default function Wallet() {
 
   const wallet: Wallet | null = data?.wallet ?? null;
   const transactions: Transaction[] = data?.transactions ?? [];
+  const ghcBalance: number = ghcData?.balance ?? 0;
 
   const spcToEur = (spc: number) => (spc / 1000).toFixed(2);
   const eurToSpc = (eur: number) => Math.floor(eur * 1000);
@@ -302,24 +309,45 @@ export default function Wallet() {
               <p className="text-muted-foreground text-sm">Gana SPC compitiendo, estudiando y resolviendo máquinas. Canjéalos por dinero real.</p>
             </div>
 
-            {/* Balance card */}
+            {/* Balance cards */}
             {isLoading ? (
-              <div className="w-64 h-32 rounded-2xl bg-[#0d0d14] border border-primary/20 animate-pulse"/>
+              <div className="flex flex-col sm:flex-row gap-4">
+                <div className="w-64 h-32 rounded-2xl bg-[#0d0d14] border border-primary/20 animate-pulse"/>
+                <div className="w-64 h-32 rounded-2xl bg-[#0d0d14] border border-purple-500/20 animate-pulse"/>
+              </div>
             ) : wallet ? (
-              <div className="w-full md:w-auto min-w-[260px] rounded-2xl border border-primary/30 bg-[#0d0d14] p-6 shadow-[0_0_30px_rgba(255,77,184,0.08)]">
-                <div className="flex items-center gap-2 mb-1">
-                  <Coins className="h-4 w-4 text-primary"/>
-                  <span className="font-mono text-xs text-primary/70 tracking-widest">BALANCE ACTUAL</span>
+              <div className="flex flex-col sm:flex-row gap-4">
+                <div className="w-full md:w-auto min-w-[260px] rounded-2xl border border-primary/30 bg-[#0d0d14] p-6 shadow-[0_0_30px_rgba(255,77,184,0.08)]">
+                  <div className="flex items-center gap-2 mb-1">
+                    <Coins className="h-4 w-4 text-primary"/>
+                    <span className="font-mono text-xs text-primary/70 tracking-widest">SALDO SPC</span>
+                  </div>
+                  <div className="font-mono font-black text-4xl text-primary mb-1">
+                    {wallet.balance.toLocaleString()} <span className="text-xl text-primary/60">SPC</span>
+                  </div>
+                  <div className="font-mono text-sm text-muted-foreground">
+                    ≈ <span className="text-green-400 font-bold">€{spcToEur(wallet.balance)}</span> EUR · retirable
+                  </div>
+                  <div className="mt-3 pt-3 border-t border-primary/10 flex gap-4 font-mono text-[10px] text-muted-foreground">
+                    <span className="flex items-center gap-1"><TrendingUp className="h-3 w-3 text-green-400"/>{wallet.totalEarned.toLocaleString()} ganados</span>
+                    <span className="flex items-center gap-1"><ArrowUpRight className="h-3 w-3 text-red-400"/>{wallet.totalSpent.toLocaleString()} gastados</span>
+                  </div>
                 </div>
-                <div className="font-mono font-black text-4xl text-primary mb-1">
-                  {wallet.balance.toLocaleString()} <span className="text-xl text-primary/60">SPC</span>
-                </div>
-                <div className="font-mono text-sm text-muted-foreground">
-                  ≈ <span className="text-green-400 font-bold">€{spcToEur(wallet.balance)}</span> EUR
-                </div>
-                <div className="mt-3 pt-3 border-t border-primary/10 flex gap-4 font-mono text-[10px] text-muted-foreground">
-                  <span className="flex items-center gap-1"><TrendingUp className="h-3 w-3 text-green-400"/>{wallet.totalEarned.toLocaleString()} ganados</span>
-                  <span className="flex items-center gap-1"><ArrowUpRight className="h-3 w-3 text-red-400"/>{wallet.totalSpent.toLocaleString()} gastados</span>
+
+                <div className="w-full md:w-auto min-w-[260px] rounded-2xl border border-purple-500/30 bg-[#0d0d14] p-6 shadow-[0_0_30px_rgba(155,85,249,0.08)]">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-base">👻</span>
+                    <span className="font-mono text-xs text-purple-300/80 tracking-widest">SALDO GHOSTCOIN</span>
+                  </div>
+                  <div className="font-mono font-black text-4xl text-purple-300 mb-1">
+                    {ghcBalance.toLocaleString()} <span className="text-xl text-purple-300/60">GHC</span>
+                  </div>
+                  <div className="font-mono text-sm text-muted-foreground">
+                    Uso interno · no retirable
+                  </div>
+                  <div className="mt-3 pt-3 border-t border-purple-500/10 font-mono text-[10px] text-muted-foreground">
+                    Úsalo para suscripciones, máquinas y torneos
+                  </div>
                 </div>
               </div>
             ) : null}
