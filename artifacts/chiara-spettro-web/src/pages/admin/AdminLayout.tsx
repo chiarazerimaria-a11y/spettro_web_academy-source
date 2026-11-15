@@ -8,6 +8,7 @@ const navItems = [
   { href: "/admin/courses", label: "Cursos", icon: BookOpen },
   { href: "/admin/payments", label: "Pagos", icon: CreditCard },
   { href: "/admin/payouts", label: "Pagos Instructores", icon: Banknote },
+  { href: "/admin/payout-requests", label: "Retiros Usuarios", icon: Banknote },
   { href: "/admin/machines", label: "Máquinas Kanban", icon: Server },
   { href: "/admin/lab-machines", label: "Lab Público", icon: FlaskConical },
   { divider: true, label: "JUEGO" } as const,
