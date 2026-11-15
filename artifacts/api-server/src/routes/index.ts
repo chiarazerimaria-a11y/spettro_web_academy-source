@@ -10,6 +10,7 @@ import coursesRouter from "./courses";
 import publicCoursesRouter from "./publiccourses";
 import subscriptionsRouter from "./subscriptions";
 import membershipRouter from "./membership";
+import { premiumLessonsGuard } from "../middleware/premiumGuard";
 import payoutsRouter from "./payouts";
 import streamsRouter from "./streams";
 import squadsRouter from "./squads";
@@ -23,6 +24,7 @@ import ghcRouter from "./ghc";
 
 const router: IRouter = Router();
 
+router.get("/public/courses/:id/lessons", premiumLessonsGuard);
 router.use("/admin", adminGuard);
 router.use(healthRouter);
 router.use(adminRouter);
