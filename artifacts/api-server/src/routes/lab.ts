@@ -10,6 +10,12 @@ import { join } from "path";
 
 const router: IRouter = Router();
 
+// Las flags nunca salen en las rutas publicas.
+function publicMachine<T extends Record<string, unknown>>(m: T) {
+  const { userFlag: _u, rootFlag: _r, ...rest } = m as Record<string, unknown>;
+  return rest;
+}
+
 // ─── VPN Certificate Infrastructure ──────────────────────────────────────────
 interface CaBundle { cert: string; key: string; }
 let _ca: CaBundle | null = null;
@@ -87,7 +93,7 @@ router.get("/lab/machines", async (req, res) => {
       .where(and(...conditions))
       .limit(limit)
       .offset(offset);
-    res.json(rows);
+    res.json(rows.map(publicMachine));
   } catch (e) {
     req.log.error(e);
     res.status(500).json({ error: "Error interno del servidor" });
@@ -105,7 +111,7 @@ router.get("/lab/machines/:slug", async (req, res) => {
       .where(eq(labMachinesTable.slug, slug))
       .limit(1);
     if (!row[0]) return res.status(404).json({ error: "Not found" });
-    res.json(row[0]);
+    res.json(publicMachine(row[0]));
   } catch (e) {
     req.log.error(e);
     res.status(500).json({ error: "Error interno del servidor" });
