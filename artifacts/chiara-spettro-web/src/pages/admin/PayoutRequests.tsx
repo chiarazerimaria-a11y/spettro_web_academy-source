@@ -117,3 +117,53 @@ export default function PayoutRequests() {
                 <td className="px-4 py-3 text-right">
                   {r.status === "pendiente" ? (
                     <div className="flex gap-2 justify-end">
+                      <button onClick={() => { setActing({ id: r.id, status: "aprobado" }); setAdminNote(""); }}
+                        className="p-1.5 rounded hover:bg-green-500/10 text-muted-foreground hover:text-green-400 transition-colors" title="Aprobar">
+                        <CheckCircle2 className="h-4 w-4" />
+                      </button>
+                      <button onClick={() => { setActing({ id: r.id, status: "rechazado" }); setAdminNote(""); }}
+                        className="p-1.5 rounded hover:bg-red-500/10 text-muted-foreground hover:text-red-400 transition-colors" title="Rechazar">
+                        <XCircle className="h-4 w-4" />
+                      </button>
+                    </div>
+                  ) : (
+                    <span className="text-[10px] text-muted-foreground font-mono flex items-center gap-1 justify-end">
+                      <Clock className="h-3 w-3" /> {r.processedAt ? new Date(r.processedAt).toLocaleDateString() : "—"}
+                    </span>
+                  )}
+                </td>
+              </motion.tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      <Dialog open={!!acting} onOpenChange={() => setActing(null)}>
+        <DialogContent className="bg-[#0a0a1a] border-primary/30 font-mono max-w-md">
+          <DialogHeader>
+            <DialogTitle className={acting?.status === "aprobado" ? "text-green-400" : "text-red-400"}>
+              {acting?.status === "aprobado" ? "Aprobar retiro" : "Rechazar retiro"}
+            </DialogTitle>
+          </DialogHeader>
+          {acting?.status === "rechazado" && (
+            <p className="text-xs text-muted-foreground">Al rechazar, el SPC se reembolsará automáticamente al usuario.</p>
+          )}
+          <div>
+            <label className="text-xs text-muted-foreground block mb-1">NOTA (opcional)</label>
+            <Input value={adminNote} onChange={e => setAdminNote(e.target.value)}
+              placeholder="Ej: Pagado por Bizum el 15/11" className="font-mono text-sm bg-black/50 border-primary/20 focus:border-primary h-9" />
+          </div>
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={() => setActing(null)} className="font-mono border-border">CANCELAR</Button>
+            <Button
+              disabled={mutation.isPending}
+              onClick={() => acting && mutation.mutate({ id: acting.id, status: acting.status, adminNote })}
+              className={`font-mono ${acting?.status === "aprobado" ? "bg-green-500 hover:bg-green-600" : "bg-red-500 hover:bg-red-600"} text-black`}>
+              {mutation.isPending ? "GUARDANDO..." : "CONFIRMAR"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}
