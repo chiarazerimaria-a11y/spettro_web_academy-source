@@ -42,7 +42,7 @@ app.use((_req: Request, res: Response, next: NextFunction) => {
 });
 
 // ─── CORS ─────────────────────────────────────────────────────────────────────
-app.use(cookieParser());
+app.use(cookieParser(process.env["COOKIE_SECRET"] || undefined));
 app.use("/updates", express.static("/home/kali/spettro-updates"));
 app.use(cors({
   origin: true,

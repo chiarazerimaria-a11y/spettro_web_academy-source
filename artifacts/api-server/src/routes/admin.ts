@@ -219,6 +219,8 @@ router.post("/admin/lab-machines", async (req, res) => {
     difficulty: b.difficulty || "facil",
     characterType: b.characterType || "skull",
     points: Number(b.points || 20),
+    price: Math.max(0, Math.floor(Number(b.price) || 0)),
+    priceCurrency: b.priceCurrency === "SPC" ? "SPC" : "GHC",
     description: b.description || "",
     vulnerability: b.vulnerability || "",
     techniques: b.techniques || "",
@@ -244,6 +246,8 @@ router.patch("/admin/lab-machines/:id", async (req, res) => {
   if (b.difficulty !== undefined) updateData.difficulty = b.difficulty;
   if (b.characterType !== undefined) updateData.characterType = b.characterType;
   if (b.points !== undefined) updateData.points = Number(b.points);
+  if (b.price !== undefined) updateData.price = Math.max(0, Math.floor(Number(b.price) || 0));
+  if (b.priceCurrency !== undefined) updateData.priceCurrency = b.priceCurrency === "SPC" ? "SPC" : "GHC";
   if (b.description !== undefined) updateData.description = b.description;
   if (b.vulnerability !== undefined) updateData.vulnerability = b.vulnerability;
   if (b.techniques !== undefined) updateData.techniques = b.techniques;

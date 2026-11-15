@@ -17,7 +17,7 @@ interface Machine {
   id: string; name: string; slug: string; os: "Linux" | "Windows";
   difficulty: Difficulty; characterType: string; points: number;
   description: string; vulnerability: string; techniques: string[];
-  hints: string; ip: string | null; thumbnailUrl: string | null; downloadUrl: string | null;
+  hints: string; ip: string | null; thumbnailUrl: string | null; downloadUrl: string | null; price?: number; priceCurrency?: string;
   writeupUrl: string | null; videoUrl: string | null;
   solveCount: number; isActive: boolean;
 }
@@ -2324,6 +2324,8 @@ export default function Lab() {
 
   const handleSpawn = async () => {
     if (!user || !selectedMachine) return;
+    const mp = Number((selectedMachine as any).price ?? 0);
+    if (mp > 0 && !window.confirm(`Esta máquina cuesta ${mp} ${(selectedMachine as any).priceCurrency ?? "GHC"}. Se cobra una sola vez; si ya la desbloqueaste, no se cobra de nuevo. ¿Continuar?`)) return;
     setSpawning(true);
     try {
       const r = await fetch(`${BASE}api/lab/machines/${selectedMachine.slug}/spawn`, {
@@ -2721,6 +2723,9 @@ export default function Lab() {
                       <Badge className={`${getDifficultyColor(selectedMachine.difficulty)} bg-transparent border uppercase font-mono`}>{selectedMachine.difficulty}</Badge>
                       <Badge className={`${selectedMachine.os === "Linux" ? "text-green-400 border-green-400/50" : "text-blue-400 border-blue-400/50"} bg-transparent border font-mono`}>{selectedMachine.os}</Badge>
                       <Badge variant="outline" className="font-mono text-white">+{selectedMachine.points} XP</Badge>
+                      <Badge variant="outline" className="font-mono text-emerald-400 border-emerald-400/30">
+                        {Number((selectedMachine as any).price ?? 0) > 0 ? `${(selectedMachine as any).price} ${(selectedMachine as any).priceCurrency ?? "GHC"}` : "GRATIS"}
+                      </Badge>
                       <Badge variant="outline" className="font-mono text-muted-foreground">{selectedMachine.solveCount} pwns</Badge>
                       {selectedMachine.downloadUrl && (
                         <a href={selectedMachine.downloadUrl} target="_blank" rel="noopener noreferrer"

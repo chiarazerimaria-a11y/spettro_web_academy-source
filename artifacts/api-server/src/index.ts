@@ -1,7 +1,7 @@
 import app from "./app";
 import { logger } from "./lib/logger";
 import { runSeed } from "./seed";
-import { ensureGhcSchema } from "./ghc";
+import { ensureGhcSchema, ensureMachinePricingSchema } from "./ghc";
 
 const rawPort = process.env["PORT"];
 
@@ -28,6 +28,7 @@ const startServer = () => {
 };
 
 ensureGhcSchema().catch((err) => logger.error({ err }, "GhostCoin: no se pudo preparar el esquema"));
+ensureMachinePricingSchema().catch((err) => logger.error({ err }, "Máquinas: no se pudo preparar el esquema de precios"));
 
 // El seed SOLO corre si RUN_SEED=true en el .env (datos de ejemplo opcionales)
 if (process.env["RUN_SEED"] === "true") {

@@ -59,7 +59,7 @@ router.post("/auth/register", registerLimit, async (req, res) => {
     }).onConflictDoNothing();
     try { await db.execute(sql`UPDATE spettro_wallets SET balance_free = 100 WHERE user_id = ${user.id}`); } catch {}
     res.cookie("spettro_uid", String(user.id), {
-      maxAge: 30 * 24 * 60 * 60 * 1000, httpOnly: true, sameSite: "lax", path: "/",
+      maxAge: 30 * 24 * 60 * 60 * 1000, httpOnly: true, sameSite: "lax", path: "/", signed: !!process.env["COOKIE_SECRET"],
     });
 
     res.status(201).json({ user });
@@ -89,7 +89,7 @@ router.post("/auth/login", loginLimit, async (req, res) => {
     if (!user || !valid) { res.status(401).json({ error: "Credenciales incorrectas" }); return; }
     const { passwordHash: _ph, ...safeUser } = user;
     res.cookie("spettro_uid", String(user.id), {
-      maxAge: 30 * 24 * 60 * 60 * 1000, httpOnly: true, sameSite: "lax", path: "/",
+      maxAge: 30 * 24 * 60 * 60 * 1000, httpOnly: true, sameSite: "lax", path: "/", signed: !!process.env["COOKIE_SECRET"],
     });
     res.json({ user: safeUser });
   } catch (e) {

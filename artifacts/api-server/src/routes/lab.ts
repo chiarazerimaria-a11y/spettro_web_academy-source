@@ -2,6 +2,7 @@ import { Router, type IRouter } from "express";
 import { db, labMachinesTable, teamsTable, certificationsTable, userVpnSessionsTable, usersTable, flagSubmissionsTable, machineNotesTable, spettroWalletsTable, spettroTransactionsTable } from "@workspace/db";
 import { eq, ilike, and, sql, or } from "drizzle-orm";
 import { sanitizeStr, safeInt, ALLOWED_DIFFICULTIES, ALLOWED_OS } from "../middleware/sanitize";
+import { getSessionUserId } from "../middleware/requireUser";
 import { execSync } from "child_process";
 import { mkdirSync, readFileSync, rmSync, writeFileSync } from "fs";
 import { tmpdir } from "os";
@@ -363,6 +364,34 @@ router.post("/lab/machines/:slug/spawn", async (req, res) => {
 
     const machine = await db.select().from(labMachinesTable).where(eq(labMachinesTable.slug, slug)).limit(1);
     if (!machine[0]) return res.status(404).json({ error: "Máquina no encontrada" });
+
+    // ── Cobro: solo si la maquina tiene precio. Gratis (0) no cambia nada. ──
+    const mx = machine[0] as typeof machine[0] & { price?: number; priceCurrency?: string };
+    const price = Number(mx.price ?? 0);
+    if (price > 0) {
+      const sessionId = getSessionUserId(req);
+      if (!sessionId || sessionId !== userId)
+        return res.status(401).json({ error: "Inicia sesión de nuevo para desbloquear esta máquina", code: "LOGIN_REQUIRED" });
+      if (mx.priceCurrency === "SPC")
+        return res.status(400).json({ error: "El cobro en SPC aún no está disponible" });
+      try {
+        await db.transaction(async (tx) => {
+          await tx.execute(sql`SELECT id FROM ${usersTable} WHERE id = ${userId} FOR UPDATE`);
+          const owned = await tx.execute(sql`SELECT 1 FROM machine_purchases WHERE user_id = ${userId} AND machine_id = ${mx.id}`);
+          if (owned.rows.length > 0) return;
+          const r = await tx.execute(sql`
+            UPDATE spettro_wallets SET ghc_balance = ghc_balance - ${price}, updated_at = now()
+            WHERE user_id = ${userId} AND ghc_balance >= ${price} RETURNING ghc_balance`);
+          if (r.rows.length === 0) throw new Error("GHC_INSUFICIENTE");
+          await tx.execute(sql`INSERT INTO ghc_transactions (user_id, amount, description) VALUES (${userId}, ${-price}, ${"Máquina — " + mx.name})`);
+          await tx.execute(sql`INSERT INTO machine_purchases (user_id, machine_id, price, currency) VALUES (${userId}, ${mx.id}, ${price}, 'GHC')`);
+        });
+      } catch (err) {
+        if (err instanceof Error && err.message === "GHC_INSUFICIENTE")
+          return res.status(402).json({ error: `Necesitas ${price} GHC para desbloquear esta máquina`, code: "INSUFFICIENT_GHC" });
+        throw err;
+      }
+    }
 
     await db.update(userVpnSessionsTable)
       .set({ status: "stopped", stoppedAt: new Date() })

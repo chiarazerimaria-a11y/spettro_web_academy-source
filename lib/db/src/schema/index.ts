@@ -66,6 +66,8 @@ export const labMachinesTable = pgTable("lab_machines", {
   difficulty: text("difficulty").notNull().default("facil"),
   characterType: text("character_type").notNull().default("skull"),
   points: integer("points").notNull().default(20),
+  price: integer("price").notNull().default(0),
+  priceCurrency: text("price_currency").notNull().default("GHC"),
   description: text("description").notNull().default(""),
   vulnerability: text("vulnerability").notNull().default(""),
   techniques: text("techniques").notNull().default(""),
@@ -492,5 +494,14 @@ export const battleMessagesTable = pgTable("battle_messages", {
   type: text("type").notNull().default("spectator"), // squad|spectator
   squadId: integer("squad_id"),
   squadName: text("squad_name"),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+export const machinePurchasesTable = pgTable("machine_purchases", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull().references(() => usersTable.id),
+  machineId: integer("machine_id").notNull().references(() => labMachinesTable.id),
+  price: integer("price").notNull(),
+  currency: text("currency").notNull().default("GHC"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });

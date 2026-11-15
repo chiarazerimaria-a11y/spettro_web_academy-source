@@ -74,6 +74,8 @@ interface LabMachine {
   difficulty: string;
   characterType: string;
   points: number;
+  price?: number;
+  priceCurrency?: string;
   description: string;
   vulnerability: string;
   techniques: string;
@@ -88,7 +90,7 @@ interface LabMachine {
 
 const emptyForm = (): Partial<LabMachine> => ({
   name: "", slug: "", os: "Linux", difficulty: "facil", characterType: "skull",
-  points: 20, description: "", vulnerability: "", techniques: "",
+  points: 20, price: 0, priceCurrency: "GHC", description: "", vulnerability: "", techniques: "",
   hints: "", ip: "", thumbnailUrl: "", downloadUrl: "", writeupUrl: "", videoUrl: "",
   isActive: true,
 });
@@ -148,6 +150,9 @@ function MachineCard({ m, diffColor, diffLabel, toggleActive, openEdit, handleDe
             </span>
             <Badge variant="outline" className="font-mono text-[10px]">{m.os}</Badge>
             <Badge variant="outline" className="font-mono text-[10px] text-yellow-400 border-yellow-400/30">+{m.points} XP</Badge>
+            <Badge variant="outline" className="font-mono text-[10px] text-emerald-400 border-emerald-400/30">
+              {(m.price ?? 0) > 0 ? `${m.price} ${m.priceCurrency ?? "GHC"}` : "GRATIS"}
+            </Badge>
             {m.downloadUrl && <Badge variant="outline" className="font-mono text-[10px] text-sky-400 border-sky-400/30">DL</Badge>}
             {!m.isActive && <Badge variant="outline" className="font-mono text-[10px] text-muted-foreground">OCULTA</Badge>}
           </div>
@@ -508,6 +513,26 @@ export default function AdminLabMachines() {
                       min={5} max={500} className="font-mono bg-black/50 border-white/10" />
                     <p className="text-[9px] text-muted-foreground mt-1 font-mono">User flag: {Math.floor((form.points || 20) / 2)} XP · Root: {form.points || 20} XP</p>
                   </div>
+                </div>
+
+                {/* Precio */}
+                <div>
+                  <label className="text-[10px] font-mono text-muted-foreground tracking-widest block mb-1.5">PRECIO (0 = GRATIS)</label>
+                  <div className="flex gap-2">
+                    <Input type="number" min={0} value={form.price ?? 0}
+                      onChange={e => handleField("price", Math.max(0, Math.floor(Number(e.target.value) || 0)))}
+                      className="font-mono bg-black/50 border-white/10" />
+                    {(["GHC", "SPC"] as const).map(c => (
+                      <button key={c} type="button" onClick={() => handleField("priceCurrency", c)}
+                        className="px-3 rounded-md border font-mono text-xs"
+                        style={(form.priceCurrency ?? "GHC") === c
+                          ? { background: "rgba(16,185,129,0.15)", borderColor: "rgba(16,185,129,0.5)", color: "#34d399" }
+                          : { borderColor: "rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.5)" }}>
+                        {c}
+                      </button>
+                    ))}
+                  </div>
+                  <p className="text-[9px] text-muted-foreground mt-1 font-mono">El cobro con GHC ya funciona. SPC aún no se cobra.</p>
                 </div>
 
                 {/* Thumbnail picker */}

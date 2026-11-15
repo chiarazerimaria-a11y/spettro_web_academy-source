@@ -64,3 +64,19 @@ export async function debitGhc(userId: number, amount: number, description: stri
     return Number((r.rows[0] as { ghc_balance: number }).ghc_balance);
   });
 }
+
+export async function ensureMachinePricingSchema(): Promise<void> {
+  await db.execute(sql`ALTER TABLE lab_machines ADD COLUMN IF NOT EXISTS price integer NOT NULL DEFAULT 0`);
+  await db.execute(sql`ALTER TABLE lab_machines ADD COLUMN IF NOT EXISTS price_currency text NOT NULL DEFAULT 'GHC'`);
+  await db.execute(sql`
+    CREATE TABLE IF NOT EXISTS machine_purchases (
+      id serial PRIMARY KEY,
+      user_id integer NOT NULL REFERENCES users(id),
+      machine_id integer NOT NULL REFERENCES lab_machines(id),
+      price integer NOT NULL,
+      currency text NOT NULL DEFAULT 'GHC',
+      created_at timestamptz NOT NULL DEFAULT now()
+    )
+  `);
+  await db.execute(sql`CREATE UNIQUE INDEX IF NOT EXISTS machine_purchases_user_machine_uniq ON machine_purchases (user_id, machine_id)`);
+}
