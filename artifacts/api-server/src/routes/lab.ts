@@ -14,6 +14,12 @@ const router: IRouter = Router();
 // Las flags nunca salen en las rutas publicas.
 function publicMachine<T extends Record<string, unknown>>(m: T) {
   const { userFlag: _u, rootFlag: _r, ...rest } = m as Record<string, unknown>;
+  // Maquinas de pago: el enlace de descarga solo sale de POST /lab/machines/:slug/download
+  if (Number(rest["price"] ?? 0) > 0) {
+    const hasDownload = !!rest["downloadUrl"];
+    delete rest["downloadUrl"];
+    return { ...rest, hasDownload };
+  }
   return rest;
 }
 
@@ -412,6 +418,50 @@ router.post("/lab/machines/:slug/spawn", async (req, res) => {
       machineName: machine[0].name, assignedIp, status: "active",
     }).returning();
     res.status(201).json(session[0]);
+  } catch (e) {
+    req.log.error(e);
+    res.status(500).json({ error: "Error interno del servidor" });
+  }
+});
+
+// Cobra una sola vez (GHC) y registra la compra. Si ya la tenia, no cobra.
+async function chargeMachineGhc(userId: number, machineId: number, machineName: string, price: number): Promise<void> {
+  await db.transaction(async (tx) => {
+    await tx.execute(sql`SELECT id FROM ${usersTable} WHERE id = ${userId} FOR UPDATE`);
+    const owned = await tx.execute(sql`SELECT 1 FROM machine_purchases WHERE user_id = ${userId} AND machine_id = ${machineId}`);
+    if (owned.rows.length > 0) return;
+    const r = await tx.execute(sql`
+      UPDATE spettro_wallets SET ghc_balance = ghc_balance - ${price}, updated_at = now()
+      WHERE user_id = ${userId} AND ghc_balance >= ${price} RETURNING ghc_balance`);
+    if (r.rows.length === 0) throw new Error("GHC_INSUFICIENTE");
+    await tx.execute(sql`INSERT INTO ghc_transactions (user_id, amount, description) VALUES (${userId}, ${-price}, ${"Máquina — " + machineName})`);
+    await tx.execute(sql`INSERT INTO machine_purchases (user_id, machine_id, price, currency) VALUES (${userId}, ${machineId}, ${price}, 'GHC')`);
+  });
+}
+
+// POST /api/lab/machines/:slug/download — entrega el enlace; si es de pago, cobra una vez
+router.post("/lab/machines/:slug/download", async (req, res) => {
+  try {
+    const slug = sanitizeStr(req.params.slug, 100);
+    if (!slug) return res.status(400).json({ error: "Slug inválido" });
+    const [m] = await db.select().from(labMachinesTable).where(eq(labMachinesTable.slug, slug)).limit(1);
+    if (!m) return res.status(404).json({ error: "Máquina no encontrada" });
+    if (!m.downloadUrl) return res.status(404).json({ error: "Esta máquina no tiene descarga" });
+    const mx = m as typeof m & { price?: number; priceCurrency?: string };
+    const price = Number(mx.price ?? 0);
+    if (price > 0) {
+      const userId = getSessionUserId(req);
+      if (!userId) return res.status(401).json({ error: "Inicia sesión de nuevo para descargar esta máquina", code: "LOGIN_REQUIRED" });
+      if (mx.priceCurrency === "SPC") return res.status(400).json({ error: "El cobro en SPC aún no está disponible" });
+      try {
+        await chargeMachineGhc(userId, m.id, m.name, price);
+      } catch (err) {
+        if (err instanceof Error && err.message === "GHC_INSUFICIENTE")
+          return res.status(402).json({ error: `Necesitas ${price} GHC para esta máquina`, code: "INSUFFICIENT_GHC" });
+        throw err;
+      }
+    }
+    res.json({ url: m.downloadUrl });
   } catch (e) {
     req.log.error(e);
     res.status(500).json({ error: "Error interno del servidor" });
