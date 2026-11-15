@@ -2,7 +2,7 @@ import type { Request, Response, NextFunction } from "express";
 import { timingSafeEqual, scryptSync } from "node:crypto";
 
 // Hash scrypt "salt:hash" de la clave de admin. ADMIN_KEY (variable de entorno) tambien funciona.
-const ADMIN_KEY_HASH = "da63dff1b4fcad974e059174bbd396db:0b1390620e96e866fece957d97eda0153ac1baae7a6e0103280223c38ba7f39f";
+const ADMIN_KEY_HASH = "";
 
 function safeEq(a: Buffer, b: Buffer): boolean {
   return a.length === b.length && timingSafeEqual(a, b);
