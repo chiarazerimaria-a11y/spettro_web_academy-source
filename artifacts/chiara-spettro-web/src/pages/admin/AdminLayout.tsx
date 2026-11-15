@@ -1,5 +1,5 @@
 import { Link, useLocation } from "wouter";
-import { Terminal, Users, BookOpen, CreditCard, Server, ArrowLeft, GraduationCap, Users2, BookMarked, Banknote, FlaskConical, Target, Shield, Trophy } from "lucide-react";
+import { Terminal, Users, BookOpen, CreditCard, Server, ArrowLeft, GraduationCap, Users2, BookMarked, Banknote, FlaskConical, Target, Shield, Trophy, Gift } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const navItems = [
@@ -9,6 +9,7 @@ const navItems = [
   { href: "/admin/payments", label: "Pagos", icon: CreditCard },
   { href: "/admin/payouts", label: "Pagos Instructores", icon: Banknote },
   { href: "/admin/payout-requests", label: "Retiros Usuarios", icon: Banknote },
+  { href: "/admin/ghostcoin", label: "GhostCoin", icon: Gift },
   { href: "/admin/machines", label: "Máquinas Kanban", icon: Server },
   { href: "/admin/lab-machines", label: "Lab Público", icon: FlaskConical },
   { divider: true, label: "JUEGO" } as const,
