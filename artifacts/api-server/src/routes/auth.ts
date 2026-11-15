@@ -1,3 +1,4 @@
+import { getSessionUserId } from "../middleware/requireUser";
 import { Router } from "express";
 import bcrypt from "bcryptjs";
 import { db, usersTable } from "@workspace/db";
@@ -108,13 +109,13 @@ router.post("/auth/logout", (req, res) => {
 // PATCH /api/auth/profile
 router.patch("/auth/profile", profileLimit, async (req, res) => {
   const raw = req.body as Record<string, unknown>;
-  const id        = parseInt(String(raw.id), 10);
+  const id        = getSessionUserId(req);
   const username  = sanitizeStr(raw.username, 30) || undefined;
   const avatarUrl = raw.avatarUrl !== undefined
     ? sanitizeAvatarUrl(raw.avatarUrl)
     : undefined;
 
-  if (!id || isNaN(id) || id <= 0) { res.status(400).json({ error: "Falta el id de usuario" }); return; }
+  if (!id) { res.status(401).json({ error: "Inicia sesión de nuevo" }); return; }
   if (username !== undefined && !isValidUsername(username)) {
     res.status(400).json({ error: "Usuario inválido: 3-30 caracteres, letras, números, _ o -" }); return;
   }

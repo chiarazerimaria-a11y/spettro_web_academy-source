@@ -121,6 +121,7 @@ export const usersTable = pgTable("users", {
   machinesSolved: integer("machines_solved").notNull().default(0),
   rank: text("rank").notNull().default("Rookie"),
   subscriptionTier: text("subscription_tier").notNull().default("libre"),
+  subscriptionExpiresAt: timestamp("subscription_expires_at", { withTimezone: true }),
   paymentMethodJson: text("payment_method_json"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });

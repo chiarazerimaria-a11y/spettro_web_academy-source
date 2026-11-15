@@ -66,6 +66,7 @@ export async function debitGhc(userId: number, amount: number, description: stri
 }
 
 export async function ensureMachinePricingSchema(): Promise<void> {
+  await db.execute(sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS subscription_expires_at timestamptz`);
   await db.execute(sql`ALTER TABLE lab_machines ADD COLUMN IF NOT EXISTS price integer NOT NULL DEFAULT 0`);
   await db.execute(sql`ALTER TABLE lab_machines ADD COLUMN IF NOT EXISTS price_currency text NOT NULL DEFAULT 'GHC'`);
   await db.execute(sql`

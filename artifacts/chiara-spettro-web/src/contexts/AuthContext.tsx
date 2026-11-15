@@ -9,6 +9,8 @@ export interface AuthUser {
   rank: string;
   totalPoints: number;
   machinesSolved: number;
+  subscriptionTier?: string;
+  subscriptionExpiresAt?: string | null;
 }
 
 interface AuthState {
@@ -34,6 +36,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (stored) setUser(JSON.parse(stored));
     } catch {}
     setIsLoading(false);
+  }, []);
+
+  useEffect(() => {
+    fetch(`${BASE}api/auth/me`, { cache: "no-store" })
+      .then(r => (r.ok ? r.json() : null))
+      .then(d => {
+        if (!d?.user) return;
+        setUser(d.user);
+        try { localStorage.setItem(STORAGE_KEY, JSON.stringify(d.user)); } catch {}
+      })
+      .catch(() => {});
   }, []);
 
   const login = async (email: string, password: string) => {
