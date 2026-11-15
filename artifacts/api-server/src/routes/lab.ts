@@ -3,6 +3,7 @@ import { db, labMachinesTable, teamsTable, certificationsTable, userVpnSessionsT
 import { eq, ilike, and, sql, or } from "drizzle-orm";
 import { sanitizeStr, safeInt, ALLOWED_DIFFICULTIES, ALLOWED_OS } from "../middleware/sanitize";
 import { getSessionUserId } from "../middleware/requireUser";
+import { adminGuard } from "../middleware/adminGuard";
 import { execSync } from "child_process";
 import { mkdirSync, readFileSync, rmSync, writeFileSync } from "fs";
 import { tmpdir } from "os";
@@ -340,7 +341,7 @@ ${bundle.key.trim()}
 });
 
 // PATCH /api/lab/machines/:slug/ip
-router.patch("/lab/machines/:slug/ip", async (req, res) => {
+router.patch("/lab/machines/:slug/ip", adminGuard, async (req, res) => {
   try {
     const slug = sanitizeStr(req.params.slug, 100);
     if (!slug) return res.status(400).json({ error: "Slug inválido" });
