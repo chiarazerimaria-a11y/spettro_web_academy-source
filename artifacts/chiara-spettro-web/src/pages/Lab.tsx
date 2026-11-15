@@ -1059,6 +1059,12 @@ const GameMachineCard = ({
               className="w-full font-mono text-[10px] uppercase py-2 rounded-md border border-secondary/30 text-secondary hover:bg-secondary/10 transition-all flex items-center justify-center gap-1.5">
               <Download className="h-3 w-3" /> DESCARGAR MÁQUINA
             </a>
+          ) : (m as any).hasDownload ? (
+            <button
+              onClick={() => (user ? requestMachineDownload(m) : onAuthOpen())}
+              className="w-full font-mono text-[10px] uppercase py-2 rounded-md border border-amber-400/40 text-amber-300 hover:bg-amber-400/10 transition-all flex items-center justify-center gap-1.5">
+              <Download className="h-3 w-3" /> DESCARGAR · {m.price} {m.priceCurrency ?? "GHC"}
+            </button>
           ) : (
             <button
               disabled
@@ -2745,6 +2751,13 @@ export default function Lab() {
                         {Number((selectedMachine as any).price ?? 0) > 0 ? `${(selectedMachine as any).price} ${(selectedMachine as any).priceCurrency ?? "GHC"}` : "GRATIS"}
                       </Badge>
                       <Badge variant="outline" className="font-mono text-muted-foreground">{selectedMachine.solveCount} pwns</Badge>
+                      {!selectedMachine.downloadUrl && (selectedMachine as any).hasDownload && (
+                        <button onClick={() => requestMachineDownload(selectedMachine)}
+                          className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold font-mono border transition-all hover:brightness-110"
+                          style={{ background: "rgba(251,191,36,0.1)", borderColor: "rgba(251,191,36,0.4)", color: "#fbbf24" }}>
+                          <Download className="h-2.5 w-2.5" /> DESCARGAR · {selectedMachine.price} {selectedMachine.priceCurrency ?? "GHC"}
+                        </button>
+                      )}
                       {selectedMachine.downloadUrl && (
                         <a href={selectedMachine.downloadUrl} target="_blank" rel="noopener noreferrer"
                           className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold font-mono border transition-all hover:brightness-110"
@@ -2966,6 +2979,11 @@ export default function Lab() {
                         className="flex items-center justify-center gap-1.5 h-9 px-3 rounded-md border border-secondary/40 text-secondary font-mono text-[10px] hover:bg-secondary/10 transition-all">
                         <Download className="h-3 w-3" /> DESCARGAR MÁQUINA
                       </a>
+                    ) : (selectedMachine as any).hasDownload ? (
+                      <button onClick={() => requestMachineDownload(selectedMachine)}
+                        className="flex items-center justify-center gap-1.5 h-9 px-3 rounded-md border border-amber-400/40 text-amber-300 font-mono text-[10px] hover:bg-amber-400/10 transition-all">
+                        <Download className="h-3 w-3" /> DESCARGAR · {selectedMachine.price} {selectedMachine.priceCurrency ?? "GHC"}
+                      </button>
                     ) : (
                       <button disabled
                         className="flex items-center justify-center gap-1.5 h-9 px-3 rounded-md border border-white/10 text-muted-foreground/40 font-mono text-[10px] cursor-not-allowed">
@@ -3378,4 +3396,19 @@ function generateMockMachines(): Machine[] {
       solveCount: Math.floor(Math.random() * 200), isActive: true,
     };
   });
+}
+
+
+// Descarga de una maquina de pago: el servidor cobra una sola vez y devuelve el enlace.
+async function requestMachineDownload(m: { slug: string; price?: number; priceCurrency?: string }) {
+  const p = Number(m.price ?? 0);
+  if (p > 0 && !window.confirm(`Esta máquina cuesta ${p} ${m.priceCurrency ?? "GHC"}. Se cobra una sola vez; si ya la compraste no se cobra de nuevo. ¿Continuar?`)) return;
+  try {
+    const r = await fetch(`${import.meta.env.BASE_URL}api/lab/machines/${m.slug}/download`, { method: "POST" });
+    const d = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(d.error || "No se pudo descargar");
+    window.open(d.url, "_blank", "noopener,noreferrer");
+  } catch (e: any) {
+    window.alert(e.message);
+  }
 }
