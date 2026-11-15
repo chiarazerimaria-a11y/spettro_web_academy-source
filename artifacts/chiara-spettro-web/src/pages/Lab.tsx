@@ -999,6 +999,24 @@ const GameMachineCard = ({
                 +{m.points}<span className="text-sm ml-1 opacity-50 text-white">XP</span>
               </div>
               <div className="text-[10px] text-muted-foreground font-mono mt-0.5">{m.solveCount} pwns</div>
+              <div className="font-mono text-[10px] font-bold mt-1 inline-block px-1.5 py-0.5 rounded border"
+                style={(m.price ?? 0) > 0
+                  ? { color: "#fbbf24", borderColor: "rgba(251,191,36,0.4)", background: "rgba(251,191,36,0.08)" }
+                  : { color: "#34d399", borderColor: "rgba(52,211,153,0.35)", background: "rgba(52,211,153,0.08)" }}>
+                {(m.price ?? 0) > 0 ? `${m.price} ${m.priceCurrency ?? "GHC"}` : "GRATIS"}
+              </div>
+              <div className="font-mono text-[10px] font-bold mt-1 inline-block px-1.5 py-0.5 rounded border"
+                style={(m.price ?? 0) > 0
+                  ? { color: "#fbbf24", borderColor: "rgba(251,191,36,0.4)", background: "rgba(251,191,36,0.08)" }
+                  : { color: "#34d399", borderColor: "rgba(52,211,153,0.35)", background: "rgba(52,211,153,0.08)" }}>
+                {(m.price ?? 0) > 0 ? `${m.price} ${m.priceCurrency ?? "GHC"}` : "GRATIS"}
+              </div>
+              <div className="font-mono text-[10px] font-bold mt-1 inline-block px-1.5 py-0.5 rounded border"
+                style={(m.price ?? 0) > 0
+                  ? { color: "#fbbf24", borderColor: "rgba(251,191,36,0.4)", background: "rgba(251,191,36,0.08)" }
+                  : { color: "#34d399", borderColor: "rgba(52,211,153,0.35)", background: "rgba(52,211,153,0.08)" }}>
+                {(m.price ?? 0) > 0 ? `${m.price} ${m.priceCurrency ?? "GHC"}` : "GRATIS"}
+              </div>
             </div>
             {/* Boss HP bar */}
             <div className="w-24">
