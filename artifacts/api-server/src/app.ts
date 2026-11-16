@@ -4,6 +4,7 @@
 import express, { type Express, type Request, type Response, type NextFunction } from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
+import { cookieSecret } from "./middleware/requireUser";
 import pinoHttp from "pino-http";
 import router from "./routes";
 import { logger } from "./lib/logger";
@@ -42,7 +43,7 @@ app.use((_req: Request, res: Response, next: NextFunction) => {
 });
 
 // ─── CORS ─────────────────────────────────────────────────────────────────────
-app.use(cookieParser(process.env["COOKIE_SECRET"] || undefined));
+app.use(cookieParser(cookieSecret()));
 app.use("/updates", express.static("/home/kali/spettro-updates"));
 app.use(cors({
   origin: true,
