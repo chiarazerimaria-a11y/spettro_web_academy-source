@@ -1,11 +1,16 @@
 import { useGetAdminSummary } from "@workspace/api-client-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Users, Euro, CreditCard, Server, ShieldAlert } from "lucide-react";
+import { Users, Euro, CreditCard, Server, ShieldAlert, Coins } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 
 export default function Dashboard() {
   const { data: summary, isLoading, isError } = useGetAdminSummary();
+  const { data: ghc } = useQuery<{ inCirculation: number; totalCredited: number }>({
+    queryKey: ["admin-ghc-stats"],
+    queryFn: () => fetch(`${import.meta.env.BASE_URL}api/admin/ghc/stats`).then(r => r.json()),
+  });
 
   if (isLoading) {
     return (
@@ -67,6 +72,23 @@ export default function Dashboard() {
           subtitle={`completadas de ${summary.machinesCompleted + summary.machinesInProgress + summary.machinesPlanned}`}
           icon={Server}
           color="blue"
+        />
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <StatCard
+          title="GHC en circulación"
+          value={(ghc?.inCirculation ?? 0).toLocaleString("es-ES")}
+          subtitle="moneda interna, no son euros"
+          icon={Coins}
+          color="magenta"
+        />
+        <StatCard
+          title="GHC total acreditado"
+          value={(ghc?.totalCredited ?? 0).toLocaleString("es-ES")}
+          subtitle="regalado + recompensas"
+          icon={Coins}
+          color="cyan"
         />
       </div>
 

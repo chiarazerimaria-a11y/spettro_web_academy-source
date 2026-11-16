@@ -3380,7 +3380,7 @@ function generateMockMachines(): Machine[] {
       os: oss[i % 2], difficulty: diff, characterType: charTypes[i % charTypes.length],
       points: pts, description: "Máquina de entrenamiento de hacking para poner a prueba tus habilidades de enumeración y explotación.",
       vulnerability: "SQL Injection → RCE via file upload", techniques: ["Enumeración Web", "SQLi", "File Upload Bypass", "PrivEsc"],
-      hints: "Revisa los headers HTTP y busca directorios ocultos.", thumbnailUrl: null, downloadUrl: null, writeupUrl: null, videoUrl: null,
+      hints: "Revisa los headers HTTP y busca directorios ocultos.", ip: null, thumbnailUrl: null, downloadUrl: null, writeupUrl: null, videoUrl: null,
       solveCount: Math.floor(Math.random() * 200), isActive: true,
     };
   });

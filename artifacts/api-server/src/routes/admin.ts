@@ -1,6 +1,7 @@
 import { Router, type IRouter } from "express";
 import { db, subscribersTable, coursesTable, paymentsTable, machinesTable, affiliatesTable, usersTable, applicationsTable, courseSubmissionsTable, labMachinesTable, ctfMissionsTable, squadsTable, tournamentRoomsTable } from "@workspace/db";
 import { eq, desc, sql } from "drizzle-orm";
+import { notifyEmail } from "./subscriptions";
 import {
   CreateSubscriberBody, UpdateSubscriberBody,
   CreateCourseBody, UpdateCourseBody,
@@ -76,6 +77,16 @@ router.get("/admin/summary", async (_req, res) => {
     machinesInProgress: machines.filter((m) => m.status === "en_progreso").length,
     machinesPlanned: machines.filter((m) => m.status === "planificada").length,
     recentSubscribers: recent,
+  });
+});
+
+// GhostCoin stats (moneda interna, separada de los euros)
+router.get("/admin/ghc/stats", async (_req, res) => {
+  const a = await db.execute(sql`SELECT COALESCE(SUM(ghc_balance), 0)::bigint AS v FROM spettro_wallets`);
+  const b = await db.execute(sql`SELECT COALESCE(SUM(amount), 0)::bigint AS v FROM ghc_transactions WHERE amount > 0`);
+  res.json({
+    inCirculation: Number((a.rows[0] as { v: string }).v),
+    totalCredited: Number((b.rows[0] as { v: string }).v),
   });
 });
 
@@ -164,6 +175,17 @@ router.patch("/admin/payments/:id", async (req, res) => {
   if (body.amount !== undefined) update.amount = String(body.amount);
   const [row] = await db.update(paymentsTable).set(update).where(eq(paymentsTable.id, id)).returning();
   if (!row) return res.status(404).json({ error: "not found" });
+  if ((body as { status?: string }).status === "pagado" && row.subscriberId) {
+    const [sub] = await db.update(subscribersTable)
+      .set({ status: "active" })
+      .where(eq(subscribersTable.id, row.subscriberId))
+      .returning();
+    if (sub) {
+      try {
+        await notifyEmail(sub.email, "¡Tu suscripción está activa!", `Hemos confirmado tu pago. Tu plan ${sub.plan} ya está activo. ¡Bienvenido a la academia!`);
+      } catch (e) { console.error("notify error", e); }
+    }
+  }
   res.json(toPayment(row));
 });
 router.delete("/admin/payments/:id", async (req, res) => {

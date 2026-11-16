@@ -4,6 +4,7 @@ import { Menu, X, LogOut, Coins, ChevronDown } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
+import NotificationBell from "@/components/NotificationBell";
 import { AuthModal } from "@/components/AuthModal";
 import { useQuery } from "@tanstack/react-query";
 import { useLang, LANGUAGES, type Lang } from "@/contexts/LanguageContext";
@@ -168,6 +169,7 @@ export function PublicNav() {
             <LangSwitcher />
             {user ? (
               <div className="flex items-center gap-2">
+                <NotificationBell />
                 <WalletBadge userId={user.id} />
                 <Link href="/perfil">
                   <Button variant="outline" className="border-primary/40 text-primary hover:bg-primary/10 font-mono flex items-center gap-2">
