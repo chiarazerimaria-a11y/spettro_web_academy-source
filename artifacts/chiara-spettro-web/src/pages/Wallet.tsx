@@ -1,4 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import CurrencyIcon from "@/components/CurrencyIcon";
 import { Link } from "wouter";
 import { PublicNav } from "@/components/PublicNav";
 import { Button } from "@/components/ui/button";
@@ -320,7 +321,7 @@ export default function Wallet() {
               <div className="flex flex-col sm:flex-row gap-4">
                 <div className="w-full md:w-auto min-w-[260px] rounded-2xl border border-primary/30 bg-[#0d0d14] p-6 shadow-[0_0_30px_rgba(255,77,184,0.08)]">
                   <div className="flex items-center gap-2 mb-1">
-                    <Coins className="h-4 w-4 text-primary"/>
+                    <CurrencyIcon currency="SPC" className="h-5 w-5"/>
                     <span className="font-mono text-xs text-primary/70 tracking-widest">SALDO SPC</span>
                   </div>
                   <div className="font-mono font-black text-4xl text-primary mb-1">
@@ -337,7 +338,7 @@ export default function Wallet() {
 
                 <div className="w-full md:w-auto min-w-[260px] rounded-2xl border border-purple-500/30 bg-[#0d0d14] p-6 shadow-[0_0_30px_rgba(155,85,249,0.08)]">
                   <div className="flex items-center gap-2 mb-1">
-                    <span className="text-base">👻</span>
+                    <CurrencyIcon currency="GHC" className="h-5 w-5"/>
                     <span className="font-mono text-xs text-purple-300/80 tracking-widest">SALDO GHOSTCOIN</span>
                   </div>
                   <div className="font-mono font-black text-4xl text-purple-300 mb-1">
@@ -458,7 +459,7 @@ export default function Wallet() {
 
               {/* GhostCoin panel */}
               <div className="rounded-xl border border-purple-500/20 bg-[#0d0d14] p-5">
-                <h3 className="font-mono font-bold text-xs text-purple-300 tracking-widest mb-4">👻 GHOSTCOIN</h3>
+                <h3 className="font-mono font-bold text-xs text-purple-300 tracking-widest mb-4 flex items-center gap-1.5"><CurrencyIcon currency="GHC" className="h-4 w-4"/> GHOSTCOIN</h3>
                 <div className="flex justify-between items-center mb-3">
                   <span className="font-mono text-xs text-muted-foreground">Saldo</span>
                   <span className="font-mono font-bold text-purple-300">{ghcBalance.toLocaleString()} GHC</span>
@@ -482,7 +483,7 @@ export default function Wallet() {
 
               {/* GhostCoin panel */}
               <div className="rounded-xl border border-purple-500/20 bg-[#0d0d14] p-5">
-                <h3 className="font-mono font-bold text-xs text-purple-300 tracking-widest mb-4">👻 GHOSTCOIN</h3>
+                <h3 className="font-mono font-bold text-xs text-purple-300 tracking-widest mb-4 flex items-center gap-1.5"><CurrencyIcon currency="GHC" className="h-4 w-4"/> GHOSTCOIN</h3>
                 <div className="flex justify-between items-center mb-3">
                   <span className="font-mono text-xs text-muted-foreground">Saldo</span>
                   <span className="font-mono font-bold text-purple-300">{ghcBalance.toLocaleString()} GHC</span>
