@@ -246,6 +246,7 @@ export const spettroWalletsTable = pgTable("spettro_wallets", {
   balance: integer("balance").notNull().default(0),
   totalEarned: integer("total_earned").notNull().default(0),
   totalSpent: integer("total_spent").notNull().default(0),
+  ghcBalance: integer("ghc_balance").notNull().default(0),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
@@ -504,5 +505,14 @@ export const machinePurchasesTable = pgTable("machine_purchases", {
   machineId: integer("machine_id").notNull().references(() => labMachinesTable.id),
   price: integer("price").notNull(),
   currency: text("currency").notNull().default("GHC"),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+// GhostCoin: declarado aqui para que drizzle-kit push no lo borre (ghc.ts sigue creandolo si falta).
+export const ghcTransactionsTable = pgTable("ghc_transactions", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull(),
+  amount: integer("amount").notNull(),
+  description: text("description").notNull(),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
