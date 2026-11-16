@@ -321,7 +321,7 @@ export default function Wallet() {
               <div className="flex flex-col sm:flex-row gap-4">
                 <div className="w-full md:w-auto min-w-[260px] rounded-2xl border border-primary/30 bg-[#0d0d14] p-6 shadow-[0_0_30px_rgba(255,77,184,0.08)]">
                   <div className="flex items-center gap-2 mb-1">
-                    <CurrencyIcon currency="SPC" className="h-5 w-5"/>
+                    <CurrencyIcon currency="SPC" className="h-16 w-16"/>
                     <span className="font-mono text-xs text-primary/70 tracking-widest">SALDO SPC</span>
                   </div>
                   <div className="font-mono font-black text-4xl text-primary mb-1">
@@ -338,7 +338,7 @@ export default function Wallet() {
 
                 <div className="w-full md:w-auto min-w-[260px] rounded-2xl border border-purple-500/30 bg-[#0d0d14] p-6 shadow-[0_0_30px_rgba(155,85,249,0.08)]">
                   <div className="flex items-center gap-2 mb-1">
-                    <CurrencyIcon currency="GHC" className="h-5 w-5"/>
+                    <CurrencyIcon currency="GHC" className="h-16 w-16"/>
                     <span className="font-mono text-xs text-purple-300/80 tracking-widest">SALDO GHOSTCOIN</span>
                   </div>
                   <div className="font-mono font-black text-4xl text-purple-300 mb-1">
@@ -459,7 +459,7 @@ export default function Wallet() {
 
               {/* GhostCoin panel */}
               <div className="rounded-xl border border-purple-500/20 bg-[#0d0d14] p-5">
-                <h3 className="font-mono font-bold text-xs text-purple-300 tracking-widest mb-4 flex items-center gap-1.5"><CurrencyIcon currency="GHC" className="h-4 w-4"/> GHOSTCOIN</h3>
+                <h3 className="font-mono font-bold text-xs text-purple-300 tracking-widest mb-4 flex items-center gap-1.5"><CurrencyIcon currency="GHC" className="h-6 w-6"/> GHOSTCOIN</h3>
                 <div className="flex justify-between items-center mb-3">
                   <span className="font-mono text-xs text-muted-foreground">Saldo</span>
                   <span className="font-mono font-bold text-purple-300">{ghcBalance.toLocaleString()} GHC</span>
@@ -483,7 +483,7 @@ export default function Wallet() {
 
               {/* GhostCoin panel */}
               <div className="rounded-xl border border-purple-500/20 bg-[#0d0d14] p-5">
-                <h3 className="font-mono font-bold text-xs text-purple-300 tracking-widest mb-4 flex items-center gap-1.5"><CurrencyIcon currency="GHC" className="h-4 w-4"/> GHOSTCOIN</h3>
+                <h3 className="font-mono font-bold text-xs text-purple-300 tracking-widest mb-4 flex items-center gap-1.5"><CurrencyIcon currency="GHC" className="h-6 w-6"/> GHOSTCOIN</h3>
                 <div className="flex justify-between items-center mb-3">
                   <span className="font-mono text-xs text-muted-foreground">Saldo</span>
                   <span className="font-mono font-bold text-purple-300">{ghcBalance.toLocaleString()} GHC</span>

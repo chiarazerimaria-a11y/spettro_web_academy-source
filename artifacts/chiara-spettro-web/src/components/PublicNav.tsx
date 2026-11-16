@@ -44,7 +44,7 @@ function WalletBadge({ userId }: { userId: number }) {
   return (
     <Link href="/wallet">
       <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-primary/10 border border-primary/25 font-mono text-xs text-primary hover:bg-primary/20 transition-all cursor-pointer">
-        <CurrencyIcon currency="SPC" className="h-3.5 w-3.5" />
+        <CurrencyIcon currency="SPC" className="h-9 w-9" />
         <span className="font-bold">{balance.toLocaleString()}</span>
         <span className="text-primary/60 text-[10px]">SPC</span>
       </div>
