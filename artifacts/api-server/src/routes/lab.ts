@@ -385,23 +385,15 @@ router.post("/lab/machines/:slug/spawn", async (req, res) => {
       const sessionId = getSessionUserId(req);
       if (!sessionId || sessionId !== userId)
         return res.status(401).json({ error: "Inicia sesión de nuevo para desbloquear esta máquina", code: "LOGIN_REQUIRED" });
-      if (mx.priceCurrency === "SPC")
-        return res.status(400).json({ error: "El cobro en SPC aún no está disponible" });
+      const currency = mx.priceCurrency === "SPC" ? "SPC" : "GHC";
       try {
-        await db.transaction(async (tx) => {
-          await tx.execute(sql`SELECT id FROM ${usersTable} WHERE id = ${userId} FOR UPDATE`);
-          const owned = await tx.execute(sql`SELECT 1 FROM machine_purchases WHERE user_id = ${userId} AND machine_id = ${mx.id}`);
-          if (owned.rows.length > 0) return;
-          const r = await tx.execute(sql`
-            UPDATE spettro_wallets SET ghc_balance = ghc_balance - ${price}, updated_at = now()
-            WHERE user_id = ${userId} AND ghc_balance >= ${price} RETURNING ghc_balance`);
-          if (r.rows.length === 0) throw new Error("GHC_INSUFICIENTE");
-          await tx.execute(sql`INSERT INTO ghc_transactions (user_id, amount, description) VALUES (${userId}, ${-price}, ${"Máquina — " + mx.name})`);
-          await tx.execute(sql`INSERT INTO machine_purchases (user_id, machine_id, price, currency) VALUES (${userId}, ${mx.id}, ${price}, 'GHC')`);
-        });
+        await chargeMachine(userId, mx.id, mx.name, price, currency);
       } catch (err) {
-        if (err instanceof Error && err.message === "GHC_INSUFICIENTE")
-          return res.status(402).json({ error: `Necesitas ${price} GHC para desbloquear esta máquina`, code: "INSUFFICIENT_GHC" });
+        if (err instanceof Error && (err.message === "GHC_INSUFICIENTE" || err.message === "SPC_INSUFICIENTE"))
+          return res.status(402).json({
+            error: `Necesitas ${price} ${currency} para desbloquear esta máquina`,
+            code: currency === "SPC" ? "INSUFFICIENT_SPC" : "INSUFFICIENT_GHC",
+          });
         throw err;
       }
     }
@@ -424,8 +416,27 @@ router.post("/lab/machines/:slug/spawn", async (req, res) => {
   }
 });
 
-// Cobra una sola vez (GHC) y registra la compra. Si ya la tenia, no cobra.
-async function chargeMachineGhc(userId: number, machineId: number, machineName: string, price: number): Promise<void> {
+// Cobra una sola vez (GHC o SPC) y registra la compra. Si ya la tenia, no cobra.
+async function chargeMachine(
+  userId: number, machineId: number, machineName: string, price: number, currency: "GHC" | "SPC",
+): Promise<void> {
+  if (currency === "SPC") {
+    await db.transaction(async (tx) => {
+      await tx.execute(sql`SELECT id FROM ${usersTable} WHERE id = ${userId} FOR UPDATE`);
+      const owned = await tx.execute(sql`SELECT 1 FROM machine_purchases WHERE user_id = ${userId} AND machine_id = ${machineId}`);
+      if (owned.rows.length > 0) return;
+      await tx.execute(sql`
+        INSERT INTO spettro_wallets (user_id, balance, total_earned, total_spent)
+        VALUES (${userId}, 0, 0, 0) ON CONFLICT (user_id) DO NOTHING`);
+      const r = await tx.execute(sql`
+        UPDATE spettro_wallets SET balance = balance - ${price}, total_spent = total_spent + ${price}, updated_at = now()
+        WHERE user_id = ${userId} AND balance >= ${price} RETURNING balance`);
+      if (r.rows.length === 0) throw new Error("SPC_INSUFICIENTE");
+      await tx.execute(sql`INSERT INTO spettro_transactions (user_id, amount, type, description) VALUES (${userId}, ${-price}, 'spent', ${"Máquina — " + machineName})`);
+      await tx.execute(sql`INSERT INTO machine_purchases (user_id, machine_id, price, currency) VALUES (${userId}, ${machineId}, ${price}, 'SPC')`);
+    });
+    return;
+  }
   await db.transaction(async (tx) => {
     await tx.execute(sql`SELECT id FROM ${usersTable} WHERE id = ${userId} FOR UPDATE`);
     const owned = await tx.execute(sql`SELECT 1 FROM machine_purchases WHERE user_id = ${userId} AND machine_id = ${machineId}`);
@@ -452,12 +463,15 @@ router.post("/lab/machines/:slug/download", async (req, res) => {
     if (price > 0) {
       const userId = getSessionUserId(req);
       if (!userId) return res.status(401).json({ error: "Inicia sesión de nuevo para descargar esta máquina", code: "LOGIN_REQUIRED" });
-      if (mx.priceCurrency === "SPC") return res.status(400).json({ error: "El cobro en SPC aún no está disponible" });
+      const currency = mx.priceCurrency === "SPC" ? "SPC" : "GHC";
       try {
-        await chargeMachineGhc(userId, m.id, m.name, price);
+        await chargeMachine(userId, m.id, m.name, price, currency);
       } catch (err) {
-        if (err instanceof Error && err.message === "GHC_INSUFICIENTE")
-          return res.status(402).json({ error: `Necesitas ${price} GHC para esta máquina`, code: "INSUFFICIENT_GHC" });
+        if (err instanceof Error && (err.message === "GHC_INSUFICIENTE" || err.message === "SPC_INSUFICIENTE"))
+          return res.status(402).json({
+            error: `Necesitas ${price} ${currency} para esta máquina`,
+            code: currency === "SPC" ? "INSUFFICIENT_SPC" : "INSUFFICIENT_GHC",
+          });
         throw err;
       }
     }
