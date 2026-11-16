@@ -261,6 +261,7 @@ export default function Wallet() {
   const wallet: Wallet | null = data?.wallet ?? null;
   const transactions: Transaction[] = data?.transactions ?? [];
   const ghcBalance: number = ghcData?.balance ?? 0;
+  const ghcTransactions: { id: number; amount: number; description: string; createdAt: string }[] = ghcData?.transactions ?? [];
 
   const spcToEur = (spc: number) => (spc / 1000).toFixed(2);
   const eurToSpc = (eur: number) => Math.floor(eur * 1000);
@@ -453,6 +454,30 @@ export default function Wallet() {
                     <span className="font-mono font-bold text-yellow-400">€{spcToEur(wallet?.balance ?? 0)}</span>
                   </div>
                 </div>
+              </div>
+
+              {/* GhostCoin panel */}
+              <div className="rounded-xl border border-purple-500/20 bg-[#0d0d14] p-5">
+                <h3 className="font-mono font-bold text-xs text-purple-300 tracking-widest mb-4">👻 GHOSTCOIN</h3>
+                <div className="flex justify-between items-center mb-3">
+                  <span className="font-mono text-xs text-muted-foreground">Saldo</span>
+                  <span className="font-mono font-bold text-purple-300">{ghcBalance.toLocaleString()} GHC</span>
+                </div>
+                <p className="text-[10px] text-muted-foreground font-mono mb-3">Interno · no retirable · úsalo en suscripciones, máquinas y torneos</p>
+                {ghcTransactions.length === 0 ? (
+                  <p className="text-[10px] text-muted-foreground font-mono italic">Sin movimientos todavía.</p>
+                ) : (
+                  <div className="space-y-1.5 max-h-40 overflow-y-auto pr-1">
+                    {ghcTransactions.slice(0, 10).map(tx => (
+                      <div key={tx.id} className="flex justify-between items-center text-[10px] font-mono">
+                        <span className="text-muted-foreground truncate pr-2">{tx.description}</span>
+                        <span className={tx.amount > 0 ? "text-green-400 shrink-0" : "text-red-400 shrink-0"}>
+                          {tx.amount > 0 ? "+" : ""}{tx.amount.toLocaleString()}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
 
               {/* Redeem info */}
