@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 import CurrencyIcon from "@/components/CurrencyIcon";
 import NotificationBell from "@/components/NotificationBell";
+import SoundToggle from "@/components/SoundToggle";
 import { AuthModal } from "@/components/AuthModal";
 import { useQuery } from "@tanstack/react-query";
 import { useLang, LANGUAGES, type Lang } from "@/contexts/LanguageContext";
@@ -167,6 +168,7 @@ export function PublicNav() {
 
           {/* Desktop right side */}
           <div className="hidden lg:flex items-center gap-2">
+            <SoundToggle />
             <LangSwitcher />
             {user ? (
               <div className="flex items-center gap-2">
