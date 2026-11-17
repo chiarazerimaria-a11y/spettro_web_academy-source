@@ -8,6 +8,7 @@ import { eq, desc, and } from "drizzle-orm";
 import { sanitizeStr, sanitizeOptional, safeInt, rateLimit } from "../middleware/sanitize";
 import { adminGuard } from "../middleware/adminGuard";
 import { getSessionUserId } from "../middleware/requireUser";
+import { creditGhc } from "../ghc";
 
 const router = Router();
 
@@ -42,6 +43,24 @@ async function credit(userId: number, amount: number, description: string, type 
   await db.insert(spettroTransactionsTable).values({ userId, amount, type, description, referenceId: refId ?? null });
   return upd;
 }
+
+// ── Exchange SPC -> GHC ──────────────────────────────────────────────────────
+const exchangeLimit = rateLimit(10, 60_000);
+router.post("/spc/exchange-ghc", exchangeLimit, async (req, res) => {
+  const userId = getSessionUserId(req);
+  if (!userId) { res.status(401).json({ error: "Inicia sesión de nuevo" }); return; }
+  const raw = req.body as Record<string, unknown>;
+  const amount = safeInt(raw.amount, 0, 1, 50_000);
+  if (!amount) { res.status(400).json({ error: "Cantidad inválida" }); return; }
+  try {
+    const wallet = await debit(userId, amount, "Cambio a GhostCoin", "exchange");
+    const ghcBalance = await creditGhc(userId, amount, "Cambio desde SPC");
+    res.json({ ok: true, spcBalance: wallet.balance, ghcBalance, exchanged: amount });
+  } catch (err: unknown) {
+    req.log.error(err);
+    res.status(400).json({ error: (err as Error).message ?? "Error al cambiar" });
+  }
+});
 
 // ── P2P Transfer ─────────────────────────────────────────────────────────────
 router.post("/spc/transfer", transferLimit, async (req, res) => {

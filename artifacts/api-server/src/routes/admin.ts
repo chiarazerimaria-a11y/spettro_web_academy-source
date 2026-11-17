@@ -1,5 +1,5 @@
 import { Router, type IRouter } from "express";
-import { db, subscribersTable, coursesTable, paymentsTable, machinesTable, affiliatesTable, usersTable, applicationsTable, courseSubmissionsTable, labMachinesTable, ctfMissionsTable, squadsTable, tournamentRoomsTable } from "@workspace/db";
+import { db, subscribersTable, coursesTable, paymentsTable, machinesTable, affiliatesTable, usersTable, applicationsTable, courseSubmissionsTable, labMachinesTable, ctfMissionsTable, squadsTable, tournamentRoomsTable, spettroWalletsTable, spettroTransactionsTable } from "@workspace/db";
 import { eq, desc, sql } from "drizzle-orm";
 import { notifyEmail } from "./subscriptions";
 import {
@@ -58,19 +58,42 @@ const toMachine = (r: typeof machinesTable.$inferSelect) => ({
 });
 
 // Summary
+const PACK_EUR_CENTS: Record<string, number> = { STARTER: 100, HACKER: 450, ELITE: 1000, MASTER: 2000 };
+
 router.get("/admin/summary", async (_req, res) => {
-  const [subs, courses, payments, machines] = await Promise.all([
+  const [subs, courses, payments, machines, wallets, spcTx] = await Promise.all([
     db.select().from(subscribersTable),
     db.select().from(coursesTable),
     db.select().from(paymentsTable),
     db.select().from(machinesTable),
+    db.select().from(spettroWalletsTable),
+    db.select().from(spettroTransactionsTable),
   ]);
   const recent = [...subs].sort((a, b) => +b.joinedAt - +a.joinedAt).slice(0, 5).map(toSubscriber);
+
+  const subscriptionRevenue = payments.filter((p) => p.status === "pagado").reduce((s, p) => s + Number(p.amount), 0);
+
+  const spcRevenueCents = spcTx
+    .filter((t) => t.type === "purchase")
+    .reduce((s, t) => {
+      const match = /^Pack (\w+):/.exec(t.description);
+      const label = match?.[1];
+      return s + (label && PACK_EUR_CENTS[label] ? PACK_EUR_CENTS[label] : 0);
+    }, 0);
+  const spcRevenue = spcRevenueCents / 100;
+
+  const totalSpcBalance = wallets.reduce((s, w) => s + w.balance, 0);
+  const totalGhcBalance = wallets.reduce((s, w) => s + w.ghcBalance, 0);
+
   res.json({
     totalSubscribers: subs.length,
     activeSubscribers: subs.filter((s) => s.status === "active").length,
     totalCourses: courses.length,
-    totalRevenue: payments.filter((p) => p.status === "pagado").reduce((s, p) => s + Number(p.amount), 0),
+    totalRevenue: subscriptionRevenue + spcRevenue,
+    subscriptionRevenue,
+    spcRevenue,
+    totalSpcBalance,
+    totalGhcBalance,
     pendingPayments: payments.filter((p) => p.status === "pendiente").length,
     paidPayments: payments.filter((p) => p.status === "pagado").length,
     machinesCompleted: machines.filter((m) => m.status === "completada").length,

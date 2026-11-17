@@ -108,7 +108,7 @@ export default function Wallet() {
   const { user } = useAuth();
   const { toast } = useToast();
   const qc = useQueryClient();
-  const [tab, setTab] = useState<"wallet" | "leaderboard" | "earn" | "comprar" | "enviar" | "enviarghc" | "retirar">("wallet");
+  const [tab, setTab] = useState<"wallet" | "leaderboard" | "earn" | "comprar" | "enviar" | "enviarghc" | "cambiar" | "retirar">("wallet");
 
   // Payout state
   const [payoutAmount, setPayoutAmount] = useState(5000);
@@ -243,6 +243,31 @@ export default function Wallet() {
       toast({ title: "Error al enviar", description: err.message, variant: "destructive" });
     } finally {
       setSendingGhc(false);
+    }
+  };
+
+  const [exchangeAmount, setExchangeAmount] = useState(100);
+  const [exchangingCoins, setExchangingCoins] = useState(false);
+
+  const exchangeSpcToGhc = async () => {
+    if (!user) { toast({ title: "Inicia sesión primero", variant: "destructive" }); return; }
+    if (exchangeAmount < 1) { toast({ title: "Cantidad mínima: 1 SPC", variant: "destructive" }); return; }
+    setExchangingCoins(true);
+    try {
+      const r = await fetch(BASE + "api/spc/exchange-ghc", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ amount: exchangeAmount }),
+      });
+      const d = await r.json();
+      if (!r.ok) throw new Error(d.error);
+      qc.invalidateQueries();
+      toast({ title: "✓ Cambiaste " + exchangeAmount.toLocaleString() + " SPC por GHC" });
+      setExchangeAmount(100);
+    } catch (err: any) {
+      toast({ title: "Error al cambiar", description: err.message, variant: "destructive" });
+    } finally {
+      setExchangingCoins(false);
     }
   };
 
@@ -406,6 +431,7 @@ export default function Wallet() {
               { key: "comprar",     label: "COMPRAR SPC",  icon: <ShoppingCart className="h-3.5 w-3.5"/>, highlight: true },
               { key: "enviar",      label: "ENVIAR SPC",   icon: <Send className="h-3.5 w-3.5"/> },
               { key: "enviarghc",   label: "ENVIAR GHC",   icon: <Send className="h-3.5 w-3.5"/> },
+              { key: "cambiar",     label: "CAMBIAR SPC→GHC", icon: <RefreshCw className="h-3.5 w-3.5"/> },
               { key: "retirar",     label: "RETIRAR €",    icon: <Banknote className="h-3.5 w-3.5"/>, highlightGreen: true },
               { key: "leaderboard", label: "RANKING",      icon: <Trophy className="h-3.5 w-3.5"/> },
               { key: "earn",        label: "GANAR SPC",    icon: <Zap className="h-3.5 w-3.5"/> },
@@ -1180,6 +1206,56 @@ export default function Wallet() {
                   ? <><RefreshCw className="h-4 w-4 animate-spin mr-2"/> ENVIANDO...</>
                   : <><Send className="h-4 w-4 mr-2"/> ENVIAR {sendAmount.toLocaleString()} SPC</>}
               </Button>
+            </div>
+          </div>
+        )}
+
+        {/* CAMBIAR SPC -> GHC TAB */}
+        {tab === "cambiar" && (
+          <div className="max-w-md mx-auto">
+            <div className="text-center mb-8">
+              <h2 className="font-mono font-bold text-xl text-purple-300 mb-2">CAMBIAR SPC → GHOSTCOIN</h2>
+              <p className="text-muted-foreground text-sm font-mono">Convertí tu SPC en GhostCoin para gastar en suscripciones, máquinas y torneos. Es irreversible: el GHC no vuelve a ser SPC ni euros.</p>
+            </div>
+
+            <div className="rounded-2xl border border-purple-500/20 bg-card/30 p-6 space-y-5 font-mono">
+              <div className="flex items-center justify-between text-xs text-muted-foreground mb-2">
+                <span>Tu saldo SPC</span>
+                <span className="text-primary font-bold">{wallet?.balance.toLocaleString() ?? 0} SPC</span>
+              </div>
+              <div className="flex items-center justify-between text-xs text-muted-foreground mb-2">
+                <span>Tu saldo GHC</span>
+                <span className="text-purple-300 font-bold">{ghcBalance.toLocaleString()} GHC</span>
+              </div>
+
+              <div>
+                <label className="text-[10px] text-muted-foreground uppercase tracking-widest block mb-1.5">Cantidad a cambiar (1 SPC = 1 GHC)</label>
+                <div className="flex gap-2 flex-wrap mb-2">
+                  {[100, 250, 500, 1000, 2500, 5000].map(v => (
+                    <button key={v} onClick={() => setExchangeAmount(v)}
+                      className={`px-3 py-1.5 rounded-lg border text-xs transition-all ${exchangeAmount === v ? "border-purple-400/60 bg-purple-500/15 text-purple-300 font-bold" : "border-border text-muted-foreground hover:border-purple-400/30"}`}>
+                      {v}
+                    </button>
+                  ))}
+                </div>
+                <input type="number" value={exchangeAmount} onChange={e => setExchangeAmount(parseInt(e.target.value) || 1)}
+                  min={1} max={50000}
+                  className="w-full bg-[#050508] border border-purple-500/20 rounded-lg px-4 py-2.5 text-sm font-mono text-foreground outline-none focus:border-purple-400/60 transition-colors"/>
+              </div>
+
+              <Button
+                onClick={exchangeSpcToGhc}
+                disabled={exchangingCoins || exchangeAmount < 1 || (wallet?.balance ?? 0) < exchangeAmount}
+                className="w-full font-mono font-black text-sm h-12 rounded-xl gap-2"
+                style={{ background: exchangingCoins ? undefined : "linear-gradient(135deg,#9b55f9,#ff4db8)", color: "#fff", border: "none" }}>
+                {exchangingCoins
+                  ? <><RefreshCw className="h-4 w-4 animate-spin"/> CAMBIANDO...</>
+                  : <><RefreshCw className="h-4 w-4"/> CAMBIAR {exchangeAmount.toLocaleString()} SPC POR GHC</>}
+              </Button>
+
+              <p className="font-mono text-[9px] text-muted-foreground text-center leading-relaxed">
+                Una vez cambiado a GhostCoin, ese saldo deja de ser retirable en euros.
+              </p>
             </div>
           </div>
         )}
