@@ -81,3 +81,33 @@ export async function ensureMachinePricingSchema(): Promise<void> {
   `);
   await db.execute(sql`CREATE UNIQUE INDEX IF NOT EXISTS machine_purchases_user_machine_uniq ON machine_purchases (user_id, machine_id)`);
 }
+
+export async function transferGhc(
+  fromId: number, toId: number, amount: number,
+  fromName: string, toName: string, note?: string,
+): Promise<number> {
+  validAmount(amount);
+  if (amount > 10_000) throw new Error("Máximo 10.000 GHC por envío");
+  const suffix = note ? ": " + note : "";
+  return db.transaction(async (tx) => {
+    const r = await tx.execute(sql`
+      UPDATE spettro_wallets SET ghc_balance = ghc_balance - ${amount}, updated_at = now()
+      WHERE user_id = ${fromId} AND ghc_balance >= ${amount} RETURNING ghc_balance
+    `);
+    if (r.rows.length === 0) throw new Error("Saldo GHC insuficiente");
+    await tx.execute(sql`
+      INSERT INTO spettro_wallets (user_id, balance, total_earned, total_spent)
+      VALUES (${toId}, 0, 0, 0) ON CONFLICT (user_id) DO NOTHING
+    `);
+    await tx.execute(sql`
+      UPDATE spettro_wallets SET ghc_balance = ghc_balance + ${amount}, updated_at = now()
+      WHERE user_id = ${toId}
+    `);
+    await tx.execute(sql`
+      INSERT INTO ghc_transactions (user_id, amount, description)
+      VALUES (${fromId}, ${-amount}, ${"[envío] → " + toName + suffix}),
+             (${toId}, ${amount}, ${"[envío] ← " + fromName + suffix})
+    `);
+    return Number((r.rows[0] as { ghc_balance: number }).ghc_balance);
+  });
+}

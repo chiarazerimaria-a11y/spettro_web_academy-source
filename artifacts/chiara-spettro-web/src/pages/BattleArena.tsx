@@ -628,6 +628,9 @@ function BettingPanel({ battleId, battle }: { battleId: number; battle: any }) {
 
                       {/* Resolve: accepted bet, is participant */}
                       {bet.status === "aceptada" && (isCreator || isAcceptor) && (
+                        <p className="text-[9px] font-mono text-muted-foreground text-center">Resolución pendiente de administración</p>
+                      )}
+                      {false && (
                         <div className="flex flex-col gap-1">
                           <p className="text-[9px] font-mono text-muted-foreground text-center">¿Quién ganó?</p>
                           <button onClick={() => resolveBet(bet.id, bet.creatorId, bet.creatorUsername)}
@@ -1115,7 +1118,7 @@ export default function BattleArena() {
         </div>
 
         {/* Resolve buttons (for testing / admin) */}
-        {isActive && user && (
+        {false && isActive && user && (
           <div className="max-w-3xl mx-auto mt-4 p-4 rounded-xl border border-white/5 bg-white/2">
             <p className="text-[10px] text-muted-foreground font-mono mb-3 text-center tracking-widest">DECLARAR GANADOR (ADMIN)</p>
             <div className="flex gap-3">

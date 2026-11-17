@@ -1,4 +1,5 @@
 import { Router } from "express";
+import { adminGuard } from "../middleware/adminGuard";
 import { db } from "@workspace/db";
 import {
   squadsTable, ctfBattlesTable, ctfMissionsTable, battleMessagesTable,
@@ -330,7 +331,7 @@ router.post("/squads/battles/:id/flag", async (req, res) => {
 });
 
 // PATCH /api/squads/battles/:id/resolve
-router.patch("/squads/battles/:id/resolve", async (req, res) => {
+router.patch("/squads/battles/:id/resolve", adminGuard, async (req, res) => {
   try {
     const id       = safeInt(req.params.id, 0, 1);
     if (!id) return res.status(400).json({ error: "ID inválido" });
@@ -340,6 +341,8 @@ router.patch("/squads/battles/:id/resolve", async (req, res) => {
 
     const [battle] = await db.select().from(ctfBattlesTable).where(eq(ctfBattlesTable.id, id));
     if (!battle) return res.status(404).json({ error: "Not found" });
+    if (battle.status === "finalizado") return res.status(400).json({ error: "El combate ya está finalizado" });
+    if (winnerId !== battle.squad1Id && winnerId !== battle.squad2Id) return res.status(400).json({ error: "El ganador debe ser una de las dos escuadras" });
 
     const [updated] = await db.update(ctfBattlesTable).set({
       winnerId, winnerName, status: "finalizado", endedAt: new Date(),

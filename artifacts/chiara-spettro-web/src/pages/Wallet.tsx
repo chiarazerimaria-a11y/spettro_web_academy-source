@@ -108,7 +108,7 @@ export default function Wallet() {
   const { user } = useAuth();
   const { toast } = useToast();
   const qc = useQueryClient();
-  const [tab, setTab] = useState<"wallet" | "leaderboard" | "earn" | "comprar" | "enviar" | "retirar">("wallet");
+  const [tab, setTab] = useState<"wallet" | "leaderboard" | "earn" | "comprar" | "enviar" | "enviarghc" | "retirar">("wallet");
 
   // Payout state
   const [payoutAmount, setPayoutAmount] = useState(5000);
@@ -216,6 +216,33 @@ export default function Wallet() {
     } finally {
       setBuyingPack(false);
       setSelectedPack(null);
+    }
+  };
+
+  const [ghcTo, setGhcTo] = useState("");
+  const [ghcAmt, setGhcAmt] = useState(100);
+  const [ghcNote, setGhcNote] = useState("");
+  const [sendingGhc, setSendingGhc] = useState(false);
+
+  const sendGhc = async () => {
+    if (!user) { toast({ title: "Inicia sesión primero", variant: "destructive" }); return; }
+    if (!ghcTo.trim()) { toast({ title: "Escribe el usuario destino", variant: "destructive" }); return; }
+    setSendingGhc(true);
+    try {
+      const r = await fetch(BASE + "api/ghc/transfer", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ toUsername: ghcTo.trim(), amount: ghcAmt, note: ghcNote || undefined }),
+      });
+      const d = await r.json();
+      if (!r.ok) throw new Error(d.error);
+      qc.invalidateQueries();
+      toast({ title: "✓ " + ghcAmt.toLocaleString() + " GHC enviados a " + d.to });
+      setGhcTo(""); setGhcNote(""); setGhcAmt(100);
+    } catch (err: any) {
+      toast({ title: "Error al enviar", description: err.message, variant: "destructive" });
+    } finally {
+      setSendingGhc(false);
     }
   };
 
@@ -378,6 +405,7 @@ export default function Wallet() {
               { key: "wallet",      label: "MI WALLET",    icon: <Coins className="h-3.5 w-3.5"/> },
               { key: "comprar",     label: "COMPRAR SPC",  icon: <ShoppingCart className="h-3.5 w-3.5"/>, highlight: true },
               { key: "enviar",      label: "ENVIAR SPC",   icon: <Send className="h-3.5 w-3.5"/> },
+              { key: "enviarghc",   label: "ENVIAR GHC",   icon: <Send className="h-3.5 w-3.5"/> },
               { key: "retirar",     label: "RETIRAR €",    icon: <Banknote className="h-3.5 w-3.5"/>, highlightGreen: true },
               { key: "leaderboard", label: "RANKING",      icon: <Trophy className="h-3.5 w-3.5"/> },
               { key: "earn",        label: "GANAR SPC",    icon: <Zap className="h-3.5 w-3.5"/> },
@@ -1151,6 +1179,53 @@ export default function Wallet() {
                 {sendingCoins
                   ? <><RefreshCw className="h-4 w-4 animate-spin mr-2"/> ENVIANDO...</>
                   : <><Send className="h-4 w-4 mr-2"/> ENVIAR {sendAmount.toLocaleString()} SPC</>}
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {/* ENVIAR GHC TAB */}
+        {tab === "enviarghc" && (
+          <div className="max-w-md mx-auto">
+            <div className="text-center mb-8">
+              <h2 className="font-mono font-bold text-xl text-purple-300 mb-2">ENVIAR GHOSTCOIN</h2>
+              <p className="text-muted-foreground text-sm font-mono">Regala GHC a otro usuario. Uso interno, no retirable.</p>
+            </div>
+            <div className="rounded-2xl border border-purple-500/20 bg-card/30 p-6 space-y-5 font-mono">
+              <div className="flex items-center justify-between text-xs text-muted-foreground mb-2">
+                <span>Tu saldo GHC</span>
+                <span className="text-purple-300 font-bold">{ghcBalance.toLocaleString()} GHC</span>
+              </div>
+              <div>
+                <label className="text-[10px] text-muted-foreground uppercase tracking-widest block mb-1.5">Usuario destino</label>
+                <input value={ghcTo} onChange={e => setGhcTo(e.target.value)} placeholder="nombre_de_usuario"
+                  className="w-full bg-[#050508] border border-purple-500/20 rounded-lg px-4 py-2.5 text-sm font-mono text-foreground outline-none focus:border-purple-400 transition-colors"/>
+              </div>
+              <div>
+                <label className="text-[10px] text-muted-foreground uppercase tracking-widest block mb-1.5">Cantidad GHC</label>
+                <div className="flex gap-2 flex-wrap mb-2">
+                  {[50, 100, 250, 500, 1000].map(v => (
+                    <button key={v} onClick={() => setGhcAmt(v)}
+                      className={"px-3 py-1.5 rounded-lg border text-xs transition-all " + (ghcAmt === v ? "border-purple-400 bg-purple-500/15 text-purple-300 font-bold" : "border-border text-muted-foreground hover:border-purple-400/50")}>
+                      {v}
+                    </button>
+                  ))}
+                </div>
+                <input type="number" value={ghcAmt} min={1} max={10000} onChange={e => setGhcAmt(parseInt(e.target.value) || 1)}
+                  className="w-full bg-[#050508] border border-purple-500/20 rounded-lg px-4 py-2.5 text-sm font-mono text-foreground outline-none focus:border-purple-400 transition-colors"/>
+              </div>
+              <div>
+                <label className="text-[10px] text-muted-foreground uppercase tracking-widest block mb-1.5">Nota (opcional)</label>
+                <input value={ghcNote} onChange={e => setGhcNote(e.target.value)} maxLength={80} placeholder="gracias, regalo..."
+                  className="w-full bg-[#050508] border border-purple-500/20 rounded-lg px-4 py-2.5 text-sm font-mono text-foreground outline-none focus:border-purple-400 transition-colors"/>
+              </div>
+              <div className="p-3 rounded-lg border border-purple-500/10 bg-purple-500/5 text-[10px] text-muted-foreground space-y-1">
+                <p>• Máximo <span className="text-purple-300">10,000 GHC</span> por envío</p>
+                <p>• Los envíos son instantáneos e irreversibles</p>
+              </div>
+              <Button onClick={sendGhc} disabled={sendingGhc || !ghcTo.trim() || ghcAmt < 1}
+                className="w-full font-mono font-bold bg-purple-500 text-black hover:bg-purple-600 h-11">
+                {sendingGhc ? "ENVIANDO..." : "ENVIAR " + ghcAmt.toLocaleString() + " GHC"}
               </Button>
             </div>
           </div>

@@ -7,6 +7,7 @@ import {
 import { eq, desc, and } from "drizzle-orm";
 import { sanitizeStr, sanitizeOptional, safeInt, rateLimit } from "../middleware/sanitize";
 import { adminGuard } from "../middleware/adminGuard";
+import { getSessionUserId } from "../middleware/requireUser";
 
 const router = Router();
 
@@ -45,13 +46,14 @@ async function credit(userId: number, amount: number, description: string, type 
 // ── P2P Transfer ─────────────────────────────────────────────────────────────
 router.post("/spc/transfer", transferLimit, async (req, res) => {
   const raw        = req.body as Record<string, unknown>;
-  const fromUserId = safeInt(raw.fromUserId, 0, 1, 1_000_000);
+  const fromUserId = getSessionUserId(req);
   const toUsername = sanitizeStr(raw.toUsername, 30);
   const amount     = safeInt(raw.amount, 0, 1, 50_000);
   const note       = sanitizeOptional(raw.note, 200);
   const roomId     = safeInt(raw.roomId, 0, 0, 1_000_000) || undefined;
 
-  if (!fromUserId || !toUsername || !amount) {
+  if (!fromUserId) { res.status(401).json({ error: "Inicia sesión de nuevo" }); return; }
+  if (!toUsername || !amount) {
     res.status(400).json({ error: "Faltan campos requeridos" }); return;
   }
 
@@ -131,15 +133,17 @@ router.post("/spc/bets/:roomId", betLimit, async (req, res) => {
   const roomId = safeInt(req.params.roomId, 0, 1);
   if (!roomId) { res.status(400).json({ error: "roomId inválido" }); return; }
   const raw             = req.body as Record<string, unknown>;
-  const creatorId       = safeInt(raw.creatorId, 0, 1, 1_000_000);
-  const creatorUsername = sanitizeStr(raw.creatorUsername, 50);
+  const creatorId = getSessionUserId(req);
+  let creatorUsername = "";
   const prediction      = sanitizeStr(raw.prediction, 200);
   const isFree          = raw.isFree === true;
   const betAmount       = isFree ? 0 : safeInt(raw.amount, 0, 0, 100_000);
 
-  if (!creatorId || !creatorUsername || !prediction) {
-    res.status(400).json({ error: "Faltan campos" }); return;
-  }
+  if (!creatorId) { res.status(401).json({ error: "Inicia sesión de nuevo" }); return; }
+  if (!prediction) { res.status(400).json({ error: "Faltan campos" }); return; }
+  const [cu] = await db.select({ username: usersTable.username }).from(usersTable).where(eq(usersTable.id, creatorId)).limit(1);
+  if (!cu) { res.status(401).json({ error: "Sesión inválida" }); return; }
+  creatorUsername = cu.username;
   if (!isFree && betAmount < 10) {
     res.status(400).json({ error: "Apuesta mínima: 10 SPC" }); return;
   }
@@ -161,9 +165,12 @@ router.post("/spc/bets/:betId/accept", betLimit, async (req, res) => {
   const betId = safeInt(req.params.betId, 0, 1);
   if (!betId) { res.status(400).json({ error: "betId inválido" }); return; }
   const raw             = req.body as Record<string, unknown>;
-  const acceptorId      = safeInt(raw.acceptorId, 0, 1, 1_000_000);
-  const acceptorUsername = sanitizeStr(raw.acceptorUsername, 50);
-  if (!acceptorId || !acceptorUsername) { res.status(400).json({ error: "Faltan campos" }); return; }
+  const acceptorId = getSessionUserId(req);
+  let acceptorUsername = "";
+  if (!acceptorId) { res.status(401).json({ error: "Inicia sesión de nuevo" }); return; }
+  const [au] = await db.select({ username: usersTable.username }).from(usersTable).where(eq(usersTable.id, acceptorId)).limit(1);
+  if (!au) { res.status(401).json({ error: "Sesión inválida" }); return; }
+  acceptorUsername = au.username;
   try {
     const [bet] = await db.select().from(roomBetsTable).where(eq(roomBetsTable.id, betId));
     if (!bet) { res.status(404).json({ error: "Apuesta no encontrada" }); return; }
@@ -183,7 +190,7 @@ router.post("/spc/bets/:betId/accept", betLimit, async (req, res) => {
   }
 });
 
-router.post("/spc/bets/:betId/resolve", async (req, res) => {
+router.post("/spc/bets/:betId/resolve", betLimit, adminGuard, async (req, res) => {
   const betId = safeInt(req.params.betId, 0, 1);
   if (!betId) { res.status(400).json({ error: "betId inválido" }); return; }
   const raw      = req.body as Record<string, unknown>;
@@ -209,11 +216,12 @@ router.post("/spc/bets/:betId/resolve", async (req, res) => {
   }
 });
 
-router.post("/spc/bets/:betId/cancel", async (req, res) => {
+router.post("/spc/bets/:betId/cancel", betLimit, async (req, res) => {
   const betId = safeInt(req.params.betId, 0, 1);
   if (!betId) { res.status(400).json({ error: "betId inválido" }); return; }
   const raw    = req.body as Record<string, unknown>;
-  const userId = safeInt(raw.userId, 0, 1, 1_000_000);
+  const userId = getSessionUserId(req);
+  if (!userId) { res.status(401).json({ error: "Inicia sesión de nuevo" }); return; }
   try {
     const [bet] = await db.select().from(roomBetsTable).where(eq(roomBetsTable.id, betId));
     if (!bet) { res.status(404).json({ error: "No encontrada" }); return; }

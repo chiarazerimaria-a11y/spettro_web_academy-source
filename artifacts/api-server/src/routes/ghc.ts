@@ -3,8 +3,9 @@ import { db } from "@workspace/db";
 import { usersTable } from "@workspace/db/schema";
 import { eq, sql } from "drizzle-orm";
 import { adminGuard } from "../middleware/adminGuard";
-import { sanitizeStr, safeInt } from "../middleware/sanitize";
-import { creditGhc, getGhcBalance } from "../ghc";
+import { sanitizeStr, sanitizeOptional, safeInt, rateLimit } from "../middleware/sanitize";
+import { getSessionUserId } from "../middleware/requireUser";
+import { creditGhc, getGhcBalance, transferGhc } from "../ghc";
 
 const router = Router();
 
@@ -47,6 +48,35 @@ router.post("/admin/ghc/grant", adminGuard, async (req, res) => {
   } catch (err) {
     req.log.error(err);
     res.status(500).json({ error: "Error al regalar GhostCoin" });
+  }
+});
+
+const ghcTransferLimit = rateLimit(20, 60_000);
+
+// POST /api/ghc/transfer — el remitente sale de la cookie firmada, nunca del body
+router.post("/ghc/transfer", ghcTransferLimit, async (req, res) => {
+  try {
+    const fromId = getSessionUserId(req);
+    if (!fromId) return res.status(401).json({ error: "Inicia sesión de nuevo" });
+    const raw = req.body as Record<string, unknown>;
+    const toUsername = sanitizeStr(raw.toUsername, 30);
+    const amount = safeInt(raw.amount, 0, 1, 10000);
+    const note = sanitizeOptional(raw.note, 200);
+    if (!toUsername || !amount) return res.status(400).json({ error: "Faltan campos requeridos" });
+
+    const [toUser] = await db.select({ id: usersTable.id, username: usersTable.username })
+      .from(usersTable).where(eq(usersTable.username, toUsername)).limit(1);
+    if (!toUser) return res.status(404).json({ error: "Usuario no encontrado" });
+    if (toUser.id === fromId) return res.status(400).json({ error: "No puedes enviarte GHC a ti mismo" });
+    const [fromUser] = await db.select({ username: usersTable.username })
+      .from(usersTable).where(eq(usersTable.id, fromId)).limit(1);
+    if (!fromUser) return res.status(401).json({ error: "Sesión inválida" });
+
+    const balance = await transferGhc(fromId, toUser.id, amount, fromUser.username, toUser.username, note ?? undefined);
+    res.json({ ok: true, to: toUser.username, amount, balance });
+  } catch (err) {
+    req.log.error(err);
+    res.status(400).json({ error: (err as Error).message ?? "Error al transferir" });
   }
 });
 

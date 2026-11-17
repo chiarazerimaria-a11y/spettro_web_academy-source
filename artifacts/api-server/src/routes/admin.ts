@@ -83,7 +83,7 @@ router.get("/admin/summary", async (_req, res) => {
 // GhostCoin stats (moneda interna, separada de los euros)
 router.get("/admin/ghc/stats", async (_req, res) => {
   const a = await db.execute(sql`SELECT COALESCE(SUM(ghc_balance), 0)::bigint AS v FROM spettro_wallets`);
-  const b = await db.execute(sql`SELECT COALESCE(SUM(amount), 0)::bigint AS v FROM ghc_transactions WHERE amount > 0`);
+  const b = await db.execute(sql`SELECT COALESCE(SUM(amount), 0)::bigint AS v FROM ghc_transactions WHERE amount > 0 AND description NOT LIKE '[envío]%'`);
   res.json({
     inCirculation: Number((a.rows[0] as { v: string }).v),
     totalCredited: Number((b.rows[0] as { v: string }).v),
