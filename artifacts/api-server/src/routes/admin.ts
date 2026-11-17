@@ -1,5 +1,5 @@
 import { Router, type IRouter } from "express";
-import { db, subscribersTable, coursesTable, paymentsTable, machinesTable, affiliatesTable, usersTable, applicationsTable, courseSubmissionsTable, labMachinesTable, ctfMissionsTable, squadsTable, tournamentRoomsTable, spettroWalletsTable, spettroTransactionsTable } from "@workspace/db";
+import { db, subscribersTable, coursesTable, paymentsTable, machinesTable, affiliatesTable, usersTable, applicationsTable, courseSubmissionsTable, labMachinesTable, ctfMissionsTable, squadsTable, tournamentRoomsTable, spettroWalletsTable, spettroTransactionsTable, ghcTransactionsTable, machinePurchasesTable } from "@workspace/db";
 import { eq, desc, sql } from "drizzle-orm";
 import { notifyEmail } from "./subscriptions";
 import {
@@ -576,6 +576,101 @@ router.delete("/admin/tournament-rooms/:id", async (req, res) => {
   const id = Number(req.params.id);
   await db.delete(tournamentRoomsTable).where(eq(tournamentRoomsTable.id, id));
   res.status(204).end();
+});
+
+// -- Usuarios (panel admin: ficha completa por usuario) --------
+router.get("/admin/users", async (_req, res) => {
+  const rows = await db
+    .select({
+      id: usersTable.id,
+      username: usersTable.username,
+      email: usersTable.email,
+      rank: usersTable.rank,
+      totalPoints: usersTable.totalPoints,
+      machinesSolved: usersTable.machinesSolved,
+      createdAt: usersTable.createdAt,
+      spcBalance: spettroWalletsTable.balance,
+      ghcBalance: spettroWalletsTable.ghcBalance,
+    })
+    .from(usersTable)
+    .leftJoin(spettroWalletsTable, eq(spettroWalletsTable.userId, usersTable.id))
+    .orderBy(desc(usersTable.createdAt));
+
+  const subs = await db.select().from(subscribersTable);
+  const subByEmail = new Map(subs.map((s) => [s.email.toLowerCase(), s]));
+
+  res.json(
+    rows.map((r) => {
+      const sub = subByEmail.get(r.email.toLowerCase());
+      return {
+        id: r.id,
+        username: r.username,
+        email: r.email,
+        rank: r.rank,
+        totalPoints: r.totalPoints,
+        machinesSolved: r.machinesSolved,
+        createdAt: r.createdAt.toISOString(),
+        spcBalance: r.spcBalance ?? 0,
+        ghcBalance: r.ghcBalance ?? 0,
+        subscriptionStatus: sub?.status ?? null,
+        subscriptionPlan: sub?.plan ?? null,
+      };
+    })
+  );
+});
+
+router.get("/admin/users/:id", async (req, res) => {
+  const id = Number(req.params.id);
+  const [user] = await db.select().from(usersTable).where(eq(usersTable.id, id)).limit(1);
+  if (!user) { res.status(404).json({ error: "usuario no encontrado" }); return; }
+
+  const [wallet] = await db.select().from(spettroWalletsTable).where(eq(spettroWalletsTable.userId, id)).limit(1);
+  const spcTx = await db
+    .select()
+    .from(spettroTransactionsTable)
+    .where(eq(spettroTransactionsTable.userId, id))
+    .orderBy(desc(spettroTransactionsTable.createdAt))
+    .limit(100);
+  const ghcTx = await db
+    .select()
+    .from(ghcTransactionsTable)
+    .where(eq(ghcTransactionsTable.userId, id))
+    .orderBy(desc(ghcTransactionsTable.createdAt))
+    .limit(100);
+  const purchases = await db
+    .select()
+    .from(machinePurchasesTable)
+    .where(eq(machinePurchasesTable.userId, id))
+    .orderBy(desc(machinePurchasesTable.createdAt));
+
+  const [sub] = await db.select().from(subscribersTable).where(eq(subscribersTable.email, user.email)).limit(1);
+
+  res.json({
+    user: {
+      id: user.id, username: user.username, email: user.email, rank: user.rank,
+      totalPoints: user.totalPoints, machinesSolved: user.machinesSolved,
+      createdAt: user.createdAt.toISOString(), avatarType: user.avatarType,
+      paymentMethodJson: user.paymentMethodJson,
+    },
+    wallet: wallet ? {
+      balance: wallet.balance, totalEarned: wallet.totalEarned, totalSpent: wallet.totalSpent,
+      ghcBalance: wallet.ghcBalance,
+    } : null,
+    subscription: sub ? {
+      status: sub.status, plan: sub.plan, joinedAt: sub.joinedAt.toISOString(), notes: sub.notes,
+    } : null,
+    spcTransactions: spcTx.map((t) => ({
+      id: t.id, amount: t.amount, type: t.type, description: t.description,
+      createdAt: t.createdAt.toISOString(),
+    })),
+    ghcTransactions: ghcTx.map((t) => ({
+      id: t.id, amount: t.amount, description: t.description, createdAt: t.createdAt.toISOString(),
+    })),
+    machinePurchases: purchases.map((p) => ({
+      id: p.id, machineId: p.machineId, price: p.price, currency: p.currency,
+      createdAt: p.createdAt.toISOString(),
+    })),
+  });
 });
 
 void sql;
