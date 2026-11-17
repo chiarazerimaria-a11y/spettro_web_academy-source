@@ -1,4 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { playCoinSound } from "@/lib/sounds";
 import CurrencyIcon from "@/components/CurrencyIcon";
 import { Link } from "wouter";
 import { PublicNav } from "@/components/PublicNav";
@@ -209,6 +210,7 @@ export default function Wallet() {
       const pack = SPC_PACKS.find(p => p.id === packId)!;
       const total = pack.spc + pack.bonus;
       qc.invalidateQueries({ queryKey: ["wallet", user.id] });
+      playCoinSound("spc-in");
       toast({ title: `✓ Pack ${pack.label} adquirido`, description: `+${total.toLocaleString()} SPC añadidos a tu wallet` });
       setTab("wallet");
     } catch (err: any) {
@@ -237,6 +239,7 @@ export default function Wallet() {
       const d = await r.json();
       if (!r.ok) throw new Error(d.error);
       qc.invalidateQueries();
+      playCoinSound("ghc-move");
       toast({ title: "✓ " + ghcAmt.toLocaleString() + " GHC enviados a " + d.to });
       setGhcTo(""); setGhcNote(""); setGhcAmt(100);
     } catch (err: any) {
@@ -262,6 +265,7 @@ export default function Wallet() {
       const d = await r.json();
       if (!r.ok) throw new Error(d.error);
       qc.invalidateQueries();
+      playCoinSound("exchange");
       toast({ title: "✓ Cambiaste " + exchangeAmount.toLocaleString() + " SPC por GHC" });
       setExchangeAmount(100);
     } catch (err: any) {
@@ -285,6 +289,7 @@ export default function Wallet() {
       const d = await r.json();
       if (!r.ok) throw new Error(d.error);
       qc.invalidateQueries({ queryKey: ["wallet", user.id] });
+      playCoinSound("spc-out");
       toast({ title: `✓ ${sendAmount.toLocaleString()} SPC enviados a ${d.to}` });
       setSendTo(""); setSendNote(""); setSendAmount(50);
     } catch (err: any) {
