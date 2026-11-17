@@ -34,6 +34,7 @@ import Machines from "@/pages/admin/Machines";
 import AdminLabMachines from "@/pages/admin/AdminLabMachines";
 import Alumnos from "@/pages/admin/Alumnos";
 import GhostCoin from "@/pages/admin/GhostCoin";
+import AdminSpcGrant from "@/pages/admin/AdminSpcGrant";
 import Instructores from "@/pages/admin/Instructores";
 import Affiliates from "@/pages/admin/Affiliates";
 import PayoutRequests from "@/pages/admin/PayoutRequests";
@@ -57,6 +58,7 @@ function AdminRouter() {
         <Route path="/admin/lab-machines" component={AdminLabMachines} />
         <Route path="/admin/alumnos" component={Alumnos} />
         <Route path="/admin/ghostcoin" component={GhostCoin} />
+        <Route path="/admin/spc-grant" component={AdminSpcGrant} />
         <Route path="/admin/instructores" component={Instructores} />
         <Route path="/admin/affiliates" component={Affiliates} />
         <Route path="/admin/payout-requests" component={PayoutRequests} />

@@ -100,6 +100,31 @@ router.post("/spc/transfer", transferLimit, async (req, res) => {
   }
 });
 
+// POST /api/admin/spc/grant — solo administración: acredita SPC manualmente (pago real recibido por fuera: Bizum/PayPal/transferencia)
+router.post("/admin/spc/grant", adminGuard, async (req, res) => {
+  try {
+    const raw = req.body as Record<string, unknown>;
+    const amount = safeInt(raw.amount, 0, 1, 1_000_000);
+    const description = sanitizeStr(raw.description, 200) || "Acreditado por administración";
+    let userId = safeInt(raw.userId, 0, 1, 1_000_000);
+    if (!userId) {
+      const username = sanitizeStr(raw.username, 30);
+      if (username) {
+        const [u] = await db.select({ id: usersTable.id }).from(usersTable).where(eq(usersTable.username, username)).limit(1);
+        userId = u?.id ?? 0;
+      }
+    }
+    if (!userId || !amount) { res.status(400).json({ error: "Indica userId (o username) y amount" }); return; }
+    const [exists] = await db.select({ id: usersTable.id }).from(usersTable).where(eq(usersTable.id, userId)).limit(1);
+    if (!exists) { res.status(404).json({ error: "Usuario no encontrado" }); return; }
+    const wallet = await credit(userId, amount, description, "purchase");
+    res.json({ ok: true, userId, granted: amount, balance: wallet.balance });
+  } catch (err: unknown) {
+    req.log.error(err);
+    res.status(500).json({ error: "Error al acreditar SPC" });
+  }
+});
+
 // ── SPC Packs ─────────────────────────────────────────────────────────────────
 const PACKS = [
   { id: "starter", label: "STARTER", spc: 1000,  eurCents: 100,  bonus: 0 },
