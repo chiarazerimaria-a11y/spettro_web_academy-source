@@ -872,7 +872,7 @@ export default function Home() {
                 </div>
                 <div className="text-sm font-mono text-secondary mb-2 uppercase tracking-widest mt-2">Oferta Lanzamiento</div>
                 <div className="text-6xl font-mono font-bold text-foreground mb-6 flex items-start justify-center gap-2">
-                  <span className="text-3xl text-muted-foreground mt-2">€</span>97
+                  <span className="text-3xl text-muted-foreground mt-2">€</span>90
                 </div>
                 <ul className="text-left space-y-3 mb-8 text-muted-foreground">
                   <li className="flex items-center gap-3"><Target className="h-4 w-4 text-primary shrink-0" /> <span>8 Módulos de contenido práctico</span></li>
@@ -881,9 +881,11 @@ export default function Home() {
                   <li className="flex items-center gap-3"><Target className="h-4 w-4 text-primary shrink-0" /> <span>Soporte directo de Chiara</span></li>
                   <li className="flex items-center gap-3"><Target className="h-4 w-4 text-primary shrink-0" /> <span>Plantillas de reporte profesional</span></li>
                 </ul>
-                <Button size="lg" className="w-full bg-primary text-background hover:bg-primary/90 font-mono font-bold h-14 glitch-hover text-lg shadow-[0_0_15px_rgba(255,77,184,0.3)]">
-                  COMPRAR EL CURSO <ArrowRight className="ml-2 h-5 w-5" />
-                </Button>
+                <Link href="/suscripcion">
+                  <Button size="lg" className="w-full bg-primary text-background hover:bg-primary/90 font-mono font-bold h-14 glitch-hover text-lg shadow-[0_0_15px_rgba(255,77,184,0.3)]">
+                    COMPRAR EL CURSO <ArrowRight className="ml-2 h-5 w-5" />
+                  </Button>
+                </Link>
                 <div className="mt-4 flex items-center justify-center gap-2 text-xs text-muted-foreground font-mono">
                   <Lock className="h-3 w-3" /> Pago 100% seguro
                 </div>
