@@ -193,9 +193,14 @@ function PlanCard({ plan, billing, onSelect }: { plan: typeof PLANS[0]; billing:
             </div>
           )}
           {!plan.free && billing === "annual" && (
-            <p className="font-mono text-[10px] text-green-400 mt-1">
-              Facturado anualmente — ahorras {((plan.priceMonthly - plan.priceAnnual) * 12).toFixed(2).replace(".", ",")}€/año
-            </p>
+            <>
+              <p className="font-mono text-xs text-foreground mt-1 font-bold">
+                Total: €{(plan.priceAnnual * 12).toFixed(2).replace(".", ",")} al año
+              </p>
+              <p className="font-mono text-[10px] text-green-400 mt-1">
+                Facturado anualmente — ahorras {((plan.priceMonthly - plan.priceAnnual) * 12).toFixed(2).replace(".", ",")}€/año
+              </p>
+            </>
           )}
           {!plan.free && billing === "monthly" && (
             <p className="font-mono text-[10px] text-muted-foreground mt-1">
