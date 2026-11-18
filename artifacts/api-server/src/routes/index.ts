@@ -21,6 +21,7 @@ import marketplaceRouter from "./marketplace";
 import lessonsRouter from "./lessons";
 import profileRouter from "./profile";
 import ghcRouter from "./ghc";
+import instructorRouter from "./instructor";
 
 const router: IRouter = Router();
 
@@ -45,6 +46,7 @@ router.use(marketplaceRouter);
 router.use(lessonsRouter);
 router.use(profileRouter);
 router.use(ghcRouter);
+router.use(instructorRouter);
 router.use(tutoringRouter);
 router.use(tutoringRouter);
 

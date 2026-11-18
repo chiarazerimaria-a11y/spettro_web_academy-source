@@ -24,7 +24,7 @@ interface UserDetail {
   user: {
     id: number; username: string; email: string; rank: string;
     totalPoints: number; machinesSolved: number; createdAt: string;
-    avatarType: string; paymentMethodJson: string | null;
+    avatarType: string; paymentMethodJson: string | null; role?: string;
   };
   wallet: { balance: number; totalEarned: number; totalSpent: number; ghcBalance: number } | null;
   subscription: { status: string; plan: string; joinedAt: string; notes: string | null } | null;
@@ -38,7 +38,7 @@ function fmtDate(iso: string) {
 }
 
 function UserDetailPanel({ userId, onClose }: { userId: number; onClose: () => void }) {
-  const { data, isLoading } = useQuery<UserDetail>({
+  const { data, isLoading, refetch } = useQuery<UserDetail>({
     queryKey: ["admin-user-detail", userId],
     queryFn: () => fetch(BASE + "api/admin/users/" + userId).then((r) => r.json()),
   });
@@ -68,6 +68,21 @@ function UserDetailPanel({ userId, onClose }: { userId: number; onClose: () => v
                   <Badge variant="outline">{data.user.rank}</Badge>
                   <Badge variant="outline">{data.user.totalPoints} pts</Badge>
                   <Badge variant="outline">{data.user.machinesSolved} resueltas</Badge>
+                  {data.user.role === "instructor" && <Badge variant="outline" className="border-purple-500/40 text-purple-300">profesor</Badge>}
+                  <button
+                    className="text-[10px] font-mono border border-primary/30 rounded px-2 text-primary hover:bg-primary/10"
+                    onClick={async () => {
+                      const next = data.user.role === "instructor" ? "student" : "instructor";
+                      await fetch(BASE + "api/admin/users/" + data.user.id + "/role", {
+                        method: "PATCH",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ role: next }),
+                      });
+                      refetch();
+                    }}
+                  >
+                    {data.user.role === "instructor" ? "Quitar rol profesor" : "Hacer profesor"}
+                  </button>
                 </div>
               </div>
               <div className="rounded-lg border border-border/30 p-4 space-y-1.5">

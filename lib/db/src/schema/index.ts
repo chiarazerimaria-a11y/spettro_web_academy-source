@@ -18,6 +18,7 @@ export const coursesTable = pgTable("courses", {
   level: text("level").notNull().default("principiante"),
   category: text("category").notNull().default("general"),
   instructor: text("instructor").notNull().default("SpettroWeb"),
+  instructorId: integer("instructor_id"),
   durationHours: integer("duration_hours").notNull().default(0),
   totalLessons: integer("total_lessons").notNull().default(0),
   videoUrl: text("video_url"),
@@ -121,6 +122,7 @@ export const usersTable = pgTable("users", {
   machinesSolved: integer("machines_solved").notNull().default(0),
   rank: text("rank").notNull().default("Rookie"),
   subscriptionTier: text("subscription_tier").notNull().default("libre"),
+  role: text("role").notNull().default("student"),
   subscriptionExpiresAt: timestamp("subscription_expires_at", { withTimezone: true }),
   paymentMethodJson: text("payment_method_json"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
@@ -514,5 +516,33 @@ export const ghcTransactionsTable = pgTable("ghc_transactions", {
   userId: integer("user_id").notNull(),
   amount: integer("amount").notNull(),
   description: text("description").notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+// ─── Exams (creados por profesores) ──────────────────────────────────────────
+export const examsTable = pgTable("exams", {
+  id: serial("id").primaryKey(),
+  courseId: integer("course_id").notNull().references(() => coursesTable.id),
+  title: text("title").notNull(),
+  passScore: integer("pass_score").notNull().default(60),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+export const examQuestionsTable = pgTable("exam_questions", {
+  id: serial("id").primaryKey(),
+  examId: integer("exam_id").notNull().references(() => examsTable.id),
+  position: integer("position").notNull().default(0),
+  question: text("question").notNull(),
+  options: text("options").notNull().default("[]"), // JSON string[]
+  correctIndex: integer("correct_index").notNull().default(0),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+export const examAttemptsTable = pgTable("exam_attempts", {
+  id: serial("id").primaryKey(),
+  examId: integer("exam_id").notNull().references(() => examsTable.id),
+  userId: integer("user_id").notNull().references(() => usersTable.id),
+  score: integer("score").notNull().default(0),
+  passed: boolean("passed").notNull().default(false),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });

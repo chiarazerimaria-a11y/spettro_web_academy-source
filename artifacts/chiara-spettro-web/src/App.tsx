@@ -22,6 +22,7 @@ import Marketplace from "@/pages/Marketplace";
 import Tutorias from "@/pages/Tutorias";
 import BattleArena from "@/pages/BattleArena";
 import Login from "@/pages/Login";
+import Instructor from "@/pages/Instructor";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 
@@ -94,6 +95,7 @@ function Router() {
       <Route path="/recursos" component={Recursos} />
       <Route path="/marketplace" component={Marketplace} />
       <Route path="/tutorias" component={Tutorias} />
+      <Route path="/profesor" component={Instructor} />
       <Route path="/batalla/:id" component={BattleArena} />
       <Route path="/admin" component={AdminRouter} />
       <Route path="/admin/:rest*" component={AdminRouter} />

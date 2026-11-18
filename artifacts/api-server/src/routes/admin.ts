@@ -650,7 +650,7 @@ router.get("/admin/users/:id", async (req, res) => {
       id: user.id, username: user.username, email: user.email, rank: user.rank,
       totalPoints: user.totalPoints, machinesSolved: user.machinesSolved,
       createdAt: user.createdAt.toISOString(), avatarType: user.avatarType,
-      paymentMethodJson: user.paymentMethodJson,
+      paymentMethodJson: user.paymentMethodJson, role: user.role,
     },
     wallet: wallet ? {
       balance: wallet.balance, totalEarned: wallet.totalEarned, totalSpent: wallet.totalSpent,
@@ -671,6 +671,16 @@ router.get("/admin/users/:id", async (req, res) => {
       createdAt: p.createdAt.toISOString(),
     })),
   });
+});
+
+router.patch("/admin/users/:id/role", async (req, res) => {
+  const id = Number(req.params.id);
+  const role = String((req.body as Record<string, unknown> | undefined)?.role ?? "");
+  if (!Number.isInteger(id) || id <= 0 || !["student", "instructor"].includes(role)) {
+    res.status(400).json({ error: "datos invalidos" }); return;
+  }
+  await db.update(usersTable).set({ role }).where(eq(usersTable.id, id));
+  res.json({ ok: true, role });
 });
 
 void sql;
