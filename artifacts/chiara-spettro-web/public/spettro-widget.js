@@ -37,14 +37,14 @@
         // SIN barra inicial = relativo a donde esté spettro-widget.js (funciona en
         // file://, en subcarpetas y en la raíz). Con barra = raíz del sitio. Con
         // http(s):// = tal cual.
-        url: 'spettro-panel-instructor.html',
+        url: '/profesor',
         color: '#8b5cf6'
       },
       // Botón del ADMIN: solo en páginas de administración (o con ?admin=1 en la URL)
       admin: {
         urls: ['admin', 'administracion', 'administración', 'gestion'],
         label: '👑 Panel de Administración',
-        url: 'spettro-panel-admin.html',
+        url: '/admin',
         color: '#ff3d8b'
       }
     },
@@ -110,7 +110,9 @@
   function open(key) {
     var p = CFG.pages[key];
     if (!p) return;
-    if (CFG.mode === 'tab') { window.open(panelUrl(key), '_blank', 'noopener'); return; }
+    var target = panelUrl(key);
+    if (target && target.charAt(0) === '/') { window.location.href = target; return; }
+    if (CFG.mode === 'tab') { window.open(target, '_blank', 'noopener'); return; }
     close(); // por si había otro
     document.body.style.overflow = 'hidden';
 
