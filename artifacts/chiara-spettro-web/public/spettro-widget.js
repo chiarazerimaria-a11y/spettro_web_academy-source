@@ -111,7 +111,15 @@
     var p = CFG.pages[key];
     if (!p) return;
     var target = panelUrl(key);
-    if (target && target.charAt(0) === '/') { window.location.href = target; return; }
+    if (target && target.charAt(0) === '/') {
+      try {
+        window.history.pushState({}, '', target);
+        window.dispatchEvent(new PopStateEvent('popstate'));
+      } catch (e) {
+        window.location.href = target;
+      }
+      return;
+    }
     if (CFG.mode === 'tab') { window.open(target, '_blank', 'noopener'); return; }
     close(); // por si había otro
     document.body.style.overflow = 'hidden';
