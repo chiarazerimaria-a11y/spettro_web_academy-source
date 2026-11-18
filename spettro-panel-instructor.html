@@ -1,0 +1,1021 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SpettroWeb ▮ Panel de Control — Profesor</title>
+<style>
+*{box-sizing:border-box}
+:root{
+--bg:#0a0a10;--bg2:#10101a;--panel:#14141f;--panel2:#191926;--line:#26263a;--line2:#33334a;
+--txt:#e8e8f2;--dim:#9a9ab0;--faint:#6a6a80;
+--acc:#ff3d8b;--violet:#8b5cf6;--cyan:#39c7e0;--ok:#3ddc97;--warn:#f5b83d;--bad:#ff5c5c;
+--mono:'JetBrains Mono','Fira Code',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+--sans:'Inter',system-ui,-apple-system,'Segoe UI',Roboto,Arial,sans-serif;
+--rad:10px}
+html,body{margin:0}
+body{background:radial-gradient(1200px 500px at 70% -10%,rgba(139,92,246,.12),transparent 60%),radial-gradient(900px 400px at 10% 110%,rgba(255,61,139,.10),transparent 55%),var(--bg);color:var(--txt);font-family:var(--sans);font-size:15px}
+::selection{background:rgba(255,61,139,.35)}
+a{color:var(--cyan)}
+code{background:#1a1a28;padding:2px 6px;border-radius:6px;font-family:var(--mono);font-size:12px;color:var(--cyan)}
+::-webkit-scrollbar{width:10px;height:10px}
+::-webkit-scrollbar-thumb{background:#26263a;border-radius:8px}
+::-webkit-scrollbar-track{background:transparent}
+.topbar{position:sticky;top:0;z-index:50;display:flex;align-items:center;gap:14px;padding:0 18px;height:58px;background:rgba(10,10,16,.88);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.logo{font-family:var(--mono);font-weight:700;font-size:17px;letter-spacing:.5px;white-space:nowrap}
+.logo b{color:var(--acc)}
+.caret{animation:blink 1.1s steps(1) infinite;color:var(--acc);margin-left:2px}
+@keyframes blink{50%{opacity:0}}
+.tagline{font-size:10px;color:var(--faint);letter-spacing:2px;margin-left:10px;font-family:var(--mono);border:1px solid var(--line2);padding:3px 8px;border-radius:6px}
+.top-right{margin-left:auto;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.saved{font-size:11px;color:var(--faint);font-family:var(--mono)}
+.sel-role{width:auto;padding:7px 10px;font-family:var(--mono);font-size:12px;background:#0d0d15;border:1px solid rgba(139,92,246,.45);border-radius:8px;color:var(--txt)}
+.app{display:grid;grid-template-columns:238px minmax(0,1fr);align-items:start}
+nav#sidenav{border-right:1px solid var(--line);padding:16px 12px;position:sticky;top:58px;height:calc(100vh - 58px);overflow:auto;min-width:0}
+.nav-item{display:flex;gap:10px;align-items:center;padding:10px 12px;border-radius:8px;color:var(--dim);cursor:pointer;font-size:14px;margin-bottom:4px;user-select:none}
+.nav-item:hover{background:var(--panel2);color:var(--txt)}
+.nav-item.active{color:var(--acc);background:rgba(255,61,139,.08)}
+.ni{width:20px;text-align:center}
+.navcount{margin-left:auto;background:#1c1c2a;color:var(--dim);padding:1px 8px;border-radius:99px;font-family:var(--mono);font-size:11px}
+.side-note{margin-top:16px;padding-top:14px;border-top:1px dashed var(--line);font-size:11px;color:var(--faint);line-height:1.7}
+main{padding:26px 30px;max-width:1180px;width:100%;margin:0 auto;min-width:0}
+.page-title{font-family:var(--mono);font-size:22px;margin:0 0 6px;letter-spacing:.5px}
+.sub{color:var(--dim);font-size:13.5px;margin:0 0 18px;line-height:1.6}
+.page-head{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;margin-bottom:18px;flex-wrap:wrap}
+.page-head .page-title{margin-bottom:4px}
+.statgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px}
+.stat{background:linear-gradient(180deg,var(--panel),var(--bg2));border:1px solid var(--line);border-radius:var(--rad);padding:16px}
+.stat .num{font-size:26px;font-family:var(--mono);color:var(--acc);font-weight:700}
+.stat .lbl{font-size:11px;color:var(--dim);text-transform:uppercase;letter-spacing:1px;margin-top:4px}
+.card{background:linear-gradient(180deg,var(--panel),var(--bg2));border:1px solid var(--line);border-radius:var(--rad);padding:18px}
+.card-h{font-family:var(--mono);font-size:14px;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.stack>*+*{margin-top:16px}
+.stack-sm>*+*{margin-top:8px}
+.btn{font-family:var(--mono);font-size:13px;padding:9px 14px;border-radius:8px;border:1px solid var(--line2);background:var(--panel2);color:var(--txt);cursor:pointer;transition:.15s;white-space:nowrap}
+.btn:hover{border-color:var(--acc);color:var(--acc)}
+.btn.primary{background:var(--acc);border-color:var(--acc);color:#fff;font-weight:700}
+.btn.primary:hover{background:#ff5d9d;color:#fff;box-shadow:0 4px 18px rgba(255,61,139,.35)}
+.btn.danger{color:var(--bad);border-color:rgba(255,92,92,.45);background:transparent}
+.btn.danger:hover{background:rgba(255,92,92,.12);color:var(--bad)}
+.btn.ghost{background:transparent}
+.btn.sm{padding:5px 10px;font-size:12px}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.row-btns{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin-bottom:18px;flex-wrap:wrap}
+.tab{padding:10px 16px;color:var(--dim);cursor:pointer;font-family:var(--mono);font-size:13px;border-bottom:2px solid transparent;margin-bottom:-1px;user-select:none}
+.tab:hover{color:var(--txt)}
+.tab.active{color:var(--acc);border-color:var(--acc)}
+.badge{display:inline-flex;align-items:center;gap:5px;font-size:11px;padding:3px 9px;border-radius:999px;border:1px solid var(--line2);color:var(--dim);font-family:var(--mono);vertical-align:middle}
+.badge.ok{color:var(--ok);border-color:rgba(61,220,151,.4)}
+.badge.warn{color:var(--warn);border-color:rgba(245,184,61,.4)}
+.badge.acc{color:var(--acc);border-color:rgba(255,61,139,.4)}
+.badge.ko{color:var(--bad);border-color:rgba(255,92,92,.4)}
+.badge.vio{color:#c4b5fd;border-color:rgba(139,92,246,.55)}
+.logline{display:flex;gap:12px;padding:10px 12px;border-bottom:1px solid var(--line);font-size:13.5px;align-items:flex-start}
+.logline:last-child{border-bottom:0}
+.logline:hover{background:rgba(255,255,255,.02)}
+.log-ts{font-family:var(--mono);font-size:11.5px;color:var(--faint);white-space:nowrap;min-width:112px;padding-top:2px}
+.log-who{font-family:var(--mono);font-size:11px;color:#c4b5fd;white-space:nowrap;padding-top:2px}
+.log-tx{flex:1;color:var(--dim);line-height:1.55;min-width:0}
+.log-tx b{color:var(--txt)}
+table.tbl{width:100%;border-collapse:collapse;font-size:14px}
+.tbl th{text-align:left;color:var(--faint);font-size:11px;text-transform:uppercase;letter-spacing:1px;padding:8px 10px;border-bottom:1px solid var(--line);font-family:var(--mono)}
+.tbl td{padding:10px;border-bottom:1px solid var(--line);vertical-align:middle}
+.tbl tr:last-child td{border-bottom:0}
+.tbl tr:hover td{background:rgba(255,255,255,.02)}
+.grid2{display:grid;grid-template-columns:300px minmax(0,1fr);gap:18px;align-items:start}
+.grid2>*{min-width:0}
+.grid-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:14px}
+.inrow{display:flex;gap:8px}
+.inrow .inp{flex:1}
+label{display:block;font-size:11px;color:#b9a8f5;margin:14px 0 6px;text-transform:uppercase;letter-spacing:.8px;font-family:var(--mono)}
+.inp{width:100%;background:#0d0d15;border:1px solid rgba(139,92,246,.45);color:var(--txt);border-radius:8px;padding:10px 12px;font-size:14px;font-family:inherit}
+.inp:focus{outline:none;border-color:var(--violet);box-shadow:0 0 0 3px rgba(139,92,246,.18)}
+textarea.inp{min-height:92px;resize:vertical;line-height:1.6}
+select.inp{appearance:auto}
+fieldset{border:0;padding:0;margin:0;min-width:0}
+.lesson-row{display:flex;gap:10px;align-items:center;padding:10px 12px;border:1px solid var(--line);border-radius:8px;background:var(--panel);cursor:pointer;margin-bottom:8px}
+.lesson-row:hover{border-color:var(--line2);background:var(--panel2)}
+.lesson-row.sel{border-color:var(--acc);background:rgba(255,61,139,.07)}
+.lesson-row.done{border-color:rgba(61,220,151,.35)}
+.lesson-row.done .idx{color:var(--ok)}
+.lesson-row .idx{font-family:var(--mono);color:var(--faint);font-size:12px;min-width:22px}
+.lt{min-width:0;flex:1}
+.lt-t{font-size:13.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ld{font-size:11px;color:var(--faint);font-family:var(--mono);margin-top:2px}
+.hint{font-size:12px;color:var(--faint);line-height:1.7;margin:8px 0 0}
+.guide{margin:6px 0 0;padding-left:20px;color:var(--dim);font-size:13.5px;line-height:1.9}
+.guide b{color:var(--txt)}
+.empty{padding:36px;text-align:center;color:var(--dim);border:1px dashed var(--line2);border-radius:10px;font-size:14px}
+.readonly-note{border:1px solid rgba(245,184,61,.4);color:var(--warn);padding:10px 14px;border-radius:10px;font-size:13px;margin-bottom:14px;background:rgba(245,184,61,.06)}
+#vidPrev{margin-top:4px}
+.prev-video{width:100%;aspect-ratio:16/9;border:0;border-radius:10px;background:#000;display:block}
+.vidbox{border:1px dashed var(--line2);border-radius:10px;padding:34px 16px;text-align:center;color:var(--faint);font-family:var(--mono);font-size:13px}
+.vidbox.bad{color:var(--warn);border-color:rgba(245,184,61,.4)}
+.qcard{border:1px solid var(--line);border-radius:10px;padding:14px;background:var(--panel)}
+.qhead{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap}
+.qopt{display:flex;align-items:center;gap:10px;margin-top:8px}
+.qopt input[type=radio]{accent-color:var(--acc);width:16px;height:16px;flex:none}
+.qopt .inp{flex:1}
+.pts{display:flex;gap:6px;align-items:center;font-size:11px;color:var(--dim);text-transform:none;margin:0}
+.pts-inp{width:64px;padding:6px 8px}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.chip{font-family:var(--mono);font-size:12px;padding:6px 12px;border-radius:99px;border:1px solid var(--line2);background:var(--panel2);color:var(--dim);cursor:pointer}
+.chip.sel{border-color:var(--acc);color:var(--acc)}
+.qa{display:block;width:100%;text-align:left;padding:10px 13px;border:1px solid var(--line2);border-radius:8px;background:var(--panel2);color:var(--txt);cursor:pointer;margin-top:8px;font-family:inherit;font-size:14px}
+.qa:hover{border-color:var(--acc)}
+.qa.sel{border-color:var(--acc);background:rgba(255,61,139,.12)}
+.qa.ok{border-color:var(--ok);color:var(--ok)}
+.qa.ko{border-color:var(--bad);color:var(--bad)}
+.qa.static{cursor:default}
+.big-score{font-size:42px;font-family:var(--mono);color:var(--acc);font-weight:700;margin:8px 0}
+.res-ok{border-color:rgba(61,220,151,.5)}
+.res-ko{border-color:rgba(255,92,92,.5)}
+.progress{height:8px;background:#1c1c2a;border-radius:99px;overflow:hidden;flex:1;min-width:120px}
+.progress i{display:block;height:100%;background:linear-gradient(90deg,var(--acc),var(--violet))}
+.prev-top{display:flex;gap:14px;align-items:center;margin:8px 0 16px;flex-wrap:wrap}
+.modal-ov{position:fixed;inset:0;background:rgba(5,5,10,.72);display:flex;align-items:center;justify-content:center;z-index:100;padding:20px}
+.modal{background:var(--panel);border:1px solid var(--line2);border-radius:14px;max-width:560px;width:100%;padding:22px;box-shadow:0 20px 60px rgba(0,0,0,.6);max-height:85vh;overflow:auto}
+[hidden]{display:none!important}
+.toast{position:fixed;bottom:22px;right:22px;background:var(--panel);border:1px solid var(--ok);color:var(--ok);padding:12px 18px;border-radius:10px;font-family:var(--mono);font-size:13px;z-index:120;opacity:0;transform:translateY(10px);transition:.25s;pointer-events:none;max-width:70vw}
+.toast.show{opacity:1;transform:none}
+.cc-head{display:flex;gap:14px;align-items:center;margin-bottom:12px;flex-wrap:wrap}
+.cc-num{font-family:var(--mono);font-size:20px;font-weight:700;color:var(--acc);border:1px solid rgba(255,61,139,.4);border-radius:10px;padding:8px 13px;background:rgba(255,61,139,.08);flex:none}
+.modrow{margin-bottom:8px}
+.modrow .idx{font-family:var(--mono);color:var(--acc);font-weight:700;min-width:26px;text-align:right;flex:none}
+.modrow .inp{flex:1}
+@media(max-width:920px){
+.app{grid-template-columns:1fr}
+nav#sidenav{position:static;height:auto;display:flex;overflow-x:auto;border-right:0;border-bottom:1px solid var(--line);padding:10px}
+.nav-item{white-space:nowrap;margin-bottom:0}
+.side-note{display:none}
+.grid2{grid-template-columns:1fr}
+main{padding:16px}
+}
+@media(max-width:560px){
+.statgrid{grid-template-columns:repeat(2,1fr)}
+.topbar{padding:8px 10px;gap:8px;flex-wrap:wrap;height:auto;min-height:58px}
+.tagline{display:none}
+.logo{font-size:15px}
+.saved{display:none}
+.sel-role{max-width:52vw;font-size:11px;padding:6px 8px}
+main{padding:12px}
+.card{padding:14px}
+}
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="logo">👻 Spettro<b>Web</b><span class="caret">▮</span><span class="tagline">PANEL DE CONTROL</span></div>
+  <div class="top-right">
+    <span class="saved" id="savedChip"></span>
+    <button class="btn sm ghost" data-act="help">❔ Ayuda</button>
+    <select id="roleSel" class="sel-role" title="Sesión actual (rol)">
+      <option value="admin">👑 Admin — BEY_67</option>
+      <option value="inst">🧑‍🏫 Instructor — chiara.z</option>
+      <option value="alumno">👨‍🎓 Alumno — alex.m</option>
+    </select>
+  </div>
+</header>
+<div class="app">
+  <nav id="sidenav"></nav>
+  <main id="main"></main>
+</div>
+<div class="modal-ov" id="modal" hidden><div class="modal" id="modalCard"></div></div>
+<div class="toast" id="toast"></div>
+<input type="file" id="fileAll" accept=".json,application/json" hidden>
+<input type="file" id="fileQuiz" accept=".json,application/json" hidden>
+<script>
+'use strict';
+/* ============ utilidades ============ */
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const uid=p=>p+Math.random().toString(36).slice(2,8)+Date.now().toString(36).slice(-4);
+const clone=o=>JSON.parse(JSON.stringify(o));
+function slugify(t){return String(t||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'')||'curso'}
+function download(name,content,mime){const b=new Blob([content],{type:mime||'application/octet-stream'});const u=URL.createObjectURL(b);const a=document.createElement('a');a.href=u;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),600)}
+let toastT=null;
+function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('show'),2400)}
+/* convierte un enlace de video en reproductor integrado */
+function embed(url){
+  if(!url)return null;
+  const u=String(url).trim();let m;
+  if(m=u.match(/(?:youtube\.com\/(?:watch\?v=|shorts\/|embed\/|live\/)|youtu\.be\/)([\w-]{6,})/))return{type:'iframe',src:'https://www.youtube.com/embed/'+m[1]};
+  if(m=u.match(/vimeo\.com\/(?:video\/)?(\d+)/))return{type:'iframe',src:'https://player.vimeo.com/video/'+m[1]};
+  if(m=u.match(/drive\.google\.com\/(?:file\/d\/|open\?id=)([\w-]+)/))return{type:'iframe',src:'https://drive.google.com/file/d/'+m[1]+'/preview'};
+  if(/\.(mp4|webm|ogg|m4v)(\?.*)?$/i.test(u))return{type:'video',src:u};
+  if(/^https?:\/\//i.test(u))return{type:'iframe',src:u};
+  return{type:'bad'};
+}
+function videoBox(url){
+  if(!url)return '<div class="vidbox">🎬 Pega arriba el enlace del video (YouTube, Vimeo, Google Drive o MP4) y se previsualiza aquí.</div>';
+  const e=embed(url);
+  if(!e||e.type==='bad')return '<div class="vidbox bad">⚠ Enlace no reconocido. Copia la URL completa desde el navegador (ej. https://www.youtube.com/watch?v=…).</div>';
+  if(e.type==='video')return '<video class="prev-video" src="'+esc(e.src)+'" controls preload="metadata"></video>';
+  return '<iframe class="prev-video" src="'+esc(e.src)+'" allow="accelerometer;autoplay;encrypted-media;picture-in-picture" allowfullscreen loading="lazy" referrerpolicy="no-referrer"></iframe>';
+}
+/* ============ datos ============ */
+const LS_KEY='spettro_panel_v1';
+function load(){try{const r=localStorage.getItem(LS_KEY);if(!r)return null;const d=JSON.parse(r);if(d&&Array.isArray(d.courses)){d.progress=d.progress||{};d.log=Array.isArray(d.log)?d.log:[];d.courses.forEach(c=>{c.price=c.price||0;c.hours=c.hours||'';c.demo_url=c.demo_url||'';c.quizzes=c.quizzes||[]});return d}return null}catch(e){return null}}
+function seed(){
+  const t=Date.now();
+  const L=(title,duration,notes,mu,ml)=>({id:uid('l'),title:title,duration:duration,video_url:'',notes:notes||'',material_url:mu||'',material_label:ml||''});
+  return {version:1,updated:t,progress:{},log:[{ts:t,who:'BEY_67',ic:'👻',tx:'Cargó los cursos de ejemplo: «Hacking CTF — chiara zerimar» y «Desarrollo Web desde cero»',cid:null}],courses:[
+    {id:uid('c'),title:'Hacking CTF — chiara zerimar',slug:'hacking-ctf-chiara-zerimar',category:'Ciberseguridad',level:'Intermedio',lang:'ES',owner:'chiara.z',published:true,
+     description:'Curso práctico orientado a CTF: metodología de pentest, laboratorio con Kali Linux, reconocimiento, explotación básica, escalada de privilegios y documentación del proceso en un write-up.',
+     price:97,hours:'20',demo_url:'',cover_url:'',created:t,updated:t,
+     lessons:[
+      L('Introducción al curso y setup','11:20','Presentación del curso, objetivos, y preparación del entorno de trabajo: máquina Kali, red de laboratorio y dónde encontrar los retos.'),
+      L('Metodología: fases de un pentest','15:10','Las cinco fases: reconocimiento, escaneo, explotación, post-explotación y reporte. Cómo estructurar tu ataque como lo haría un profesional.'),
+      L('Tu primer laboratorio: Kali Linux','20:40','Instalación y primeros pasos en Kali Linux: terminal, apt, servicios y herramientas imprescindibles.','https://www.kali.org/docs/','Documentación oficial de Kali'),
+      L('Nmap: el arte del escaneo','26:00','Escaneo de puertos y servicios: -sS, -sV, -O, scripts NSE y cómo leer los resultados sin perder detalle.','https://nmap.org/book/man.html','Manual de referencia de Nmap'),
+      L('Metasploit: tu primera explotación','30:40','Busca el exploit con search, configura las opciones y obten tu primera shell en la máquina del laboratorio.'),
+      L('Escalada de privilegios Linux básica','23:20','Enumeración del sistema: sudo -l, SUID, cron y credenciales en archivos. De usuario normal a root.'),
+      L('Tu primer write-up: documenta el proceso','12:00','Cómo escribir un write-up claro: enumeración, vector de entrada, explotación y escalada. La prueba de aprendizaje se evalúa con lo que documentes.'),
+      L('Recursos, comunidades y próximos pasos','9:40','Plataformas para practicar (CTF), comunidades donde preguntar y qué aprender después de este curso.')
+     ],
+     quizzes:[{id:uid('q'),title:'Test 1 — Metodología y reconocimiento',passing_pct:70,questions:[
+       {id:uid('p'),text:'¿Cuál es la primera fase de un pentest?',opts:['Reconocimiento','Explotación','Post-explotación','Reporte final'],correct:0,points:10},
+       {id:uid('p'),text:'¿Qué herramienta es la más usada para escanear puertos y servicios?',opts:['Wireshark','Nmap','John the Ripper','Ncat'],correct:1,points:10},
+       {id:uid('p'),text:'¿Qué tipo de escaneo de Nmap envía paquetes SYN sin completar el handshake (half-open)?',opts:['-sT (connect)','-sS (SYN stealth)','-sU (UDP)','-sn (ping sweep)'],correct:1,points:10},
+       {id:uid('p'),text:'¿En qué fase se documenta todo lo hecho para el cliente?',opts:['Escaneo','Explotación','Reporte','Reconocimiento'],correct:2,points:10}
+     ]}]
+    },
+    {id:uid('c'),title:'Desarrollo Web desde cero',slug:'desarrollo-web-desde-cero',category:'Programación',level:'Principiante',lang:'ES',owner:'BEY_67',published:false,
+     description:'Curso demo asignado al admin: HTML, CSS y publicación de tu primera página. Edítalo, cambia sus temas y videos, o bórralo libremente para probar el panel.',
+     price:29,hours:'8',demo_url:'',cover_url:'',created:t,updated:t,
+     lessons:[
+      L('Estructura de un documento HTML','12:30','DOCTYPE, head, body y etiquetas semánticas básicas: qué va en cada parte de la página.'),
+      L('CSS: selectores y modelo de caja','18:00','Selectores, clases, y cómo funcionan margin, padding y border al pintar la página.'),
+      L('Publica tu primera página','10:15','Sube tu HTML a un hosting gratuito y comparte el enlace de tu primera web.')
+     ],
+     quizzes:[{id:uid('q'),title:'Repaso HTML',passing_pct:60,questions:[
+       {id:uid('p'),text:'¿Qué etiqueta contiene el contenido visible de la página?',opts:['<head>','<body>','<meta>','<title>'],correct:1,points:10},
+       {id:uid('p'),text:'¿Qué propiedad CSS centra un bloque con ancho fijo?',opts:['text-align:center','margin: 0 auto','float:center','padding: auto'],correct:1,points:10}
+     ]}]
+    }
+  ]};
+}
+const FIRST_RUN=!localStorage.getItem(LS_KEY);
+let DB=load()||seed();
+function setSaved(t){const el=document.getElementById('savedChip');if(el)el.textContent=t}
+function saveNow(){try{DB.updated=Date.now();localStorage.setItem(LS_KEY,JSON.stringify(DB));setSaved('✔ Guardado '+new Date().toLocaleTimeString('es',{hour:'2-digit',minute:'2-digit'}))}catch(e){setSaved('⚠ No se pudo guardar')}}
+let saveT=null;
+function saveSoon(){clearTimeout(saveT);saveT=setTimeout(saveNow,350)}
+saveNow();
+/* ============ estado y roles ============ */
+const state={view:'dash',role:'admin',courseId:null,tab:'info',lessonId:null,quizId:null,preview:null,sname:'alex.m',sp:null,logf:null};
+const ROLES={admin:{name:'BEY_67'},inst:{name:'chiara.z'},alumno:{name:'alex.m'}};
+const canEdit=c=>state.role==='admin'||(state.role==='inst'&&c.owner===ROLES.inst.name);
+const visibleCourses=()=>state.role==='admin'?DB.courses:state.role==='inst'?DB.courses.filter(c=>c.owner===ROLES.inst.name):DB.courses.filter(c=>c.published);
+const pv=()=>state.role==='alumno'?state.sp:state.preview;
+const progKey=cid=>(state.sname||'alumno')+'|'+cid;
+const prog=c=>{const r=DB.progress[progKey(c.id)];return r&&r.completed?r:{completed:[],attempts:(r&&r.attempts)||[]}};
+const getCourse=id=>DB.courses.find(c=>c.id===id);
+const getLesson=(cid,lid)=>{const c=getCourse(cid);return c?c.lessons.find(l=>l.id===lid):null};
+const getQuiz=(cid,qid)=>{const c=getCourse(cid);return c&&c.quizzes?c.quizzes.find(q=>q.id===qid):null};
+const badge=(t,cls)=>'<span class="badge '+(cls||'')+'">'+t+'</span>';
+const pubBadge=c=>c.published?badge('● PUBLICADO','ok'):badge('○ BORRADOR','warn');
+const statCard=(n,l)=>'<div class="stat"><div class="num">'+n+'</div><div class="lbl">'+esc(l)+'</div></div>';
+const pad2=n=>String(n).padStart(2,'0');
+function courseNo(c){const s=[...DB.courses].sort((a,b)=>(a.created||0)-(b.created||0));return s.findIndex(x=>x.id===c.id)+1}
+function guard(c){if(!c||!canEdit(c)){toast('⛔ Este curso pertenece a otro instructor');return false}return true}
+/* ============ historial de actividad ============ */
+const whoNow=()=>state.role==='admin'?ROLES.admin.name:state.role==='inst'?ROLES.inst.name:(state.sname||'alumno');
+function logAct(ic,tx,cid){
+  DB.log=Array.isArray(DB.log)?DB.log:[];
+  DB.log.unshift({ts:Date.now(),who:whoNow(),ic:ic,tx:tx,cid:cid||null});
+  if(DB.log.length>400)DB.log.length=400;
+  saveSoon();
+}
+function fmtTs(ts){const d=new Date(ts);return pad2(d.getDate())+'/'+pad2(d.getMonth()+1)+'/'+d.getFullYear()+' '+pad2(d.getHours())+':'+pad2(d.getMinutes())}
+function logLine(e){
+  return '<div class="logline"><span class="log-ts">'+fmtTs(e.ts)+'</span><span class="log-who">'+esc(e.who||'—')+'</span><span class="log-tx">'+esc(e.ic||'•')+' '+esc(e.tx)+'</span></div>';
+}
+/* ============ render raíz ============ */
+function render(){
+  renderSidebar();
+  const v={dash:vDash,courses:vCourses,course:vCourse,quizzes:vQuizzes,data:vData,upload:vUpload,log:vLog,shome:vStudent,scat:vStudentCat,scourse:vSCourse}[state.view]||vDash;
+  document.getElementById('main').innerHTML=v();
+}
+function renderSidebar(){
+  if(state.role==='alumno'){
+    const pub=DB.courses.filter(c=>c.published);
+    const sitem=(v,ic,lb,n)=>'<div class="nav-item '+(state.view===v||(v==='scat'&&state.view==='scourse')?'active':'')+'" data-act="nav" data-arg="'+v+'"><span class="ni">'+ic+'</span><span>'+lb+'</span>'+(n!=null?'<span class="navcount">'+n+'</span>':'')+'</div>';
+    document.getElementById('sidenav').innerHTML=
+      sitem('shome','🏠','Mi panel',null)+
+      sitem('scat','📚','Catálogo',pub.length)+
+      '<div class="side-note">Sesión: <b>👨‍🎓 '+esc(state.sname)+'</b><br>Elige un curso del catálogo, sigue los temas con video, márcalos completados y haz los exámenes.</div>';
+    return;
+  }
+  const cs=visibleCourses();
+  const nL=cs.reduce((a,c)=>a+c.lessons.length,0);
+  const nQ=cs.reduce((a,c)=>a+c.quizzes.length,0);
+  const item=(v,ic,lb,n)=>'<div class="nav-item '+(state.view===v||(v==='courses'&&state.view==='course')?'active':'')+'" data-act="nav" data-arg="'+v+'"><span class="ni">'+ic+'</span><span>'+lb+'</span>'+(n!=null?'<span class="navcount">'+n+'</span>':'')+'</div>';
+  document.getElementById('sidenav').innerHTML=
+    item('dash','📊','Panel',null)+
+    item('courses','📚','Mis cursos',cs.length)+
+    item('upload','⬆️','Subir curso',null)+
+    item('quizzes','❓','Exámenes',nQ)+
+    item('log','🕓','Historial',null)+
+    item('data','💾','Datos',null)+
+    '<div class="side-note">Sesión: <b>'+(state.role==='admin'?'👑 '+ROLES.admin.name:'🧑‍🏫 '+ROLES.inst.name)+'</b><br>Los cambios se guardan automáticamente en este navegador.</div>';
+}
+/* ============ panel (dashboard) ============ */
+function vDash(){
+  const cs=visibleCourses();
+  const nL=cs.reduce((a,c)=>a+c.lessons.length,0);
+  const nQ=cs.reduce((a,c)=>a+c.quizzes.reduce((b,q)=>b+q.questions.length,0),0);
+  const nPub=cs.filter(c=>c.published).length;
+  return '<h1 class="page-title">Panel de control — Profesor</h1>'+
+  '<p class="sub">Hola <b>'+esc(state.role==='admin'?ROLES.admin.name:ROLES.inst.name)+'</b> — aquí gestionas los cursos que subes: los modificas, preparas sus temas con video y sus exámenes, y en «🕓 Historial» queda registrado todo lo que pasa, con fecha y hora. Todo se guarda solo, al instante.</p>'+
+  '<div class="statgrid">'+statCard(cs.length,'Cursos subidos')+statCard(nL,'Temas')+statCard(nQ,'Preguntas de examen')+statCard(nPub,'Publicados')+'</div>'+
+  '<div class="stack" style="margin-top:22px">'+
+    '<div class="card"><div class="card-h">📚 Mis cursos subidos — enumerados en el orden en que los subes <button class="btn sm primary" data-act="course-new">⬆️ Subir curso</button></div>'+
+    (cs.length?cs.map(c=>'<div class="dash-course"><div><b><span style="color:var(--acc)">Curso '+pad2(courseNo(c))+'</span> — '+esc(c.title)+'</b> '+pubBadge(c)+'<div class="hint">'+c.lessons.length+' temas · '+c.quizzes.length+' exámenes · '+esc(c.category||'sin categoría')+'</div></div><div class="row-btns"><button class="btn sm" data-act="course-edit" data-arg="'+c.id+'">🧭 Reconocimiento</button><button class="btn sm ghost" data-act="tab-prev" data-arg="'+c.id+'">▶ Ver como alumno</button></div></div>').join(''):'<div class="empty">Aún no hay cursos. Sube el primero con «⬆️ Subir curso».</div>')+
+    '</div>'+
+    logMini()+
+    '<div class="card"><div class="card-h">🚀 Flujo de trabajo</div><ol class="guide">'+
+      '<li><b>⬆️ Subir curso</b>: formulario estilo SUBIR_CURSO.exe — título, precio en euros, duración en horas, video demo y temario numerado (módulos 1, 2, 3…).</li>'+
+      '<li>Al enviarlo, el curso queda <b>enumerado</b> en «Mis cursos subidos»: Curso 01, Curso 02, Curso 03… según lo vayas subiendo.</li>'+
+      '<li>Abre el curso → pestaña <b>🧭 Reconocimiento</b>: ahí figuran tus temas y exámenes numerados, y lo que aún falta por completar.</li>'+
+      '<li>Desde ahí: <b>＋ Nuevo tema</b> (pega el enlace del video: YouTube, Vimeo, Drive o MP4) y <b>＋ Nuevo examen</b> (preguntas tipo test, puntos y nota mínima).</li>'+
+      '<li><b>▶ Vista previa</b>: comprueba el curso como alumno y hazte el examen antes de publicarlo.</li>'+
+    '</ol></div>'+
+  '</div>';
+}
+/* ============ lista de cursos ============ */
+function vCourses(){
+  const cs=[...visibleCourses()].sort((a,b)=>(a.created||0)-(b.created||0));
+  return '<div class="page-head"><div><h1 class="page-title">Mis cursos subidos</h1><p class="sub" style="margin-bottom:0">Enumerados en el orden en que los fuiste subiendo: Curso 01, 02, 03… Desde cada uno pasas a crear sus temas y exámenes.</p></div><button class="btn primary" data-act="course-new">⬆️ Subir curso</button></div>'+
+  '<div class="stack">'+(cs.length?cs.map(c=>'<div class="card"><div class="cc-head"><span class="cc-num">'+pad2(courseNo(c))+'</span><div class="lt"><div class="lt-t"><b>'+esc(c.title)+'</b> '+pubBadge(c)+' <span class="badge">'+esc(c.owner)+'</span></div><div class="ld">'+c.lessons.length+' temas · '+c.quizzes.length+' exámenes · '+esc(c.category||'sin categoría')+' · '+(+c.price>0?'€'+c.price:'gratis')+(c.hours?' · '+esc(c.hours)+' h':'')+'</div></div></div><div class="row-btns">'+
+    '<button class="btn sm primary" data-act="course-add-lesson" data-arg="'+c.id+'"'+(canEdit(c)?'':' disabled')+' title="Añadir un tema nuevo con su video">＋ Tema</button>'+
+    '<button class="btn sm primary" data-act="course-add-quiz" data-arg="'+c.id+'"'+(canEdit(c)?'':' disabled')+' title="Añadir un examen nuevo">＋ Examen</button>'+
+    '<button class="btn sm" data-act="course-edit" data-arg="'+c.id+'">✏️ Editar</button>'+
+    '<button class="btn sm ghost" data-act="tab-prev" data-arg="'+c.id+'" title="Ver como alumno">▶</button>'+
+    '<button class="btn sm ghost" data-act="course-dup" data-arg="'+c.id+'" title="Duplicar"'+(canEdit(c)?'':' disabled')+'>📄</button>'+
+    '<button class="btn sm ghost" data-act="course-pub" data-arg="'+c.id+'" title="Publicar / despublicar"'+(canEdit(c)?'':' disabled')+'>'+(c.published?'🔓':'🔒')+'</button>'+
+    '<button class="btn sm danger ghost" data-act="course-del" data-arg="'+c.id+'" title="Eliminar"'+(canEdit(c)?'':' disabled')+'>🗑</button>'+
+  '</div></div>').join(''):'<div class="empty">Todavía no hay cursos subidos. Pulsa «⬆️ Subir curso» para empezar.</div>')+'</div>';
+}
+/* ============ editor de curso ============ */
+function vCourse(){
+  const c=getCourse(state.courseId);
+  if(!c){state.view='courses';return vCourses()}
+  const can=canEdit(c);
+  const tabs=[['struct','🧭 Reconocimiento'],['info','ℹ️ Información'],['lessons','🎬 Temas ('+c.lessons.length+')'],['quiz','❓ Exámenes ('+c.quizzes.length+')'],['log','🕓 Historial'],['prev','▶ Vista previa']];
+  return '<div class="page-head"><div><button class="btn sm ghost" data-act="back-courses">← Mis cursos</button>'+
+  '<h1 class="page-title" style="margin:10px 0 4px"><span style="color:var(--acc)">['+pad2(courseNo(c))+']</span> '+esc(c.title)+' '+pubBadge(c)+'</h1>'+
+  '<p class="sub" style="margin-bottom:0">'+c.lessons.length+' temas · '+c.quizzes.length+' exámenes · '+(+c.price>0?'€'+c.price:'gratis')+(c.hours?' · '+esc(c.hours)+' h':'')+' · instructor '+esc(c.owner)+(can?'':' · <b>solo lectura</b> (pertenece a otro instructor)')+'</p></div>'+
+  (can?'<div class="row-btns"><button class="btn sm" data-act="course-dup" data-arg="'+c.id+'">📄 Duplicar</button><button class="btn sm" data-act="course-pub" data-arg="'+c.id+'">'+(c.published?'🔓 Despublicar':'🔒 Publicar')+'</button><button class="btn sm danger ghost" data-act="course-del" data-arg="'+c.id+'">🗑 Eliminar</button></div>':'')+
+  '</div>'+
+  (can?'':'<div class="readonly-note">👁 Este curso pertenece a otro instructor. Cambia la sesión a Admin (arriba a la derecha) para editarlo, o edita tus propios cursos.</div>')+
+  '<div class="tabs">'+tabs.map(t=>'<div class="tab '+(state.tab===t[0]?'active':'')+'" data-act="tab" data-arg="'+t[0]+'">'+t[1]+'</div>').join('')+'</div>'+
+  (state.tab==='struct'?tStruct(c,can):state.tab==='info'?tInfo(c,can):state.tab==='lessons'?tLessons(c,can):state.tab==='quiz'?tQuiz(c,can):state.tab==='log'?tLog(c):tPrev(c));
+}
+function tInfo(c,can){
+  return '<div class="card"><fieldset'+(can?'':' disabled')+'>'+
+  '<label>Título del curso</label><input class="inp" data-f="course.title" value="'+esc(c.title)+'">'+
+  '<div class="grid-row">'+
+    '<div><label>Enlace (slug)</label><div class="inrow"><input class="inp" data-f="course.slug" value="'+esc(c.slug||'')+'" placeholder="hacking-ctf"><button class="btn sm" data-act="slug-gen">generar</button></div></div>'+
+    '<div><label>Categoría</label><input class="inp" data-f="course.category" value="'+esc(c.category||'')+'" placeholder="Ciberseguridad, Programación…"></div>'+
+  '</div>'+
+  '<div class="grid-row">'+
+    '<div><label>Precio en euros (0 = gratis)</label><input class="inp" type="number" min="0" data-f="course.price" value="'+esc(c.price||0)+'"></div>'+
+    '<div><label>Duración (horas)</label><input class="inp" type="number" min="1" data-f="course.hours" value="'+esc(c.hours||'')+'" placeholder="20"></div>'+
+  '</div>'+
+  '<label>URL de video demo (YouTube / Vimeo)</label><input class="inp" data-f="course.demo_url" value="'+esc(c.demo_url||'')+'" placeholder="https://youtube.com/watch?v=…"><div id="demoPrev">'+(c.demo_url?videoBox(c.demo_url):'')+'</div>'+
+  '<div class="grid-row">'+
+    '<div><label>Nivel</label><select class="inp" data-f="course.level" data-rerender="1">'+['Principiante','Intermedio','Avanzado'].map(l=>'<option'+(c.level===l?' selected':'')+'>'+l+'</option>').join('')+'</select></div>'+
+    '<div><label>Idioma</label><select class="inp" data-f="course.lang" data-rerender="1">'+['ES','EN','IT'].map(l=>'<option'+(c.lang===l?' selected':'')+'>'+l+'</option>').join('')+'</select></div>'+
+    (state.role==='admin'
+      ?'<div><label>Instructor asignado</label><select class="inp" data-f="course.owner" data-rerender="1">'+[ROLES.admin.name,ROLES.inst.name].map(o=>'<option'+(c.owner===o?' selected':'')+'>'+esc(o)+'</option>').join('')+'</select></div>'
+      :'<div><label>Instructor asignado</label><input class="inp" value="'+esc(c.owner)+'" disabled></div>')+
+  '</div>'+
+  '<label>Descripción</label><textarea class="inp" data-f="course.description" placeholder="De qué trata el curso, a quién va dirigido, qué aprenderá el alumno…">'+esc(c.description||'')+'</textarea>'+
+  '<label>Portada (URL de imagen, opcional)</label><input class="inp" data-f="course.cover_url" value="'+esc(c.cover_url||'')+'" placeholder="https://…/imagen.jpg">'+
+  '<label style="display:flex;gap:10px;align-items:center;text-transform:none;letter-spacing:0;font-family:var(--sans);font-size:14px;color:var(--txt);margin-top:18px"><input type="checkbox" data-f="course.published" data-rerender="1"'+(c.published?' checked':'')+'> Curso publicado (visible para los alumnos)</label>'+
+  '</fieldset></div>';
+}
+/* ============ reconocimiento del curso ============ */
+function tStruct(c,can){
+  const conVideo=c.lessons.filter(l=>l.video_url).length;
+  const conNotas=c.lessons.filter(l=>l.notes).length;
+  const nPreg=c.quizzes.reduce((a,q)=>a+q.questions.length,0);
+  const sinPreg=c.quizzes.filter(q=>!q.questions.length).length;
+  const pend=[];
+  if(!c.lessons.length)pend.push('No hay temas todavía: pulsa «＋ Nuevo tema»');
+  if(c.lessons.length&&conVideo<c.lessons.length)pend.push((c.lessons.length-conVideo)+' tema(s) sin enlace de video');
+  if(c.lessons.length&&conNotas<c.lessons.length)pend.push((c.lessons.length-conNotas)+' tema(s) sin notas');
+  if(!c.quizzes.length)pend.push('No hay exámenes: pulsa «＋ Nuevo examen»');
+  if(sinPreg)pend.push(sinPreg+' examen(es) sin preguntas');
+  if(!c.published)pend.push('El curso está en borrador (no publicado)');
+  return '<div class="stack">'+
+  '<div class="card"><div class="card-h">🧭 Reconocimiento — lo que ya tienes subido</div>'+
+  '<p class="hint">Tu curso enumerado en el orden en que lo creaste (Tema 01, 02… y Examen 01, 02…). Desde aquí pasas a crear nuevos temas y exámenes.</p>'+
+  '<div class="statgrid" style="margin-top:14px">'+statCard(c.lessons.length,'Temas')+statCard(conVideo+' / '+c.lessons.length,'Con video')+statCard(c.quizzes.length,'Exámenes')+statCard(nPreg,'Preguntas')+statCard(c.lessons.filter(l=>l.material_url).length,'Materiales')+'</div>'+
+  '<div class="row-btns" style="margin-top:16px"><button class="btn primary" data-act="course-add-lesson" data-arg="'+c.id+'"'+(can?'':' disabled')+'>＋ Nuevo tema</button><button class="btn primary" data-act="course-add-quiz" data-arg="'+c.id+'"'+(can?'':' disabled')+'>＋ Nuevo examen</button><button class="btn" data-act="tab" data-arg="prev">▶ Ver como alumno</button></div>'+
+  '</div>'+
+  '<div class="card"><div class="card-h">📚 Temas ('+c.lessons.length+') <span class="hint" style="margin:0">pulsa uno para editar su video</span></div>'+
+  (c.lessons.length?c.lessons.map((l,i)=>'<div class="lesson-row" data-act="struct-lesson" data-arg="'+l.id+'"><span class="idx">T'+pad2(i+1)+'</span><div class="lt"><div class="lt-t">'+esc(l.title||'(sin título)')+'</div><div class="ld">'+esc(l.duration||'--:--')+' · '+(l.video_url?'🎬 video ✓':'⚠ sin video')+(l.notes?'':' · ⚠ sin notas')+(l.material_url?' · 📎 material':'')+'</div></div><span class="badge '+(l.video_url?'ok':'warn')+'">'+(l.video_url?'listo':'pendiente')+'</span></div>').join(''):'<div class="empty">Aún no hay temas. Pulsa «＋ Nuevo tema» y pega el video.</div>')+
+  '</div>'+
+  '<div class="card"><div class="card-h">❓ Exámenes ('+c.quizzes.length+') <span class="hint" style="margin:0">pulsa uno para editar sus preguntas</span></div>'+
+  (c.quizzes.length?c.quizzes.map((q,i)=>'<div class="lesson-row" data-act="struct-quiz" data-arg="'+q.id+'"><span class="idx">E'+pad2(i+1)+'</span><div class="lt"><div class="lt-t">'+esc(q.title||'(sin título)')+'</div><div class="ld">'+q.questions.length+' preguntas · aprueba con '+q.passing_pct+'%</div></div><span class="badge '+(q.questions.length?'ok':'warn')+'">'+(q.questions.length?'listo':'pendiente')+'</span></div>').join(''):'<div class="empty">Aún no hay exámenes. Pulsa «＋ Nuevo examen».</div>')+
+  '</div>'+
+  '<div class="card '+(pend.length?'res-ko':'res-ok')+'"><div class="card-h">'+(pend.length?'🛠 Preparación pendiente':'✅ Todo listo')+'</div>'+
+  (pend.length?'<ul class="guide" style="margin:0">'+pend.map(p=>'<li>'+esc(p)+'</li>').join('')+'</ul>':'<p class="hint" style="margin:0">Temas con video, exámenes con preguntas y curso publicado. 🎯</p>')+
+  '</div>'+
+  '</div>';
+}
+/* ============ subir curso (estilo SUBIR_CURSO.exe) ============ */
+function vUpload(){
+  if(!state.upload)state.upload={title:'',category:'',level:'Principiante',description:'',price:'',hours:'',demo:'',modules:['','','']};
+  const u=state.upload;
+  return '<div class="page-head"><div><button class="btn sm ghost" data-act="upload-cancel">← Cancelar</button>'+
+  '<h1 class="page-title" style="margin:10px 0 4px">⬆️ SUBIR_CURSO.exe</h1>'+
+  '<p class="sub" style="margin-bottom:0">Rellena el curso igual que en tu academia; al enviarlo queda <b>enumerado</b> en «Mis cursos subidos» y desde ahí creas sus temas y exámenes.</p></div>'+
+  '<span class="badge vio">'+esc(state.role==='admin'?ROLES.admin.name:ROLES.inst.name)+'</span></div>'+
+  '<div class="card"><fieldset>'+
+  '<label>Título del curso *</label><input class="inp" data-f="upload.title" value="'+esc(u.title)+'" placeholder="Ej: Pentesting Web desde Cero con OWASP Top 10">'+
+  '<div class="grid-row">'+
+    '<div><label>Categoría</label><input class="inp" data-f="upload.category" value="'+esc(u.category)+'" placeholder="Ciberseguridad, Programación…"></div>'+
+    '<div><label>Nivel</label><select class="inp" data-f="upload.level">'+['Principiante','Intermedio','Avanzado'].map(l=>'<option'+(u.level===l?' selected':'')+'>'+l+'</option>').join('')+'</select></div>'+
+  '</div>'+
+  '<label>Descripción del curso *</label><textarea class="inp" data-f="upload.description" placeholder="¿Qué aprenderán los estudiantes? ¿Qué herramientas y técnicas se cubren? ¿A quién va dirigido?">'+esc(u.description)+'</textarea>'+
+  '<div class="grid-row">'+
+    '<div><label>Precio en euros * (0 = gratis)</label><input class="inp" type="number" min="0" data-f="upload.price" value="'+esc(u.price)+'" placeholder="97"></div>'+
+    '<div><label>Duración (horas) *</label><input class="inp" type="number" min="1" data-f="upload.hours" value="'+esc(u.hours)+'" placeholder="20"></div>'+
+  '</div>'+
+  '<label>URL de video demo (YouTube / Vimeo)</label><input class="inp" data-f="upload.demo" value="'+esc(u.demo)+'" placeholder="https://youtube.com/watch?v=…"><p class="hint">Video de presentación o tráiler de 2-5 minutos. Aumenta las conversiones.</p>'+
+  '<label style="display:flex;justify-content:space-between;align-items:center;gap:10px"><span>☰ Temario / módulos</span><button class="btn sm" data-act="module-add">＋ Añadir módulo</button></label>'+
+  u.modules.map((m,i)=>'<div class="inrow modrow"><span class="idx">'+(i+1)+'.</span><input class="inp" data-f="module.'+i+'" value="'+esc(m)+'" placeholder="Módulo '+(i+1)+': Ej. Introducción al Hacking Web">'+(u.modules.length>1?'<button class="btn sm danger ghost" data-act="module-del" data-arg="'+i+'" title="Quitar módulo">🗑</button>':'')+'</div>').join('')+
+  '<p class="hint">Cada módulo se convierte en un tema numerado del curso (Tema 01, 02, 03…). Después le pegas el video de cada tema.</p>'+
+  '<div class="row-btns" style="margin-top:20px"><button class="btn primary" style="flex:1;justify-content:center" data-act="upload-send">⬆️ ENVIAR CURSO</button></div>'+
+  '<p class="hint" style="text-align:center">'+(state.role==='admin'?'Como admin, el curso se sube ya publicado.':'Como instructor, el curso se sube como borrador para revisión del admin.')+'</p>'+
+  '</fieldset></div>';
+}
+/* ============ temas ============ */
+function tLessons(c,can){
+  if(!state.lessonId||!c.lessons.find(l=>l.id===state.lessonId))state.lessonId=c.lessons[0]?c.lessons[0].id:null;
+  const l=getLesson(c.id,state.lessonId);
+  return '<div class="grid2">'+
+  '<div class="card"><div class="card-h">Temas <button class="btn sm primary" data-act="lesson-add"'+(can?'':' disabled')+'>＋ Nuevo tema</button></div>'+
+  (c.lessons.length?c.lessons.map((x,i)=>'<div class="lesson-row '+(x.id===state.lessonId?'sel':'')+'" data-act="lesson-sel" data-arg="'+x.id+'"><span class="idx">'+String(i+1).padStart(2,'0')+'</span><div class="lt"><div class="lt-t">'+esc(x.title||'(sin título)')+'</div><div class="ld">'+esc(x.duration||'--:--')+' · '+(x.video_url?'🎬 video ✓':'🎬 sin video')+(x.notes?' · 📝':'')+(x.material_url?' · 📎':'')+'</div></div></div>').join(''):'<div class="hint">Sin temas todavía. Añade el primero con «＋ Nuevo tema».</div>')+
+  '</div>'+
+  '<div class="card">'+(l?lessonForm(c,l,can):'<div class="empty">Selecciona o crea un tema.</div>')+'</div>'+
+  '</div>';
+}
+function lessonForm(c,l,can){
+  const i=c.lessons.findIndex(x=>x.id===l.id);
+  return '<fieldset'+(can?'':' disabled')+'>'+
+  '<div class="row-btns" style="justify-content:flex-end;margin-bottom:4px">'+
+    '<button class="btn sm ghost" data-act="lesson-up" data-arg="'+l.id+'"'+(i===0?' disabled':'')+'>▲ Subir</button>'+
+    '<button class="btn sm ghost" data-act="lesson-down" data-arg="'+l.id+'"'+(i===c.lessons.length-1?' disabled':'')+'>▼ Bajar</button>'+
+    '<button class="btn sm ghost" data-act="lesson-dup" data-arg="'+l.id+'">📄 Duplicar</button>'+
+    '<button class="btn sm danger ghost" data-act="lesson-del" data-arg="'+l.id+'">🗑 Eliminar</button>'+
+  '</div>'+
+  '<label>Título del tema</label><input class="inp" data-f="lesson.title" value="'+esc(l.title||'')+'">'+
+  '<div class="grid-row">'+
+    '<div><label>Duración (ej. 20:40)</label><input class="inp" data-f="lesson.duration" value="'+esc(l.duration||'')+'" placeholder="20:40"></div>'+
+    '<div><label>Enlace del video</label><input class="inp" data-f="lesson.video_url" value="'+esc(l.video_url||'')+'" placeholder="https://www.youtube.com/watch?v=…"></div>'+
+  '</div>'+
+  '<label>Vista del reproductor</label><div id="vidPrev">'+videoBox(l.video_url)+'</div>'+
+  '<p class="hint">Compatible: YouTube (watch / youtu.be / shorts), Vimeo, Google Drive y archivos directos .mp4 / .webm. Pega el enlace y el alumno verá el video integrado en la página del curso.</p>'+
+  '<label>Notas / contenido del tema</label><textarea class="inp" data-f="lesson.notes" placeholder="Apuntes, comandos, pasos a seguir…">'+esc(l.notes||'')+'</textarea>'+
+  '<div class="grid-row">'+
+    '<div><label>Material / prueba adjunta (URL)</label><input class="inp" data-f="lesson.material_url" value="'+esc(l.material_url||'')+'" placeholder="https://drive.google.com/…/practica.pdf"></div>'+
+    '<div><label>Nombre del material</label><input class="inp" data-f="lesson.material_label" value="'+esc(l.material_label||'')+'" placeholder="Práctica 1 — reconocimiento.pdf"></div>'+
+  '</div>'+
+  '</fieldset>';
+}
+/* ============ pruebas de aprendizaje ============ */
+function tQuiz(c,can){
+  if(!state.quizId||!c.quizzes.find(q=>q.id===state.quizId))state.quizId=c.quizzes[0]?c.quizzes[0].id:null;
+  const qz=getQuiz(c.id,state.quizId);
+  return '<div class="grid2">'+
+  '<div class="card"><div class="card-h">Exámenes <button class="btn sm primary" data-act="quiz-add"'+(can?'':' disabled')+'>＋ Nuevo examen</button></div>'+
+  (c.quizzes.length?c.quizzes.map(q=>'<div class="lesson-row '+(q.id===state.quizId?'sel':'')+'" data-act="quiz-sel" data-arg="'+q.id+'"><div class="lt"><div class="lt-t">'+esc(q.title||'(sin título)')+'</div><div class="ld">'+q.questions.length+' preguntas · aprueba con '+q.passing_pct+'%</div></div></div>').join(''):'<div class="hint">Sin exámenes todavía. Crea uno con «＋ Nuevo examen» o importa un JSON.</div>')+
+  '<button class="btn sm" data-act="quiz-import" style="margin-top:12px"'+(can?'':' disabled')+'>📥 Importar examen (.json)</button>'+
+  '</div>'+
+  '<div class="card">'+(qz?quizForm(c,qz,can):'<div class="empty">Selecciona o crea un examen de aprendizaje.</div>')+'</div>'+
+  '</div>';
+}
+function quizForm(c,qz,can){
+  const tot=qz.questions.reduce((a,q)=>a+(+q.points||0),0);
+  return '<fieldset'+(can?'':' disabled')+'>'+
+  '<div class="row-btns" style="justify-content:flex-end;margin-bottom:4px">'+
+    '<button class="btn sm ghost" data-act="quiz-export" data-arg="'+c.id+'|'+qz.id+'">📤 Exportar</button>'+
+    '<button class="btn sm danger ghost" data-act="quiz-del" data-arg="'+qz.id+'">🗑 Eliminar examen</button>'+
+  '</div>'+
+  '<label>Título del examen</label><input class="inp" data-f="quiz.title" value="'+esc(qz.title||'')+'">'+
+  '<label>Nota mínima para aprobar: <b id="ppVal">'+qz.passing_pct+'%</b></label>'+
+  '<input type="range" min="10" max="100" step="5" style="width:100%;accent-color:var(--acc);padding:0" data-f="quiz.passing_pct" value="'+(+qz.passing_pct||70)+'">'+
+  '<div class="hint">'+qz.questions.length+' preguntas · '+tot+' puntos en total. Cada pregunta tiene sus propios puntos.</div>'+
+  '<div class="stack" style="margin-top:14px">'+qz.questions.map((q,i)=>qCard(q,i)).join('')+'</div>'+
+  '<button class="btn primary" data-act="quiz-qadd" style="margin-top:14px">＋ Añadir pregunta</button>'+
+  '</fieldset>';
+}
+function qCard(q,i){
+  return '<div class="qcard">'+
+  '<div class="qhead"><b>Pregunta '+(i+1)+'</b><span class="row-btns"><label class="pts">puntos <input type="number" min="1" max="100" class="inp pts-inp" data-f="q.'+q.id+'.points" value="'+(+q.points||10)+'"></label><button class="btn sm danger ghost" data-act="quiz-qdel" data-arg="'+q.id+'">🗑</button></span></div>'+
+  '<textarea class="inp" data-f="q.'+q.id+'.text" placeholder="Escribe la pregunta…" style="min-height:64px">'+esc(q.text||'')+'</textarea>'+
+  q.opts.map((o,oi)=>'<div class="qopt"><input type="radio" name="cor-'+q.id+'" data-f="q.'+q.id+'.correct" value="'+oi+'" data-rerender="1"'+(q.correct===oi?' checked':'')+' title="Marcar como respuesta correcta"><input class="inp" data-f="q.'+q.id+'.opt.'+oi+'" value="'+esc(o)+'" placeholder="Opción '+String.fromCharCode(65+oi)+'">'+(q.opts.length>2?'<button class="btn sm ghost" data-act="quiz-optdel" data-arg="'+q.id+'|'+oi+'">×</button>':'')+'</div>').join('')+
+  (q.opts.length<4?'<button class="btn sm ghost" data-act="quiz-optadd" data-arg="'+q.id+'" style="margin-top:8px">＋ opción</button>':'')+
+  '</div>';
+}
+/* ============ vista previa (como alumno) ============ */
+function tPrev(c){
+  if(!c.lessons.length)return '<div class="empty">Añade temas para ver la vista previa del curso.</div>';
+  if(!state.preview||state.preview.courseId!==c.id){
+    state.preview={courseId:c.id,lessonId:c.lessons[0].id,tab:'lesson',qid:c.quizzes[0]?c.quizzes[0].id:null,started:false,done:false,answers:{}};
+  }
+  const p=state.preview;
+  const cur=c.lessons.find(l=>l.id===p.lessonId)||c.lessons[0];
+  const idx=c.lessons.findIndex(l=>l.id===cur.id);
+  const quiz=c.quizzes.find(q=>q.id===p.qid)||c.quizzes[0]||null;
+  return '<div class="card"><div class="prev-top"><b style="font-family:var(--mono)">'+esc(c.title)+'</b>'+pubBadge(c)+badge(esc(c.level||''),'acc')+badge(esc(c.lang||'ES'),'')+badge(+c.price>0?'€'+c.price:'gratis','')+(c.hours?badge(esc(c.hours)+' h',''):'')+
+  '<div class="progress"><i style="width:'+Math.round(((idx+1)/c.lessons.length)*100)+'%"></i></div><span class="hint" style="margin:0">Lección '+(idx+1)+' de '+c.lessons.length+'</span></div>'+
+  (c.description?'<p class="hint" style="margin-top:4px">'+esc(c.description)+'</p>':'')+'</div>'+
+  '<div class="grid2" style="margin-top:18px">'+
+  '<div>'+
+    '<div id="vidPrev">'+videoBox(cur.video_url)+'</div>'+
+    '<div class="tabs" style="margin-top:16px"><div class="tab '+(p.tab==='lesson'?'active':'')+'" data-act="prev-tab" data-arg="lesson">▷ Tema</div><div class="tab '+(p.tab==='notes'?'active':'')+'" data-act="prev-tab" data-arg="notes">📄 Notas</div><div class="tab '+(p.tab==='quiz'?'active':'')+'" data-act="prev-tab" data-arg="quiz">❓ Examen</div></div>'+
+    (p.tab==='lesson'
+      ?'<div class="card"><h3 style="margin:0 0 4px;font-family:var(--mono)">'+(idx+1)+'. '+esc(cur.title)+'</h3><p class="hint">⏱ '+esc(cur.duration||'—')+'</p>'+(cur.material_url?'<p class="hint" style="margin-top:12px">📎 Material: <a href="'+esc(cur.material_url)+'" target="_blank" rel="noopener">'+esc(cur.material_label||cur.material_url)+'</a></p>':'')+'</div>'
+      :p.tab==='notes'
+      ?'<div class="card">'+(cur.notes?'<p style="line-height:1.8;white-space:pre-wrap;margin:0">'+esc(cur.notes)+'</p>'+(cur.material_url?'<p class="hint" style="margin-top:12px">📎 <a href="'+esc(cur.material_url)+'" target="_blank" rel="noopener">'+esc(cur.material_label||cur.material_url)+'</a></p>':''):'<div class="empty">El instructor aún no escribió notas para esta lección.</div>')+'</div>'
+      :prevQuiz(c,quiz))+
+  '</div>'+
+  '<div><div class="card"><div class="card-h">Temas ('+c.lessons.length+')</div>'+
+  c.lessons.map((x,i)=>'<div class="lesson-row '+(x.id===cur.id?'sel':'')+'" data-act="prev-lesson" data-arg="'+x.id+'"><span class="idx">'+String(i+1).padStart(2,'0')+'</span><div class="lt"><div class="lt-t">'+esc(x.title||'(sin título)')+'</div><div class="ld">'+esc(x.duration||'--:--')+(x.video_url?' · 🎬':'')+'</div></div></div>').join('')+
+  '</div></div>'+
+  '</div>';
+}
+function prevQuiz(c,quiz){
+  const p=pv();
+  if(!quiz)return '<div class="empty">Este curso aún no tiene exámenes de aprendizaje. Créalo en la pestaña «Exámenes».</div>';
+  const tot=quiz.questions.reduce((a,q)=>a+(+q.points||0),0);
+  let html='';
+  if(c.quizzes.length>1)html+='<div class="chips">'+c.quizzes.map(q=>'<button class="chip '+(q.id===quiz.id?'sel':'')+'" data-act="prev-quiz" data-arg="'+q.id+'">'+esc(q.title)+'</button>').join('')+'</div>';
+  if(!p.started||p.qid!==quiz.id){p.qid=quiz.id;p.started=false;p.done=false;p.answers={};
+    return html+'<div class="card"><div class="card-h">❓ '+esc(quiz.title)+'</div><p class="hint" style="margin:0 0 14px">Examen de aprendizaje del curso: '+quiz.questions.length+' preguntas · '+tot+' puntos · necesitas <b>'+quiz.passing_pct+'%</b> para aprobar.</p><button class="btn primary" data-act="quiz-start">✍️ Comenzar examen</button></div>';
+  }
+  if(p.done)return html+prevResults(quiz);
+  const ans=Object.keys(p.answers).length;
+  return html+quiz.questions.map((q,i)=>'<div class="qcard"><div class="qhead"><b>'+(i+1)+'. '+esc(q.text||'(sin pregunta)')+'</b><span class="badge">'+(+q.points||10)+' pts</span></div>'+
+    q.opts.map((o,oi)=>'<button class="qa '+(p.answers[q.id]===oi?'sel':'')+'" data-act="quiz-answer" data-arg="'+q.id+'|'+oi+'">'+String.fromCharCode(65+oi)+'. '+esc(o)+'</button>').join('')+
+    '</div>').join('')+
+    '<div style="margin-top:16px"><button class="btn primary" data-act="quiz-finish"'+(ans<quiz.questions.length?' disabled':'')+'>✅ Finalizar y ver nota</button>'+
+    '<p class="hint">Respondidas '+ans+' de '+quiz.questions.length+'.</p></div>';
+}
+function quizScore(quiz,answers){
+  let got=0,tot=0;
+  quiz.questions.forEach(q=>{tot+=(+q.points||0);if(answers[q.id]===q.correct)got+=(+q.points||0)});
+  const pct=tot?Math.round(got/tot*100):0;
+  return{got:got,tot:tot,pct:pct,pass:pct>=(+quiz.passing_pct||70)};
+}
+function prevResults(quiz){
+  const s=quizScore(quiz,pv().answers);
+  return '<div class="card '+(s.pass?'res-ok':'res-ko')+'"><div class="card-h">'+(s.pass?'✅ ¡Examen superado!':'❌ Examen no superado')+'</div>'+
+  '<div class="big-score">'+s.pct+'%</div>'+
+  '<p class="hint" style="margin:0 0 14px">'+s.got+' de '+s.tot+' puntos · nota mínima '+quiz.passing_pct+'%</p>'+
+  '<div class="row-btns"><button class="btn primary" data-act="quiz-retry">🔁 Reintentar</button></div></div>'+
+  '<div class="stack" style="margin-top:16px">'+
+  quiz.questions.map((q,i)=>{const sel=pv().answers[q.id];
+    return '<div class="qcard"><div class="qhead"><b>'+(i+1)+'. '+esc(q.text)+'</b>'+(sel===q.correct?badge('correcta','ok'):badge('fallada','ko'))+'</div>'+
+    q.opts.map((o,oi)=>'<div class="qa static '+(q.correct===oi?'ok':(sel===oi?'ko':''))+'">'+String.fromCharCode(65+oi)+'. '+esc(o)+(q.correct===oi?' ✓':'')+'</div>').join('')+
+    '</div>'}).join('')+
+  '</div>';
+}
+/* ============ pruebas globales ============ */
+function vQuizzes(){
+  const rows=visibleCourses().flatMap(c=>c.quizzes.map(q=>({c:c,q:q})));
+  return '<h1 class="page-title">Exámenes de aprendizaje</h1><p class="sub">Todos los exámenes de tus cursos. Edítalos, expórtalos en JSON o pruébalos como alumno.</p>'+
+  '<div class="card">'+(rows.length?rows.map(r=>'<div class="lesson-row" style="cursor:default"><div class="lt"><div class="lt-t">'+esc(r.q.title)+'</div><div class="ld">📚 '+esc(r.c.title)+' · '+r.q.questions.length+' preguntas · aprueba con '+r.q.passing_pct+'%</div></div><div class="row-btns">'+
+  '<button class="btn sm" data-act="quiz-edit" data-arg="'+r.c.id+'|'+r.q.id+'">✏️ Editar</button>'+
+  '<button class="btn sm ghost" data-act="quiz-preview" data-arg="'+r.c.id+'|'+r.q.id+'">▶ Probar</button>'+
+  '<button class="btn sm ghost" data-act="quiz-export" data-arg="'+r.c.id+'|'+r.q.id+'" title="Exportar JSON">📤</button>'+
+  '</div></div>').join(''):'<div class="empty">No hay pruebas todavía. Se crean dentro de cada curso, en la pestaña «Pruebas».</div>')+'</div>';
+}
+/* ============ lado del alumno ============ */
+function vStudent(){
+  const pub=[...DB.courses].filter(c=>c.published).sort((a,b)=>(a.created||0)-(b.created||0));
+  const recs=pub.map(c=>({c:c,r:prog(c)}));
+  const done=recs.reduce((a,x)=>a+x.r.completed.length,0);
+  const totalT=pub.reduce((a,c)=>a+c.lessons.length,0);
+  const att=recs.flatMap(x=>x.r.attempts);
+  const passed=att.filter(a=>a.passed).length;
+  const avg=att.length?Math.round(att.reduce((a,b)=>a+b.score,0)/att.length):0;
+  return '<h1 class="page-title">Mi panel</h1>'+
+  '<p class="sub">Hola <b>'+esc(state.sname)+'</b> 👨‍🎓 — aquí tienes tu avance: temas completados, exámenes hechos y tus notas. Elige un curso y sigue aprendiendo.</p>'+
+  '<div class="statgrid">'+statCard(pub.length,'Cursos disponibles')+statCard(done+' / '+totalT,'Temas completados')+statCard(att.length,'Exámenes hechos')+statCard(passed,'Exámenes superados')+statCard(avg+'%','Nota media')+'</div>'+
+  '<div class="stack" style="margin-top:22px">'+
+  '<div class="card"><div class="card-h">👤 Tu nombre (guarda tu progreso aparte)</div><input class="inp" data-f="sname" value="'+esc(state.sname)+'" style="max-width:260px"><p class="hint">Cambia el nombre para probar con distintos alumnos: cada uno tiene su propio avance y notas guardadas.</p></div>'+
+  '<div class="card"><div class="card-h">🚀 Sigue aprendiendo</div>'+
+  (recs.length?recs.map(({c,r})=>{
+    const pct=c.lessons.length?Math.round(r.completed.length/c.lessons.length*100):0;
+    return '<div class="dash-course"><div><b>'+esc(c.title)+'</b> <span class="badge">'+esc(c.category||'')+'</span><div class="hint">'+r.completed.length+' de '+c.lessons.length+' temas completados · '+r.attempts.length+' examen(es) hecho(s)</div></div><div class="row-btns"><div class="progress"><i style="width:'+pct+'%"></i></div><span class="hint" style="margin:0">'+pct+'%</span><button class="btn sm primary" data-act="s-open" data-arg="'+c.id+'">'+(pct>0?'▶ Continuar':'▶ Empezar')+'</button></div></div>';
+  }).join(''):'<div class="empty">No hay cursos publicados todavía. El admin debe publicar uno en el panel de instructor.</div>')+
+  '</div></div>';
+}
+function vStudentCat(){
+  const pub=[...DB.courses].filter(c=>c.published).sort((a,b)=>(a.created||0)-(b.created||0));
+  return '<h1 class="page-title">Catálogo de cursos</h1><p class="sub">Los cursos ya publicados por la academia, numerados en el orden en que se subieron. Los borradores solo los ve el admin y los instructores.</p>'+
+  '<div class="stack">'+(pub.length?pub.map(c=>'<div class="card"><div class="cc-head"><span class="cc-num">'+pad2(courseNo(c))+'</span><div class="lt"><div class="lt-t"><b>'+esc(c.title)+'</b> <span class="badge acc">'+esc(c.level||'')+'</span> <span class="badge">'+esc(c.category||'')+'</span></div><div class="ld">'+c.lessons.length+' temas · '+c.quizzes.length+' exámenes · '+(+c.price>0?'€'+c.price:'gratis')+(c.hours?' · '+esc(c.hours)+' h':'')+' · instructor '+esc(c.owner)+'</div></div></div>'+
+  (c.description?'<p class="hint" style="margin:6px 0 12px">'+esc(c.description)+'</p>':'')+
+  '<div class="row-btns"><button class="btn primary" data-act="s-open" data-arg="'+c.id+'">▶ Ver curso</button></div></div>').join(''):'<div class="empty">Todavía no hay cursos publicados.</div>')+'</div>';
+}
+function vSCourse(){
+  const c=getCourse(state.sp&&state.sp.courseId);
+  if(!c){state.view='scat';return vStudentCat()}
+  if(!state.sp.lessonId||!c.lessons.find(l=>l.id===state.sp.lessonId))state.sp.lessonId=c.lessons[0]?c.lessons[0].id:null;
+  const cur=c.lessons.find(l=>l.id===state.sp.lessonId);
+  const idx=c.lessons.findIndex(l=>l.id===cur.id);
+  const r=prog(c);
+  const pct=c.lessons.length?Math.round(r.completed.length/c.lessons.length*100):0;
+  const quiz=c.quizzes.find(q=>q.id===state.sp.qid)||c.quizzes[0]||null;
+  const done=r.completed.includes(cur.id);
+  return '<div class="page-head"><div><button class="btn sm ghost" data-act="nav" data-arg="scat">← Catálogo</button>'+
+  '<h1 class="page-title" style="margin:10px 0 4px">'+esc(c.title)+'</h1>'+
+  '<p class="sub" style="margin-bottom:0">'+badge(esc(c.level||''),'acc')+badge(esc(c.lang||'ES'),'')+badge(+c.price>0?'€'+c.price:'gratis','')+(c.hours?badge(esc(c.hours)+' h',''):'')+' Tema '+(idx+1)+' de '+c.lessons.length+'</p></div>'+
+  '<div class="row-btns"><div class="progress"><i style="width:'+pct+'%"></i></div><span class="hint" style="margin:0">'+pct+'% completado</span></div></div>'+
+  '<div class="grid2">'+
+  '<div><div id="vidPrev">'+(cur.video_url?videoBox(cur.video_url):'<div class="vidbox">🎬 El instructor aún no ha publicado el video de este tema. Avanza al siguiente o trabaja con las notas.</div>')+'</div>'+
+  '<div class="tabs" style="margin-top:16px"><div class="tab '+(state.sp.tab==='lesson'?'active':'')+'" data-act="s-tab" data-arg="lesson">▷ Tema</div><div class="tab '+(state.sp.tab==='notes'?'active':'')+'" data-act="s-tab" data-arg="notes">📄 Notas</div><div class="tab '+(state.sp.tab==='quiz'?'active':'')+'" data-act="s-tab" data-arg="quiz">❓ Examen</div></div>'+
+  (state.sp.tab==='lesson'
+    ?'<div class="card"><h3 style="margin:0 0 4px;font-family:var(--mono)">'+(idx+1)+'. '+esc(cur.title)+'</h3><p class="hint">⏱ '+esc(cur.duration||'—')+'</p>'+(cur.notes?'<p style="line-height:1.8;white-space:pre-wrap;margin-top:12px;color:var(--dim)">'+esc(cur.notes)+'</p>':'')+(cur.material_url?'<p class="hint" style="margin-top:12px">📎 Material: <a href="'+esc(cur.material_url)+'" target="_blank" rel="noopener">'+esc(cur.material_label||cur.material_url)+'</a></p>':'')+
+     '<div class="row-btns" style="margin-top:16px"><button class="btn '+(done?'':'primary')+'" data-act="s-complete" data-arg="'+cur.id+'">'+(done?'✓ Completado — quitar marca':'✓ Marcar tema como completado')+'</button></div></div>'
+    :state.sp.tab==='notes'
+    ?'<div class="card">'+(cur.notes?'<p style="line-height:1.8;white-space:pre-wrap;margin:0">'+esc(cur.notes)+'</p>'+(cur.material_url?'<p class="hint" style="margin-top:12px">📎 <a href="'+esc(cur.material_url)+'" target="_blank" rel="noopener">'+esc(cur.material_label||cur.material_url)+'</a></p>':''):'<div class="empty">El instructor aún no escribió notas para este tema.</div>')+'</div>'
+    :prevQuiz(c,quiz))+
+  '</div>'+
+  '<div><div class="card"><div class="card-h">Temas ('+c.lessons.length+')</div>'+
+  c.lessons.map((x,i)=>'<div class="lesson-row '+(x.id===cur.id?'sel':'')+' '+(r.completed.includes(x.id)?'done':'')+'" data-act="s-lesson" data-arg="'+x.id+'"><span class="idx">'+(r.completed.includes(x.id)?'✓':'T')+pad2(i+1)+'</span><div class="lt"><div class="lt-t">'+esc(x.title||'(sin título)')+'</div><div class="ld">'+esc(x.duration||'--:--')+(x.video_url?' · 🎬':'')+'</div></div></div>').join('')+
+  '</div></div>'+
+  '</div>';
+}
+/* ============ historial (vistas) ============ */
+function logMini(){
+  const lines=(DB.log||[]).slice(0,5);
+  return '<div class="card"><div class="card-h">🕓 Últimos movimientos <button class="btn sm" data-act="nav" data-arg="log">Ver historial completo</button></div>'+
+  (lines.length?lines.map(e=>logLine(e)).join(''):'<div class="hint">Todavía no hay movimientos registrados.</div>')+'</div>';
+}
+function vLog(){
+  const cs=visibleCourses();
+  const f=state.logf;
+  const entries=(DB.log||[]).filter(e=>!f||e.cid===f);
+  return '<h1 class="page-title">Historial</h1><p class="sub">Todo lo que ha pasado en el panel, con fecha y hora: cursos subidos, temas creados, videos pegados, exámenes, publicaciones y la actividad de los alumnos. Se guarda con tus datos y entra en la copia de seguridad.</p>'+
+  '<div class="chips"><button class="chip '+(f?'':'sel')+'" data-act="log-f" data-arg="todos">Todo ('+(DB.log||[]).length+')</button>'+
+  cs.map(c=>'<button class="chip '+(f===c.id?'sel':'')+'" data-act="log-f" data-arg="'+c.id+'">'+pad2(courseNo(c))+' · '+esc(String(c.title).slice(0,26))+'</button>').join('')+'</div>'+
+  '<div class="card">'+(entries.length?entries.map(e=>logLine(e)).join(''):'<div class="empty">No hay movimientos registrados'+(f?' para este curso':' todavía')+'.</div>')+'</div>';
+}
+function tLog(c){
+  const entries=(DB.log||[]).filter(e=>e.cid===c.id);
+  return '<div class="card"><div class="card-h">🕓 Historial del curso '+pad2(courseNo(c))+' — «'+esc(c.title)+'»</div>'+
+  (entries.length?entries.map(e=>logLine(e)).join(''):'<div class="hint">Sin movimientos registrados para este curso todavía. Todo lo que hagas aquí (añadir temas, pegar videos, publicar…) quedará registrado con fecha y hora.</div>')+'</div>';
+}
+/* ============ datos y copia de seguridad ============ */
+function vData(){
+  let size=0;try{size=(localStorage.getItem(LS_KEY)||'').length}catch(e){}
+  return '<h1 class="page-title">Datos y copia de seguridad</h1>'+
+  '<p class="sub">Todo se guarda en este navegador (localStorage). Descarga copias para no perder nada o para pasar tus cursos a otro equipo.</p>'+
+  '<div class="statgrid">'+statCard(DB.courses.length,'Cursos')+
+  statCard(DB.courses.reduce((a,c)=>a+c.lessons.length,0),'Temas')+
+  statCard(DB.courses.reduce((a,c)=>a+c.quizzes.reduce((b,q)=>b+q.questions.length,0),0),'Preguntas de examen')+
+  statCard((size/1024).toFixed(1)+' KB','En almacenamiento')+'</div>'+
+  '<div class="stack" style="margin-top:22px">'+
+  '<div class="card"><div class="card-h">💾 Copia de seguridad</div><div class="row-btns">'+
+  '<button class="btn primary" data-act="data-export">⬇️ Descargar copia (JSON)</button>'+
+  '<button class="btn" data-act="data-import">⬆️ Importar copia</button>'+
+  '<button class="btn" data-act="data-exportjs">🧩 Descargar spettro-contenido.js</button>'+
+  '</div><p class="hint">El JSON contiene cursos, temas, enlaces de video, notas y exámenes completos. Guarda una copia de vez en cuando.</p></div>'+
+  '<div class="card"><div class="card-h">🧩 Integrar en tu sitio (spettro.onrender.com)</div><ol class="guide">'+
+  '<li>Gestiona aquí tus cursos hasta dejarlos como quieres.</li>'+
+  '<li>Pulsa «Descargar spettro-contenido.js»: se genera un archivo con <code>window.SPETTRO_DATA</code> y todos tus cursos, temas y exámenes.</li>'+
+  '<li>Copia ese archivo a la carpeta pública de tu proyecto en Render (por ejemplo <code>public/</code> o <code>static/</code>).</li>'+
+  '<li>Cárgalo en tu página antes del código que dibuja los cursos: <code>&lt;script src="/spettro-contenido.js"&gt;&lt;/script&gt;</code> y lee <code>window.SPETTRO_DATA.courses</code>.</li>'+
+  '<li>Cuando cambies cursos en el panel, vuelve a descargar el archivo y reemplázalo en Render.</li>'+
+  '</ol><p class="hint">Para que los alumnos guarden su progreso y sus notas de las pruebas en el servidor necesitas un backend con base de datos; este panel te deja el contenido ya estructurado para conectarlo.</p></div>'+
+  '<div class="card"><div class="card-h">⚠️ Zona de riesgo</div><div class="row-btns">'+
+  '<button class="btn danger ghost" data-act="data-seed">Restaurar datos de ejemplo</button>'+
+  '<button class="btn danger ghost" data-act="data-clear">🗑 Borrar todo</button>'+
+  '</div></div>'+
+  '</div>';
+}
+/* ============ modal y ayuda ============ */
+let modalCb=null;
+function confirmModal(title,msg,cb){
+  modalCb=cb;
+  document.getElementById('modalCard').innerHTML='<h3 style="margin:0 0 8px;font-family:var(--mono)">'+esc(title)+'</h3><p class="hint" style="font-size:13px;margin:0">'+esc(msg)+'</p><div class="row-btns" style="justify-content:flex-end;margin-top:18px"><button class="btn" data-act="modal-close">Cancelar</button><button class="btn danger" data-act="modal-ok">Sí, continuar</button></div>';
+  document.getElementById('modal').hidden=false;
+}
+function closeModal(){document.getElementById('modal').hidden=true;modalCb=null}
+function helpHtml(){
+  return '<h3 style="margin:0 0 10px;font-family:var(--mono)">👻 Ayuda del panel</h3><ol class="guide">'+
+  '<li><b>Autoguardado:</b> cada cambio se guarda al instante en este navegador. Usa la pestaña «Datos» para descargar una copia JSON y llevarla a otro PC.</li>'+
+  '<li><b>Historial:</b> en «🕓 Historial» (y en la pestaña de cada curso) queda registrado todo con fecha y hora: cursos subidos, temas creados, videos pegados, exámenes, publicaciones y las notas de los alumnos. Se incluye en la copia de seguridad.</li>'+
+  '<li><b>Roles:</b> arriba a la derecha alternas entre <b>Admin (BEY_67)</b>, que ve y modifica todos los cursos; <b>Instructor (chiara.z)</b>, que solo edita los suyos; y <b>Alumno (alex.m)</b>, que ve el catálogo de cursos publicados, sigue los temas, marca su progreso y hace los exámenes con notas guardadas.</li>'+
+  '<li><b>Subir curso:</b> formulario con precio en euros, duración en horas, video demo y temario numerado. Al enviarlo el curso queda enumerado en «Mis cursos subidos» (Curso 01, 02, 03…).</li>'+
+  '<li><b>Reconocimiento:</b> cada curso muestra sus temas y exámenes numerados (T01, T02… E01, E02…) con un checklist de lo que falta por completar.</li>'+
+  '<li><b>Videos:</b> en cada tema pega el enlace de YouTube / Vimeo / Google Drive / MP4; el panel lo convierte al reproductor integrado automáticamente.</li>'+
+  '<li><b>Exámenes de aprendizaje:</b> crea preguntas tipo test, marca la correcta con el círculo, define los puntos y la nota mínima. Importa y exporta cada examen en JSON y hazlo tú mismo en «Vista previa».</li>'+
+  '<li><b>Material:</b> cada tema admite un adjunto (PDF, Drive…) que el alumno verá como enlace descargable.</li>'+
+  '<li><b>Tu sitio real:</b> descarga «spettro-contenido.js» en «Datos» para integrar el contenido en spettro.onrender.com.</li>'+
+  '</ol><div class="row-btns" style="justify-content:flex-end;margin-top:16px"><button class="btn primary" data-act="help-close">Entendido</button></div>';
+}
+/* ============ acciones ============ */
+const ACTIONS={
+  nav:v=>{state.view=v;render()},
+  'log-f':a=>{state.logf=a==='todos'?null:a;render()},
+  help:()=>{document.getElementById('modalCard').innerHTML=helpHtml();document.getElementById('modal').hidden=false},
+  'help-close':closeModal,
+  'modal-close':closeModal,
+  'modal-ok':()=>{const cb=modalCb;closeModal();if(cb)cb()},
+  'course-new':()=>{
+    state.view='upload';state.upload=null;render();
+  },
+  'upload-cancel':()=>{state.upload=null;state.view='courses';render()},
+  'module-add':()=>{const u=state.upload;if(!u)return;u.modules.push('');render()},
+  'module-del':i=>{const u=state.upload;if(!u)return;u.modules.splice(+i,1);if(!u.modules.length)u.modules=[''];render()},
+  'upload-send':()=>{
+    const u=state.upload;
+    if(!u||!String(u.title).trim())return toast('⚠ Pon al menos el título del curso');
+    const mods=u.modules.map((t,i)=>String(t).trim()||('Módulo '+(i+1)));
+    const c={id:uid('c'),title:u.title.trim(),slug:slugify(u.title),category:String(u.category||'').trim()||'Sin categoría',level:u.level||'Principiante',lang:'ES',
+      owner:state.role==='admin'?ROLES.admin.name:ROLES.inst.name,
+      published:state.role==='admin',description:String(u.description||'').trim(),cover_url:'',
+      price:+u.price||0,hours:String(u.hours||'').trim(),demo_url:String(u.demo||'').trim(),
+      created:Date.now(),updated:Date.now(),
+      lessons:mods.map(t=>({id:uid('l'),title:t,duration:'',video_url:'',notes:'',material_url:'',material_label:''})),
+      quizzes:[]};
+    DB.courses.push(c);
+    const nn=courseNo(c);
+    logAct('⬆️','Subió el curso '+pad2(nn)+' — «'+c.title+'» ('+(+c.price>0?'€'+c.price:'gratis')+', '+c.lessons.length+' módulos)',c.id);
+    saveNow();
+    state.upload=null;state.view='course';state.courseId=c.id;state.tab='struct';state.lessonId=null;state.quizId=null;state.preview=null;
+    render();toast('✅ Curso subido — figura como Curso '+pad2(nn)+(state.role==='admin'?' (publicado)':' (borrador, pendiente de revisión del admin)'));
+  },
+  'struct-lesson':id=>{state.tab='lessons';state.lessonId=id;render()},
+  'struct-quiz':id=>{state.tab='quiz';state.quizId=id;render()},
+  'course-add-lesson':id=>{
+    const c=getCourse(id);if(!c)return;
+    state.view='course';state.courseId=id;state.tab='lessons';state.quizId=null;state.preview=null;
+    if(canEdit(c)){
+      const l={id:uid('l'),title:'Tema '+(c.lessons.length+1),duration:'',video_url:'',notes:'',material_url:'',material_label:''};
+      c.lessons.push(l);c.updated=Date.now();
+      logAct('🎬','Añadió el tema T'+pad2(c.lessons.length)+' — «'+l.title+'» al curso '+pad2(courseNo(c))+' «'+c.title+'»',c.id);
+      saveNow();state.lessonId=l.id;
+      toast('🎬 Tema '+c.lessons.length+' creado — pega el enlace del video');
+    }else{state.lessonId=null;toast('⛔ Solo puedes añadir temas a tus propios cursos')}
+    render();
+  },
+  'course-add-quiz':id=>{
+    const c=getCourse(id);if(!c)return;
+    state.view='course';state.courseId=id;state.tab='quiz';state.lessonId=null;state.preview=null;
+    if(canEdit(c)){
+      const q={id:uid('q'),title:'Examen '+(c.quizzes.length+1),passing_pct:70,questions:[{id:uid('p'),text:'',opts:['','',''],correct:0,points:10}]};
+      c.quizzes.push(q);c.updated=Date.now();
+      logAct('❓','Creó el examen E'+pad2(c.quizzes.length)+' — «'+q.title+'» en el curso '+pad2(courseNo(c))+' «'+c.title+'»',c.id);
+      saveNow();state.quizId=q.id;
+      toast('❓ Examen creado — añade preguntas y marca la correcta');
+    }else{state.quizId=null;toast('⛔ Solo puedes añadir exámenes a tus propios cursos')}
+    render();
+  },
+  'course-edit':id=>{const c=getCourse(id);if(!c)return;state.view='course';state.courseId=id;state.tab='struct';state.lessonId=null;state.quizId=null;state.preview=null;render()},
+  'tab-prev':id=>{const c=getCourse(id);if(!c)return;state.view='course';state.courseId=id;state.tab='prev';state.lessonId=null;state.quizId=null;state.preview=null;render()},
+  'back-courses':()=>{state.view='courses';render()},
+  'course-dup':id=>{
+    const c=getCourse(id);if(!c||!guard(c))return;
+    const d=clone(c);d.id=uid('c');d.title=c.title+' (copia)';d.published=false;d.created=Date.now();d.updated=Date.now();
+    d.lessons.forEach(l=>l.id=uid('l'));d.quizzes.forEach(q=>{q.id=uid('q');q.questions.forEach(p=>p.id=uid('p'))});
+    DB.courses.splice(DB.courses.indexOf(c)+1,0,d);
+    logAct('📄','Duplicó el curso '+pad2(courseNo(c))+' «'+c.title+'» como «'+d.title+'» (borrador)',d.id);
+    saveNow();render();toast('📄 Curso duplicado (como borrador)');
+  },
+  'course-del':id=>{
+    const c=getCourse(id);if(!c||!guard(c))return;
+    const nn=courseNo(c),tt=c.title,nc=c.lessons.length,nq=c.quizzes.length;
+    confirmModal('Eliminar curso','«'+c.title+'» se eliminará con sus '+nc+' temas y '+nq+' exámenes. Esta acción no se puede deshacer.',()=>{DB.courses.splice(DB.courses.indexOf(c),1);logAct('🗑','Eliminó el curso '+pad2(nn)+' — «'+tt+'» (con '+nc+' temas y '+nq+' exámenes)',null);saveNow();state.view='courses';state.courseId=null;render();toast('🗑 Curso eliminado')});
+  },
+  'course-pub':id=>{const c=getCourse(id);if(!c||!guard(c))return;c.published=!c.published;c.updated=Date.now();logAct(c.published?'🔓':'🔒',(c.published?'Publicó':'Despublicó')+' el curso '+pad2(courseNo(c))+' — «'+c.title+'»',c.id);saveNow();render();toast(c.published?'🔓 Curso publicado':'🔒 Curso pasado a borrador')},
+  'slug-gen':()=>{const c=getCourse(state.courseId);if(!c||!guard(c))return;c.slug=slugify(c.title);saveNow();render()},
+  'tab':a=>{state.tab=a;render()},
+  'lesson-add':()=>{
+    const c=getCourse(state.courseId);if(!c||!guard(c))return;
+    const l={id:uid('l'),title:'Tema '+(c.lessons.length+1),duration:'',video_url:'',notes:'',material_url:'',material_label:''};
+    c.lessons.push(l);c.updated=Date.now();
+    logAct('🎬','Añadió el tema T'+pad2(c.lessons.length)+' — «'+l.title+'» al curso '+pad2(courseNo(c))+' «'+c.title+'»',c.id);
+    saveNow();state.lessonId=l.id;render();toast('🎬 Tema añadido — pega el enlace del video');
+  },
+  'lesson-sel':id=>{state.lessonId=id;render()},
+  'lesson-up':id=>{const c=getCourse(state.courseId);if(!c||!guard(c))return;const i=c.lessons.findIndex(l=>l.id===id);if(i>0){const t=c.lessons[i-1];c.lessons[i-1]=c.lessons[i];c.lessons[i]=t;c.updated=Date.now();saveNow();render()}},
+  'lesson-down':id=>{const c=getCourse(state.courseId);if(!c||!guard(c))return;const i=c.lessons.findIndex(l=>l.id===id);if(i>=0&&i<c.lessons.length-1){const t=c.lessons[i+1];c.lessons[i+1]=c.lessons[i];c.lessons[i]=t;c.updated=Date.now();saveNow();render()}},
+  'lesson-dup':id=>{
+    const c=getCourse(state.courseId);if(!c||!guard(c))return;
+    const i=c.lessons.findIndex(l=>l.id===id);if(i<0)return;
+    const d=clone(c.lessons[i]);d.id=uid('l');d.title=c.lessons[i].title+' (copia)';
+    c.lessons.splice(i+1,0,d);c.updated=Date.now();
+    logAct('📄','Duplicó el tema «'+d.title+'» en «'+c.title+'»',c.id);
+    saveNow();state.lessonId=d.id;render();
+  },
+  'lesson-del':id=>{
+    const c=getCourse(state.courseId);if(!c||!guard(c))return;
+    const l=getLesson(c.id,id);if(!l)return;
+    const lt=l.title||'sin título';
+    confirmModal('Eliminar lección','«'+lt+'» se quitará del curso.',()=>{c.lessons=c.lessons.filter(x=>x.id!==id);if(state.lessonId===id)state.lessonId=null;c.updated=Date.now();logAct('🗑','Eliminó el tema «'+lt+'» de «'+c.title+'»',c.id);saveNow();render();toast('🗑 Tema eliminado')});
+  },
+  'quiz-add':()=>{
+    const c=getCourse(state.courseId);if(!c||!guard(c))return;
+    const q={id:uid('q'),title:'Examen '+(c.quizzes.length+1),passing_pct:70,questions:[{id:uid('p'),text:'',opts:['','',''],correct:0,points:10}]};
+    c.quizzes.push(q);c.updated=Date.now();
+    logAct('❓','Creó el examen E'+pad2(c.quizzes.length)+' — «'+q.title+'» en el curso '+pad2(courseNo(c))+' «'+c.title+'»',c.id);
+    saveNow();state.quizId=q.id;render();toast('❓ Examen creado — añade preguntas y marca la correcta');
+  },
+  'quiz-sel':id=>{state.quizId=id;render()},
+  'quiz-del':id=>{
+    const c=getCourse(state.courseId);if(!c||!guard(c))return;
+    const q=getQuiz(c.id,id);if(!q)return;
+    const qt=q.title||'sin título';
+    confirmModal('Eliminar examen','«'+qt+'» y sus '+q.questions.length+' preguntas se eliminarán.',()=>{c.quizzes=c.quizzes.filter(x=>x.id!==id);if(state.quizId===id)state.quizId=null;c.updated=Date.now();logAct('🗑','Eliminó el examen «'+qt+'» de «'+c.title+'»',c.id);saveNow();render();toast('🗑 Examen eliminado')});
+  },
+  'quiz-qadd':()=>{
+    const c=getCourse(state.courseId);if(!c||!guard(c))return;
+    const qz=getQuiz(c.id,state.quizId);if(!qz)return;
+    qz.questions.push({id:uid('p'),text:'',opts:['','',''],correct:0,points:10});c.updated=Date.now();
+    logAct('➕','Añadió la pregunta '+qz.questions.length+' al examen «'+qz.title+'» de «'+c.title+'»',c.id);
+    saveNow();render();
+  },
+  'quiz-qdel':id=>{
+    const c=getCourse(state.courseId);if(!c||!guard(c))return;
+    const qz=getQuiz(c.id,state.quizId);if(!qz)return;
+    if(qz.questions.length<=1)return toast('⚠ La prueba necesita al menos 1 pregunta');
+    qz.questions=qz.questions.filter(x=>x.id!==id);c.updated=Date.now();saveNow();render();
+  },
+  'quiz-optadd':id=>{
+    const c=getCourse(state.courseId);if(!c||!guard(c))return;
+    const qz=getQuiz(c.id,state.quizId);if(!qz)return;
+    const q=qz.questions.find(x=>x.id===id);if(!q||q.opts.length>=4)return;
+    q.opts.push('');c.updated=Date.now();saveNow();render();
+  },
+  'quiz-optdel':a=>{
+    const c=getCourse(state.courseId);if(!c||!guard(c))return;
+    const qz=getQuiz(c.id,state.quizId);if(!qz)return;
+    const[id,oi]=a.split('|');const q=qz.questions.find(x=>x.id===id);if(!q||q.opts.length<=2)return;
+    const k=+oi;q.opts.splice(k,1);
+    if(q.correct===k)q.correct=0;else if(q.correct>k)q.correct=q.correct-1;
+    c.updated=Date.now();saveNow();render();
+  },
+  'quiz-export':a=>{
+    const[id1,id2]=a.split('|');
+    const c=getCourse(id2?id1:state.courseId);const qz=getQuiz(c?id1:state.courseId,id2||id1);
+    if(!c||!qz)return;
+    download('prueba-'+slugify(qz.title)+'.json',JSON.stringify({title:qz.title,passing_pct:+qz.passing_pct||70,questions:qz.questions.map(q=>({text:q.text,options:q.opts,correct:q.correct,points:+q.points||10}))},null,2),'application/json');
+    toast('📤 Prueba exportada en JSON');
+  },
+  'quiz-import':()=>{const c=getCourse(state.courseId);if(!c||!guard(c))return;document.getElementById('fileQuiz').click()},
+  'quiz-edit':a=>{const[cid,qid]=a.split('|');if(!getCourse(cid))return;state.view='course';state.courseId=cid;state.tab='quiz';state.quizId=qid;state.lessonId=null;state.preview=null;render()},
+  'quiz-preview':a=>{const[cid,qid]=a.split('|');const c=getCourse(cid);if(!c)return;state.view='course';state.courseId=cid;state.tab='prev';state.lessonId=null;state.preview=null;render();state.preview.qid=qid;state.preview.tab='quiz';render()},
+  'prev-lesson':id=>{const p=state.preview;if(!p)return;p.lessonId=id;p.tab='lesson';render()},
+  'prev-tab':a=>{const p=state.preview;if(!p)return;p.tab=a;render()},
+  'prev-quiz':id=>{const p=state.preview;if(!p)return;p.qid=id;p.started=false;p.done=false;p.answers={};render()},
+  's-open':id=>{
+    const c=getCourse(id);
+    if(!c||!c.published){toast('⛔ Ese curso no está publicado');return}
+    state.view='scourse';
+    state.sp={courseId:id,lessonId:c.lessons[0]?c.lessons[0].id:null,tab:'lesson',qid:c.quizzes[0]?c.quizzes[0].id:null,started:false,done:false,answers:{}};
+    render();
+  },
+  's-lesson':id=>{if(!state.sp)return;state.sp.lessonId=id;state.sp.tab='lesson';render()},
+  's-tab':a=>{if(!state.sp)return;state.sp.tab=a;render()},
+  's-complete':id=>{
+    if(!state.sp)return;
+    const key=progKey(state.sp.courseId);
+    const rec=DB.progress[key]||(DB.progress[key]={completed:[],attempts:[]});
+    if(!Array.isArray(rec.completed))rec.completed=[];
+    const i=rec.completed.indexOf(id);
+    const cc=getCourse(state.sp.courseId);
+    if(cc){
+      const li=cc.lessons.findIndex(x=>x.id===id);
+      if(li>=0)logAct(i>=0?'↩':'🎓',state.sname+(i>=0?' quitó la marca del tema T'+pad2(li+1)+' — «'+cc.lessons[li].title+'»':' completó el tema T'+pad2(li+1)+' — «'+cc.lessons[li].title+'» de «'+cc.title+'»'),cc.id);
+    }
+    if(i>=0){rec.completed.splice(i,1);toast('↩ Marca de completado quitada')}
+    else{rec.completed.push(id);toast('✅ Tema completado — ¡sigue así!')}
+    saveNow();render();
+  },
+  'quiz-start':()=>{const p=pv();if(!p)return;p.started=true;p.done=false;p.answers={};render()},
+  'quiz-answer':a=>{const p=pv();if(!p)return;const[qid,oi]=a.split('|');p.answers[qid]=+oi;render()},
+  'quiz-finish':()=>{
+    const p=pv();if(!p)return;
+    p.done=true;
+    if(state.role==='alumno'){
+      const c=getCourse(p.courseId),q=getQuiz(p.courseId,p.qid);
+      if(c&&q){
+        const s=quizScore(q,p.answers);
+        const key=progKey(c.id);
+        const rec=DB.progress[key]||(DB.progress[key]={completed:[],attempts:[]});
+        if(!Array.isArray(rec.attempts))rec.attempts=[];
+        rec.attempts.push({qid:q.id,title:q.title,score:s.pct,passed:s.pass,date:Date.now()});
+        logAct('🧪',state.sname+' hizo el examen «'+q.title+'» de «'+c.title+'»: '+s.pct+'% '+(s.pass?'— APROBADO ✅':'— no aprobado'),c.id);
+        saveNow();
+        toast(s.pass?'✅ Examen superado: '+s.pct+'% 🎉':'❌ '+s.pct+'% — necesitas '+q.passing_pct+'%, puedes reintentarlo');
+      }
+    }
+    render();
+  },
+  'quiz-retry':()=>{const p=pv();if(!p)return;p.started=true;p.done=false;p.answers={};render()},
+  'data-export':()=>{logAct('💾','Descargó una copia de seguridad (JSON) con '+DB.courses.length+' cursos');saveNow();download('spettro-backup.json',JSON.stringify(DB,null,2),'application/json');toast('⬇️ Copia descargada')},
+  'data-import':()=>{document.getElementById('fileAll').click()},
+  'data-exportjs':()=>{
+    logAct('🧩','Generó spettro-contenido.js para integrar los cursos en la web');saveNow();
+    const js='// Generado por el Panel de Control de SpettroWeb ('+new Date().toISOString()+')\n// Cárgalo antes de tu app y lee window.SPETTRO_DATA.courses\nwindow.SPETTRO_DATA='+JSON.stringify(DB,null,2)+';\n';
+    download('spettro-contenido.js',js,'text/javascript');toast('🧩 Archivo de integración descargado');
+  },
+  'data-seed':()=>confirmModal('Restaurar datos de ejemplo','Se reemplazará TODO lo que hay ahora por los 2 cursos de ejemplo. Si quieres conservarlos, antes descarga una copia en JSON.',()=>{DB=seed();saveNow();state.view='dash';state.courseId=null;render();toast('👻 Datos de ejemplo restaurados')}),
+  'data-clear':()=>confirmModal('Borrar todo','Se eliminarán todos los cursos, temas y exámenes guardados en este navegador. Esta acción no se puede deshacer.',()=>{DB={version:1,updated:Date.now(),progress:{},log:[],courses:[]};logAct('🗑','Borró todos los datos del panel');saveNow();state.view='dash';state.courseId=null;render();toast('🗑 Datos borrados')})
+};
+/* ============ importación de archivos ============ */
+function handleAllImport(file){
+  if(!file)return;
+  const r=new FileReader();
+  r.onload=()=>{
+    let d=null;try{d=JSON.parse(r.result)}catch(e){d=null}
+    if(!d||!Array.isArray(d.courses)){toast('⚠ Archivo JSON no válido');return}
+    d.log=Array.isArray(d.log)?d.log:[];
+    DB=d;
+    logAct('📦','Importó una copia de seguridad ('+DB.courses.length+' cursos)',null);
+    saveNow();state.view='dash';state.courseId=null;render();toast('📦 Copia importada ('+DB.courses.length+' cursos)');
+  };
+  r.readAsText(file);
+}
+function handleQuizImport(file){
+  if(!file)return;
+  const c=getCourse(state.courseId);
+  if(!c||!guard(c))return;
+  const r=new FileReader();
+  r.onload=()=>{
+    let d=null;try{d=JSON.parse(r.result)}catch(e){d=null}
+    const qs=d&&Array.isArray(d.questions)?d.questions:null;
+    if(!qs){toast('⚠ Formato esperado: {"title":…,"passing_pct":…,"questions":[{"text","options","correct","points"}]}');return}
+    const q={id:uid('q'),title:d.title||file.name.replace(/\.json$/i,''),passing_pct:+d.passing_pct||70,
+      questions:qs.map(x=>({id:uid('p'),text:String(x.text||''),opts:(x.options||x.opts||['','','']).map(String),correct:Math.max(0,Math.min((x.options||x.opts||[]).length-1,+(x.correct||0))),points:+x.points||10}))};
+    c.quizzes.push(q);c.updated=Date.now();
+    logAct('📥','Importó el examen «'+q.title+'» ('+q.questions.length+' preguntas) en «'+c.title+'»',c.id);
+    saveNow();state.tab='quiz';state.quizId=q.id;render();toast('📥 Prueba «'+q.title+'» importada');
+  };
+  r.readAsText(file);
+}
+/* ============ eventos ============ */
+document.addEventListener('click',e=>{
+  const el=e.target.closest('[data-act]');
+  if(!el||el.disabled)return;
+  const f=ACTIONS[el.dataset.act];
+  if(f)f(el.dataset.arg,el);
+});
+document.addEventListener('input',e=>{
+  const el=e.target;
+  if(!el.matches('[data-f]')||el.disabled)return;
+  let v=el.value;
+  if(el.type==='number')v=+v;
+  setField(el.dataset.f,v);
+  if(el.dataset.f==='lesson.video_url'){const vp=document.getElementById('vidPrev');if(vp)vp.innerHTML=videoBox(v)}
+  if(el.dataset.f==='course.demo_url'){const dp=document.getElementById('demoPrev');if(dp)dp.innerHTML=videoBox(v)}
+  if(el.dataset.f==='quiz.passing_pct'){const pv=document.getElementById('ppVal');if(pv)pv.textContent=v+'%'}
+  saveSoon();
+});
+document.addEventListener('change',e=>{
+  const el=e.target;
+  if(el.id==='fileAll'){handleAllImport(el.files[0]);el.value='';return}
+  if(el.id==='fileQuiz'){handleQuizImport(el.files[0]);el.value='';return}
+  if(el.id==='roleSel'){state.role=el.value;state.courseId=null;state.preview=null;state.sp=null;state.view=state.role==='alumno'?'shome':'dash';render();toast('👤 Sesión: '+(state.role==='admin'?'👑 Admin — '+ROLES.admin.name:state.role==='inst'?'🧑‍🏫 Instructor — '+ROLES.inst.name:'👨‍🎓 Alumno — '+state.sname));return}
+  if(el.matches('[data-f]')){
+    if(el.type==='checkbox')setField(el.dataset.f,el.checked);
+    else if(el.type==='radio')setField(el.dataset.f,+el.value);
+    else setField(el.dataset.f,el.type==='number'?+el.value:el.value);
+    saveNow();
+    if(el.dataset.rerender)render();
+  }
+});
+function setField(path,v){
+  const seg=path.split('.');
+  if(seg[0]==='sname'){state.sname=String(v).trim()||'alumno';return}
+  if(seg[0]==='upload'){if(state.upload)state.upload[seg[1]]=v;return}
+  if(seg[0]==='module'){if(state.upload)state.upload.modules[+seg[1]]=v;return}
+  const c=getCourse(state.courseId);
+  if(!c)return;
+  if(seg[0]==='course'){c[seg[1]]=v;c.updated=Date.now();return}
+  if(seg[0]==='lesson'){const l=getLesson(c.id,state.lessonId);if(l)l[seg[1]]=v;return}
+  if(seg[0]==='quiz'){const q=getQuiz(c.id,state.quizId);if(q)q[seg[1]]=v;return}
+  if(seg[0]==='q'){
+    const qz=getQuiz(c.id,state.quizId);if(!qz)return;
+    const q=qz.questions.find(x=>x.id===seg[1]);if(!q)return;
+    if(seg[2]==='opt')q.opts[+seg[3]]=v;
+    else if(seg[2]==='correct')q.correct=v;
+    else q[seg[2]]=v;
+  }
+}
+/* ============ inicio ============ */
+document.getElementById('roleSel').value=state.role;
+render();
+if(FIRST_RUN)toast('👻 Datos de ejemplo cargados — personalízalos a tu gusto');
+</script>
+</body>
+</html>
