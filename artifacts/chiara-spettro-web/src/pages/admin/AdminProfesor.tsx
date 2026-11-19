@@ -15,7 +15,8 @@ async function api<T = unknown>(path: string, method = "GET", body?: unknown): P
   return d as T;
 }
 
-interface Course { id: number; title: string; description: string; level: string; price: number; durationHours: number; videoUrl: string | null; published: boolean }
+interface Course { id: number; title: string; description: string; level: string; price: number; durationHours: number; videoUrl: string | null; published: boolean; instructor: string; instructorId: number | null }
+interface InstructorUser { id: number; username: string }
 interface Lesson { id: number; order: number; title: string; videoUrl: string | null; content: string | null; duration: number; isFree: boolean }
 interface Exam { id: number; title: string; passScore: number }
 interface Question { id: number; question: string; options: string[]; correctIndex: number }
@@ -184,11 +185,20 @@ export default function AdminProfesor() {
   const [tab, setTab] = useState<"lessons" | "exams">("lessons");
   const [err, setErr] = useState("");
   const [f, setF] = useState({ title: "", description: "", level: "principiante", price: "0", durationHours: "1", videoUrl: "" });
+  const [instructors, setInstructors] = useState<InstructorUser[]>([]);
 
   const loadCourses = useCallback(() => {
     api<Course[]>("/courses").then(setCourses).catch((e) => setErr(e.message));
   }, []);
   useEffect(() => { loadCourses(); }, [loadCourses]);
+  useEffect(() => { api<InstructorUser[]>("/instructor-users").then(setInstructors).catch(() => setInstructors([])); }, []);
+
+  const assignInstructor = async (courseId: number, instructorId: string) => {
+    try {
+      await api("/courses/" + courseId + "/instructor", "PATCH", { instructorId: instructorId ? Number(instructorId) : null });
+      loadCourses();
+    } catch (e) { setErr((e as Error).message); }
+  };
 
   const createCourse = async () => {
     setErr("");
@@ -239,9 +249,20 @@ export default function AdminProfesor() {
       <div className="space-y-2">
         {courses.length === 0 ? <div className="text-xs text-muted-foreground italic">Todavia no hay cursos</div> : courses.map((c) => (
           <div key={c.id} onClick={() => setSelId(c.id)} className={"flex items-center justify-between rounded-md border p-3 cursor-pointer " + (selId === c.id ? "border-primary/50 bg-primary/5" : "border-border/30")}>
-            <div>
+            <div className="flex-1 min-w-0">
               <div className="font-mono font-bold">{c.title}</div>
-              <div className="text-[10px] text-muted-foreground">{c.level} · {c.price} €</div>
+              <div className="text-[10px] text-muted-foreground">{c.level} · {c.price} € · profesor: {c.instructor}</div>
+              <select
+                className={inp + " max-w-[220px] mt-1"}
+                value={c.instructorId ?? ""}
+                onClick={(e) => e.stopPropagation()}
+                onChange={(e) => { e.stopPropagation(); assignInstructor(c.id, e.target.value); }}
+              >
+                <option value="">Sin profesor asignado (SpettroWeb)</option>
+                {instructors.map((ins) => (
+                  <option key={ins.id} value={ins.id}>{ins.username}</option>
+                ))}
+              </select>
             </div>
             <div className="flex items-center gap-3">
               <Badge

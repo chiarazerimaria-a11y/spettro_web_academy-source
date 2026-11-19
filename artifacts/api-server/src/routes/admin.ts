@@ -30,6 +30,8 @@ const toCourse = (r: typeof coursesTable.$inferSelect) => ({
   durationHours: r.durationHours,
   videoUrl: r.videoUrl,
   published: r.published,
+  instructor: r.instructor,
+  instructorId: r.instructorId,
   createdAt: r.createdAt.toISOString(),
 });
 const toPayment = (r: typeof paymentsTable.$inferSelect) => ({
@@ -329,6 +331,29 @@ router.delete("/admin/questions/:id", async (req, res) => {
   if (!q) { res.status(404).json({ error: "Pregunta no encontrada" }); return; }
   await db.delete(examQuestionsTable).where(eq(examQuestionsTable.id, q.id));
   res.json({ ok: true });
+});
+
+// Lista de usuarios con rol instructor (para asignar a un curso)
+router.get("/admin/instructor-users", async (_req, res) => {
+  const rows = await db.select({ id: usersTable.id, username: usersTable.username })
+    .from(usersTable).where(eq(usersTable.role, "instructor")).orderBy(usersTable.username);
+  res.json(rows);
+});
+
+// Asignar/cambiar el profesor de un curso
+router.patch("/admin/courses/:id/instructor", async (req, res) => {
+  const id = Number(req.params.id);
+  const b = req.body as Record<string, unknown>;
+  const instructorId = b.instructorId === null || b.instructorId === undefined ? null : Number(b.instructorId) || null;
+  let instructorName = "SpettroWeb";
+  if (instructorId) {
+    const [u] = await db.select({ username: usersTable.username }).from(usersTable).where(eq(usersTable.id, instructorId)).limit(1);
+    if (!u) { res.status(404).json({ error: "Usuario no encontrado" }); return; }
+    instructorName = u.username;
+  }
+  const [row] = await db.update(coursesTable).set({ instructorId, instructor: instructorName }).where(eq(coursesTable.id, id)).returning();
+  if (!row) { res.status(404).json({ error: "Curso no encontrado" }); return; }
+  res.json(toCourse(row));
 });
 
 // Payments
