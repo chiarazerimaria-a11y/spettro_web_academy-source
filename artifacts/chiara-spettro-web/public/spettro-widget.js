@@ -37,7 +37,7 @@
         // SIN barra inicial = relativo a donde esté spettro-widget.js (funciona en
         // file://, en subcarpetas y en la raíz). Con barra = raíz del sitio. Con
         // http(s):// = tal cual.
-        url: '/profesor',
+        url: '/admin/profesor',
         color: '#8b5cf6'
       },
       // Botón del ADMIN: solo en páginas de administración (o con ?admin=1 en la URL)
