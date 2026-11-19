@@ -63,6 +63,21 @@
   var overlayEl = null;
   var escHandler = null;
 
+  /* Solo mostramos el boton del profesor si la cuenta realmente tiene ese rol
+     (se consulta /api/instructor/me, nunca solo por la URL de la pagina) */
+  var meCache = { isInstructor: false, loaded: false, lastCheck: 0 };
+  function refreshInstructorStatus() {
+    var now = Date.now();
+    if (now - meCache.lastCheck < 15000) return;
+    meCache.lastCheck = now;
+    try {
+      fetch('/api/instructor/me', { credentials: 'include' })
+        .then(function (r) { return r.ok ? r.json() : { isInstructor: false }; })
+        .then(function (d) { meCache.isInstructor = !!(d && d.isInstructor); meCache.loaded = true; })
+        .catch(function () { meCache.isInstructor = false; meCache.loaded = true; });
+    } catch (e) { meCache.isInstructor = false; meCache.loaded = true; }
+  }
+
   /* carpeta donde vive este widget (para resolver URLs de los paneles) */
   var SCRIPT_DIR = '';
   try {
@@ -190,9 +205,11 @@
 
   function sync() {
     try {
+      refreshInstructorStatus();
       ['instructor', 'admin'].forEach(function (key) {
         var p = CFG.pages[key];
         var show = pageMatches(key);
+        if (key === 'instructor') show = show && meCache.loaded && meCache.isInstructor;
         var hostBtn = findInjected(key);
         if (!show) {
           // fuera de la página correspondiente → quitar nuestros botones
