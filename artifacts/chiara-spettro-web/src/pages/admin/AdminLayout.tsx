@@ -11,6 +11,7 @@ const navItems = [
   { href: "/admin/payout-requests", label: "Retiros Usuarios", icon: Banknote },
   { href: "/admin/ghostcoin", label: "GhostCoin", icon: Gift },
   { href: "/admin/spc-grant", label: "Acreditar SPC", icon: Coins },
+  { href: "/admin/profesor", label: "Panel Profesor", icon: BookOpen },
   { href: "/admin/machines", label: "Máquinas Kanban", icon: Server },
   { href: "/admin/lab-machines", label: "Lab Público", icon: FlaskConical },
   { divider: true, label: "JUEGO" } as const,

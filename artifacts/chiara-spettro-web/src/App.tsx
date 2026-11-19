@@ -37,6 +37,7 @@ import Alumnos from "@/pages/admin/Alumnos";
 import Usuarios from "@/pages/admin/Usuarios";
 import GhostCoin from "@/pages/admin/GhostCoin";
 import AdminSpcGrant from "@/pages/admin/AdminSpcGrant";
+import AdminProfesor from "@/pages/admin/AdminProfesor";
 import Instructores from "@/pages/admin/Instructores";
 import Affiliates from "@/pages/admin/Affiliates";
 import PayoutRequests from "@/pages/admin/PayoutRequests";
@@ -62,6 +63,7 @@ function AdminRouter() {
       <Route path="/admin/usuarios" component={Usuarios} />
         <Route path="/admin/ghostcoin" component={GhostCoin} />
         <Route path="/admin/spc-grant" component={AdminSpcGrant} />
+        <Route path="/admin/profesor" component={AdminProfesor} />
         <Route path="/admin/instructores" component={Instructores} />
         <Route path="/admin/affiliates" component={Affiliates} />
         <Route path="/admin/payout-requests" component={PayoutRequests} />

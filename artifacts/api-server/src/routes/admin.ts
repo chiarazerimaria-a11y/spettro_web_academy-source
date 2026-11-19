@@ -1,6 +1,7 @@
 import { Router, type IRouter } from "express";
-import { db, subscribersTable, coursesTable, paymentsTable, machinesTable, affiliatesTable, usersTable, applicationsTable, courseSubmissionsTable, labMachinesTable, ctfMissionsTable, squadsTable, tournamentRoomsTable, spettroWalletsTable, spettroTransactionsTable, ghcTransactionsTable, machinePurchasesTable } from "@workspace/db";
-import { eq, desc, sql } from "drizzle-orm";
+import { db, subscribersTable, coursesTable, paymentsTable, machinesTable, affiliatesTable, usersTable, applicationsTable, courseSubmissionsTable, labMachinesTable, ctfMissionsTable, squadsTable, tournamentRoomsTable, spettroWalletsTable, spettroTransactionsTable, ghcTransactionsTable, machinePurchasesTable, courseLessonsTable, examsTable, examQuestionsTable, examAttemptsTable } from "@workspace/db";
+import { eq, desc, sql, asc } from "drizzle-orm";
+import { sanitizeStr } from "../middleware/sanitize";
 import { notifyEmail } from "./subscriptions";
 import {
   CreateSubscriberBody, UpdateSubscriberBody,
@@ -171,6 +172,163 @@ router.patch("/admin/courses/:id", async (req, res) => {
 router.delete("/admin/courses/:id", async (req, res) => {
   await db.delete(coursesTable).where(eq(coursesTable.id, Number(req.params.id)));
   res.status(204).end();
+});
+
+// ── Cursos: lecciones y examenes (control total admin, sin restriccion de dueno) ──
+function adminIntId(v: unknown): number {
+  const n = Number(v);
+  return Number.isInteger(n) && n > 0 ? n : 0;
+}
+function adminCleanUrl(v: unknown): { ok: boolean; value: string | null } {
+  if (v === undefined || v === null) return { ok: true, value: null };
+  if (typeof v !== "string") return { ok: false, value: null };
+  const u = v.trim().slice(0, 500);
+  if (!u) return { ok: true, value: null };
+  if (!/^https?:\/\/[^\s]+$/i.test(u)) return { ok: false, value: null };
+  const yt = u.match(/(?:youtube\.com\/watch\?(?:[^#\s]*&)?v=|youtu\.be\/)([\w-]{11})/i);
+  return { ok: true, value: yt ? "https://www.youtube.com/embed/" + yt[1] : u };
+}
+async function adminRefreshLessonCount(courseId: number) {
+  const [r] = await db.select({ n: sql<number>`count(*)::int` })
+    .from(courseLessonsTable).where(eq(courseLessonsTable.courseId, courseId));
+  await db.update(coursesTable).set({ totalLessons: r?.n ?? 0 }).where(eq(coursesTable.id, courseId));
+}
+
+// Lecciones
+router.get("/admin/courses/:id/lessons", async (req, res) => {
+  const courseId = adminIntId(req.params.id);
+  const rows = await db.select().from(courseLessonsTable)
+    .where(eq(courseLessonsTable.courseId, courseId)).orderBy(asc(courseLessonsTable.order), asc(courseLessonsTable.id));
+  res.json(rows);
+});
+
+router.post("/admin/courses/:id/lessons", async (req, res) => {
+  const courseId = adminIntId(req.params.id);
+  const [c] = await db.select().from(coursesTable).where(eq(coursesTable.id, courseId)).limit(1);
+  if (!c) { res.status(404).json({ error: "Curso no encontrado" }); return; }
+  const b = req.body as Record<string, unknown>;
+  const title = sanitizeStr(b.title, 150);
+  const description = sanitizeStr(b.description, 1000);
+  const content = typeof b.content === "string" ? b.content.slice(0, 20000) : "";
+  const vid = adminCleanUrl(b.videoUrl);
+  if (title.length < 2) { res.status(400).json({ error: "Falta el titulo de la leccion" }); return; }
+  if (!vid.ok) { res.status(400).json({ error: "Enlace invalido (debe empezar por http o https)" }); return; }
+  const [mx] = await db.select({ m: sql<number>`coalesce(max(${courseLessonsTable.order}), 0)::int` })
+    .from(courseLessonsTable).where(eq(courseLessonsTable.courseId, courseId));
+  const [l] = await db.insert(courseLessonsTable).values({
+    courseId,
+    order: (mx?.m ?? 0) + 1,
+    title, description, content: content || null,
+    videoUrl: vid.value,
+    videoUrls: vid.value ? JSON.stringify({ es: vid.value }) : null,
+    duration: Math.min(Math.max(Math.floor(Number(b.durationMinutes) || 0), 0), 600) * 60,
+    isFree: b.isFree === true,
+  }).returning();
+  await adminRefreshLessonCount(courseId);
+  res.status(201).json(l);
+});
+
+router.patch("/admin/lessons/:id", async (req, res) => {
+  const id = adminIntId(req.params.id);
+  const [l] = await db.select().from(courseLessonsTable).where(eq(courseLessonsTable.id, id)).limit(1);
+  if (!l) { res.status(404).json({ error: "Leccion no encontrada" }); return; }
+  const b = req.body as Record<string, unknown>;
+  const upd: Record<string, unknown> = {};
+  if (b.title !== undefined) { const t = sanitizeStr(b.title, 150); if (t.length < 2) { res.status(400).json({ error: "Titulo invalido" }); return; } upd.title = t; }
+  if (b.description !== undefined) upd.description = sanitizeStr(b.description, 1000);
+  if (b.content !== undefined) upd.content = typeof b.content === "string" ? b.content.slice(0, 20000) : null;
+  if (b.videoUrl !== undefined) {
+    const v = adminCleanUrl(b.videoUrl);
+    if (!v.ok) { res.status(400).json({ error: "Enlace invalido" }); return; }
+    upd.videoUrl = v.value;
+    upd.videoUrls = v.value ? JSON.stringify({ es: v.value }) : null;
+  }
+  if (b.durationMinutes !== undefined) upd.duration = Math.min(Math.max(Math.floor(Number(b.durationMinutes) || 0), 0), 600) * 60;
+  if (b.isFree !== undefined) upd.isFree = b.isFree === true;
+  if (b.order !== undefined) upd.order = Math.max(0, Math.floor(Number(b.order) || 0));
+  if (Object.keys(upd).length === 0) { res.status(400).json({ error: "Nada que actualizar" }); return; }
+  const [row] = await db.update(courseLessonsTable).set(upd as never).where(eq(courseLessonsTable.id, l.id)).returning();
+  res.json(row);
+});
+
+router.delete("/admin/lessons/:id", async (req, res) => {
+  const id = adminIntId(req.params.id);
+  const [l] = await db.select().from(courseLessonsTable).where(eq(courseLessonsTable.id, id)).limit(1);
+  if (!l) { res.status(404).json({ error: "Leccion no encontrada" }); return; }
+  await db.delete(courseLessonsTable).where(eq(courseLessonsTable.id, l.id));
+  await adminRefreshLessonCount(l.courseId);
+  res.json({ ok: true });
+});
+
+// Examenes
+router.get("/admin/courses/:id/exams", async (req, res) => {
+  const courseId = adminIntId(req.params.id);
+  const rows = await db.select().from(examsTable).where(eq(examsTable.courseId, courseId)).orderBy(asc(examsTable.id));
+  res.json(rows);
+});
+
+router.post("/admin/courses/:id/exams", async (req, res) => {
+  const courseId = adminIntId(req.params.id);
+  const [c] = await db.select().from(coursesTable).where(eq(coursesTable.id, courseId)).limit(1);
+  if (!c) { res.status(404).json({ error: "Curso no encontrado" }); return; }
+  const b = req.body as Record<string, unknown>;
+  const title = sanitizeStr(b.title, 150);
+  const passScore = Math.min(Math.max(Math.floor(Number(b.passScore) || 60), 1), 100);
+  if (title.length < 2) { res.status(400).json({ error: "Falta el titulo del examen" }); return; }
+  const [x] = await db.insert(examsTable).values({ courseId, title, passScore }).returning();
+  res.status(201).json(x);
+});
+
+router.delete("/admin/exams/:id", async (req, res) => {
+  const id = adminIntId(req.params.id);
+  const [x] = await db.select().from(examsTable).where(eq(examsTable.id, id)).limit(1);
+  if (!x) { res.status(404).json({ error: "Examen no encontrado" }); return; }
+  await db.delete(examAttemptsTable).where(eq(examAttemptsTable.examId, x.id));
+  await db.delete(examQuestionsTable).where(eq(examQuestionsTable.examId, x.id));
+  await db.delete(examsTable).where(eq(examsTable.id, x.id));
+  res.json({ ok: true });
+});
+
+router.get("/admin/exams/:id/questions", async (req, res) => {
+  const id = adminIntId(req.params.id);
+  const rows = await db.select().from(examQuestionsTable)
+    .where(eq(examQuestionsTable.examId, id)).orderBy(asc(examQuestionsTable.position), asc(examQuestionsTable.id));
+  res.json(rows.map((q) => {
+    let options: string[] = [];
+    try { options = JSON.parse(q.options); } catch { options = []; }
+    return { id: q.id, question: q.question, options, correctIndex: q.correctIndex };
+  }));
+});
+
+router.post("/admin/exams/:id/questions", async (req, res) => {
+  const examId = adminIntId(req.params.id);
+  const [x] = await db.select().from(examsTable).where(eq(examsTable.id, examId)).limit(1);
+  if (!x) { res.status(404).json({ error: "Examen no encontrado" }); return; }
+  const b = req.body as Record<string, unknown>;
+  const question = sanitizeStr(b.question, 500);
+  const options = Array.isArray(b.options)
+    ? b.options.map((o) => sanitizeStr(o, 200)).filter((o) => o.length > 0).slice(0, 6)
+    : [];
+  const correctIndex = Math.floor(Number(b.correctIndex));
+  if (question.length < 3) { res.status(400).json({ error: "Escribe la pregunta" }); return; }
+  if (options.length < 2) { res.status(400).json({ error: "Pon al menos 2 opciones" }); return; }
+  if (!Number.isInteger(correctIndex) || correctIndex < 0 || correctIndex >= options.length) {
+    res.status(400).json({ error: "Respuesta correcta invalida" }); return;
+  }
+  const [mx] = await db.select({ m: sql<number>`coalesce(max(${examQuestionsTable.position}), 0)::int` })
+    .from(examQuestionsTable).where(eq(examQuestionsTable.examId, examId));
+  const [q] = await db.insert(examQuestionsTable).values({
+    examId, position: (mx?.m ?? 0) + 1, question, options: JSON.stringify(options), correctIndex,
+  }).returning();
+  res.status(201).json({ id: q.id, question: q.question, options, correctIndex });
+});
+
+router.delete("/admin/questions/:id", async (req, res) => {
+  const id = adminIntId(req.params.id);
+  const [q] = await db.select().from(examQuestionsTable).where(eq(examQuestionsTable.id, id)).limit(1);
+  if (!q) { res.status(404).json({ error: "Pregunta no encontrada" }); return; }
+  await db.delete(examQuestionsTable).where(eq(examQuestionsTable.id, q.id));
+  res.json({ ok: true });
 });
 
 // Payments
