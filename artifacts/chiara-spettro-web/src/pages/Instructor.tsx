@@ -191,11 +191,22 @@ export default function Instructor() {
     api<Course[]>("/courses").then(setCourses).catch((e) => setErr(e.message));
   }, []);
 
-  useEffect(() => {
+  const refreshMe = useCallback(() => {
     api<{ loggedIn: boolean; isInstructor: boolean; username: string | null }>("/me")
       .then((m) => { setMe(m); if (m.isInstructor) loadCourses(); })
       .catch(() => setMe({ loggedIn: false, isInstructor: false, username: null }));
   }, [loadCourses]);
+
+  useEffect(() => { refreshMe(); }, [refreshMe]);
+
+  const [becoming, setBecoming] = useState(false);
+  const [becomeErr, setBecomeErr] = useState("");
+  const becomeInstructor = async () => {
+    setBecoming(true); setBecomeErr("");
+    try { await api("/become", "POST"); refreshMe(); }
+    catch (e) { setBecomeErr((e as Error).message); }
+    setBecoming(false);
+  };
 
   const createCourse = async () => {
     setErr("");
@@ -215,7 +226,15 @@ export default function Instructor() {
 
   if (!me) return <div className="p-10 text-center font-mono text-sm text-muted-foreground">Cargando...</div>;
   if (!me.loggedIn) return <div className="p-10 text-center font-mono text-sm">Inicia sesion para entrar. <Link href="/login" className="text-primary underline">Ir al login</Link></div>;
-  if (!me.isInstructor) return <div className="p-10 text-center font-mono text-sm text-muted-foreground">Tu cuenta no tiene rol de profesor. Pidele al administrador que te lo asigne.</div>;
+  if (!me.isInstructor) return (
+    <div className="p-10 text-center font-mono text-sm space-y-4 max-w-sm mx-auto">
+      <p className="text-muted-foreground">Todavia no sos profesor en SpettroWeb.</p>
+      {becomeErr && <p className="text-red-400 text-xs">{becomeErr}</p>}
+      <button className={btn} disabled={becoming} onClick={becomeInstructor}>
+        {becoming ? "Activando..." : "Registrarme como profesor"}
+      </button>
+    </div>
+  );
 
   const sel = courses.find((c) => c.id === selId) || null;
 

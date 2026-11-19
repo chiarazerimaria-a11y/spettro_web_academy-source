@@ -120,6 +120,19 @@ router.get("/instructor/me", async (req, res) => {
   }
 });
 
+// ── Convertirse en profesor (autoservicio, sin aprobacion de admin) ──────────
+router.post("/instructor/become", async (req, res) => {
+  try {
+    const uid = getSessionUserId(req);
+    if (!uid) { res.status(401).json({ error: "Inicia sesion de nuevo" }); return; }
+    await db.update(usersTable).set({ role: "instructor" }).where(eq(usersTable.id, uid));
+    res.json({ ok: true });
+  } catch (e) {
+    req.log.error(e);
+    res.status(500).json({ error: "Error interno" });
+  }
+});
+
 // ── Cursos ───────────────────────────────────────────────────────────────────
 router.get("/instructor/courses", guarded(async (_req, res, me) => {
   const rows = await db.select().from(coursesTable)
