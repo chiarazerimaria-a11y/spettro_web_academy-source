@@ -32,7 +32,7 @@
       // Botón del PROFESOR: aparece en las páginas cuya URL contiene alguna
       // de estas palabras (el perfil del usuario). Añade/quita a tu gusto.
       instructor: {
-        urls: ['perfil', 'profile', 'account', 'cuenta', 'usuario', 'user'],
+        urls: ['/'],   // toda la web; el filtro real es el rol + las exclusiones de sync()
         label: '🎓 Panel del Profesor',
         // SIN barra inicial = relativo a donde esté spettro-widget.js (funciona en
         // file://, en subcarpetas y en la raíz). Con barra = raíz del sitio. Con
@@ -209,7 +209,11 @@
       ['instructor', 'admin'].forEach(function (key) {
         var p = CFG.pages[key];
         var show = pageMatches(key);
-        if (key === 'instructor') show = show && meCache.loaded && meCache.isInstructor;
+        if (key === 'instructor') {
+          var path = (location.pathname || '').toLowerCase();
+          var excluded = path.indexOf('/profesor') === 0 || path.indexOf('/admin') === 0;
+          show = show && !excluded && meCache.loaded && meCache.isInstructor;
+        }
         var hostBtn = findInjected(key);
         if (!show) {
           // fuera de la página correspondiente → quitar nuestros botones
