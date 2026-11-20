@@ -1,3 +1,4 @@
+import { sql as sqlRole } from "drizzle-orm";
 import { Router, type IRouter } from "express";
 import { db, subscribersTable, coursesTable, paymentsTable, machinesTable, affiliatesTable, usersTable, applicationsTable, courseSubmissionsTable, labMachinesTable, ctfMissionsTable, squadsTable, tournamentRoomsTable, spettroWalletsTable, spettroTransactionsTable, ghcTransactionsTable, machinePurchasesTable, courseLessonsTable, examsTable, examQuestionsTable, examAttemptsTable } from "@workspace/db";
 import { eq, desc, sql, asc } from "drizzle-orm";
@@ -575,6 +576,24 @@ router.patch("/admin/instructores/:id", async (req, res) => {
   if (payoutPaypal !== undefined) update.payoutPaypal = payoutPaypal || null;
   const [row] = await db.update(applicationsTable).set(update).where(eq(applicationsTable.id, id)).returning();
   if (!row) { res.status(404).json({ error: "not found" }); return; }
+  // Sincroniza el rol de la cuenta con la solicitud (solo solicitudes de tipo instructor)
+  if (row.role === "instructor" && status) {
+    try {
+      const mail = row.email.trim().toLowerCase();
+      if (row.status === "aprobado") {
+        await db.update(usersTable).set({ role: "instructor" })
+          .where(sqlRole`lower(${usersTable.email}) = ${mail} and coalesce(${usersTable.role}, '') <> 'admin'`);
+      } else {
+        const [other] = await db.select({ id: applicationsTable.id }).from(applicationsTable)
+          .where(sqlRole`lower(${applicationsTable.email}) = ${mail} and ${applicationsTable.role} = 'instructor' and ${applicationsTable.status} = 'aprobado' and ${applicationsTable.id} <> ${row.id}`)
+          .limit(1);
+        if (!other) {
+          await db.update(usersTable).set({ role: "student" })
+            .where(sqlRole`lower(${usersTable.email}) = ${mail} and ${usersTable.role} = 'instructor'`);
+        }
+      }
+    } catch (e) { console.error("sync rol instructor", e); }
+  }
   res.json({ id: row.id, status: row.status });
 });
 
