@@ -5,6 +5,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { PublicNav } from "@/components/PublicNav";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
+import { useState as useStateCR, useEffect as useEffectCR } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { AuthModal } from "@/components/AuthModal";
 import { useLang } from "@/contexts/LanguageContext";
@@ -203,6 +204,38 @@ function LessonVideoArea({
       )}
     </div>
   );
+}
+
+// ─── CTA según rol: alumno inscrito → suscripción | profesor → su panel ──────
+function CourseRoleCta({ isEnrolled, canSubscribe, go }: { isEnrolled: boolean; canSubscribe: boolean; go: (path: string) => void }) {
+  const [isInstructor, setIsInstructor] = useStateCR(false);
+
+  useEffectCR(() => {
+    let alive = true;
+    fetch(`${import.meta.env.BASE_URL}api/instructor/me`, { credentials: "include" })
+      .then(r => (r.ok ? r.json() : { isInstructor: false }))
+      .then(d => { if (alive) setIsInstructor(!!(d && d.isInstructor)); })
+      .catch(() => { if (alive) setIsInstructor(false); });
+    return () => { alive = false; };
+  }, []);
+
+  if (isInstructor) {
+    return (
+      <Button className="w-full font-mono font-bold h-11 bg-violet-500 text-white hover:bg-violet-400"
+        onClick={() => go("/profesor")}>
+        🎓 PANEL DE CONTROL DE PROFESOR
+      </Button>
+    );
+  }
+  if (isEnrolled && canSubscribe) {
+    return (
+      <Button className="w-full font-mono font-bold h-11 bg-yellow-500 text-black hover:bg-yellow-400"
+        onClick={() => go("/suscripcion")}>
+        👑 SUSCRIPCIÓN ELITE
+      </Button>
+    );
+  }
+  return null;
 }
 
 export default function CursoDetalle() {
@@ -538,6 +571,8 @@ export default function CursoDetalle() {
                 </div>
               </div>
             )}
+
+            <CourseRoleCta isEnrolled={isEnrolled} canSubscribe={userTier === "libre"} go={navigate as any} />
 
             {/* Progress card (if enrolled) */}
             {isEnrolled && (
