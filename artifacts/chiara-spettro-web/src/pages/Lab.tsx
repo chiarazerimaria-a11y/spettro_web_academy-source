@@ -28,6 +28,73 @@ const getAndroidImage = (id: string | number) => {
   return `/androids/android-${n}.png`;
 };
 
+// ─── Character video (intro con sonido + bucle en mute) ──────────────────────
+const getCharacterVideo = (thumb: string | null | undefined) =>
+  thumb && thumb.startsWith("/characters/")
+    ? thumb.replace(/\.(jpg|jpeg|png|webp)$/i, ".mp4")
+    : null;
+
+function MachineVideoLayer({ src, poster }: { src: string; poster: string | null }) {
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [phase, setPhase] = useState<"intro" | "loop">("intro");
+  const [muted, setMuted] = useState(false);
+
+  useEffect(() => {
+    const v = videoRef.current;
+    if (!v) return;
+    v.muted = false;
+    v.play().catch(() => {
+      v.muted = true;
+      setMuted(true);
+      v.play().catch(() => {});
+    });
+    return () => { v.pause(); };
+  }, [src]);
+
+  const toLoop = () => {
+    const v = videoRef.current;
+    if (!v) return;
+    v.muted = true;
+    v.loop = true;
+    setMuted(true);
+    setPhase("loop");
+    v.play().catch(() => {});
+  };
+
+  const toggleSound = () => {
+    const v = videoRef.current;
+    if (!v) return;
+    v.muted = !v.muted;
+    setMuted(v.muted);
+  };
+
+  const intro = phase === "intro";
+  return (
+    <div className={`fixed inset-0 overflow-hidden ${intro ? "z-[70] bg-black" : "z-50 pointer-events-none"}`}>
+      {poster && (
+        <img src={poster} alt="" aria-hidden
+          className="absolute inset-0 w-full h-full object-cover opacity-40"
+          style={{ filter: "blur(40px) brightness(0.5)" }} />
+      )}
+      <div className={`absolute inset-0 flex items-center justify-center ${intro ? "" : "md:pr-[min(95vw,1000px)]"}`}>
+        <video ref={videoRef} src={src} playsInline preload="auto"
+          onEnded={() => { if (intro) toLoop(); }}
+          className="h-full w-full object-contain" />
+      </div>
+      {intro && (
+        <button onClick={toLoop}
+          className="absolute top-4 right-4 pointer-events-auto px-4 h-9 rounded-md border border-primary/60 bg-black/60 text-primary font-mono text-[11px] font-bold hover:brightness-125">
+          SALTAR ▶
+        </button>
+      )}
+      <button onClick={toggleSound}
+        className={`${intro ? "flex" : "hidden md:flex"} items-center absolute bottom-6 left-6 pointer-events-auto px-3 h-9 rounded-md border border-primary/40 bg-black/60 text-primary font-mono text-[10px] font-bold hover:brightness-125`}>
+        {muted ? "🔇 ACTIVAR SONIDO" : "🔊 SILENCIAR"}
+      </button>
+    </div>
+  );
+}
+
 const diffColorMap: Record<string, string> = {
   "FÁCIL": "#ff4db8", "MEDIO": "#f59e0b", "DIFÍCIL": "#9b55f9", "INSANO": "#ef4444",
 };
@@ -2564,6 +2631,11 @@ export default function Lab() {
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
               className="fixed inset-0 bg-black/75 backdrop-blur-sm z-50"
               onClick={() => setSelectedMachine(null)} />
+            {!solvedMachineSlugs.has(selectedMachine.slug) && getCharacterVideo(selectedMachine.thumbnailUrl) && (
+              <MachineVideoLayer key={selectedMachine.id}
+                src={getCharacterVideo(selectedMachine.thumbnailUrl)!}
+                poster={selectedMachine.thumbnailUrl} />
+            )}
             <motion.div
               initial={{ x: "100%" }} animate={{ x: 0 }} exit={{ x: "100%" }}
               transition={{ type: "spring", damping: 22, stiffness: 180 }}

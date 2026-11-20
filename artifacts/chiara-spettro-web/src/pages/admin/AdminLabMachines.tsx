@@ -7,10 +7,6 @@ import { Plus, Edit, Trash2, Eye, EyeOff, Search, FlaskConical, Check, X, Chevro
 import { motion, AnimatePresence } from "framer-motion";
 const BASE = import.meta.env.BASE_URL;
 
-const ANDROID_IMAGES = Array.from({ length: 40 }, (_, i) =>
-  `${BASE}androids/android-${String(i + 1).padStart(2, "0")}.png`
-);
-
 const DIFFICULTIES = [
   { value: "facil", label: "FÁCIL", color: "#34d399" },
   { value: "medio", label: "MEDIO", color: "#f59e0b" },
@@ -22,26 +18,80 @@ const OS_OPTIONS = ["Linux", "Windows"];
 
 const CHARACTER_TYPES = ["skull", "robot", "demon", "spider", "ghost", "dragon", "virus", "ninja", "phantom", "cyber", "wolf", "eye", "kraken"];
 
+interface Character {
+  id: string;
+  team: "alfa" | "delta";
+  number: number;
+  name: string;
+  image: string;
+  video: string;
+}
+
+const CHAR_PREFIX = BASE.replace(/\/$/, "");
+
 function ThumbnailPicker({ value, onChange }: { value: string; onChange: (url: string) => void }) {
+  const [chars, setChars] = useState<Character[]>([]);
+  const [team, setTeam] = useState<"all" | "alfa" | "delta">("all");
+  const [q, setQ] = useState("");
+  const [failed, setFailed] = useState(false);
+
+  useEffect(() => {
+    fetch(`${BASE}characters/characters.json`)
+      .then(r => (r.ok ? r.json() : Promise.reject()))
+      .then(setChars)
+      .catch(() => setFailed(true));
+  }, []);
+
+  const term = q.trim().toLowerCase();
+  const list = chars.filter(c =>
+    (team === "all" || c.team === team) &&
+    (term === "" || c.name.toLowerCase().includes(term) || String(c.number) === term)
+  );
+  const selected = chars.find(c => c.image === value);
+
   return (
     <div>
-      <p className="text-[10px] font-mono text-muted-foreground mb-2 tracking-widest">MINIATURA — ELIGE UN ANDROIDE</p>
+      <p className="text-[10px] font-mono text-muted-foreground mb-2 tracking-widest">MINIATURA — ELIGE UN PERSONAJE</p>
+
+      <div className="flex gap-2 mb-2 flex-wrap items-center">
+        <div className="flex gap-1 p-1 rounded-lg bg-black/40 border border-white/8">
+          {(["all", "alfa", "delta"] as const).map(t => (
+            <button key={t} type="button" onClick={() => setTeam(t)}
+              className="px-3 py-1 rounded-md font-mono text-[10px] font-bold transition-all"
+              style={team === t
+                ? { background: "rgba(255,77,184,0.2)", color: "#ff4db8", border: "1px solid rgba(255,77,184,0.4)" }
+                : { color: "#6b7280", border: "1px solid transparent" }}>
+              {t === "all" ? "TODOS" : t.toUpperCase()}
+            </button>
+          ))}
+        </div>
+        <div className="relative flex-1 min-w-32">
+          <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+          <Input value={q} onChange={e => setQ(e.target.value)} placeholder="nombre o número..."
+            className="pl-7 h-8 font-mono text-xs bg-black/50 border-white/10" />
+        </div>
+        <span className="font-mono text-[10px] text-muted-foreground">{list.length} / {chars.length}</span>
+      </div>
+
+      {failed && (
+        <p className="text-[10px] font-mono text-red-400 mb-2">No se pudo cargar /characters/characters.json</p>
+      )}
+
       <div className="grid grid-cols-5 gap-2 max-h-64 overflow-y-auto p-1 rounded-xl border border-white/5 bg-black/40">
-        {ANDROID_IMAGES.map((src, i) => {
-          const isSelected = value === src;
+        {list.map(c => {
+          const isSelected = value === c.image;
           return (
-            <button
-              key={src}
-              type="button"
-              onClick={() => onChange(src)}
-              title={`Androide ${i + 1}`}
+            <button key={c.id} type="button" onClick={() => onChange(c.image)}
+              title={`${c.number}. ${c.name} (${c.team})`}
               className="relative rounded-lg overflow-hidden border-2 transition-all hover:scale-105 aspect-square bg-[#0a0a0f]"
               style={{
                 borderColor: isSelected ? "#ff4db8" : "rgba(255,255,255,0.06)",
                 boxShadow: isSelected ? "0 0 14px rgba(255,77,184,0.6)" : undefined,
-              }}
-            >
-              <img src={src} alt={`Androide ${i + 1}`} className="w-full h-full object-cover" />
+              }}>
+              <img src={CHAR_PREFIX + c.image} alt={c.name} loading="lazy" className="w-full h-full object-cover" />
+              <span className="absolute bottom-0 inset-x-0 bg-black/70 text-[8px] font-mono text-white/80 truncate px-1">
+                {c.name}
+              </span>
               {isSelected && (
                 <div className="absolute inset-0 flex items-center justify-center bg-primary/30">
                   <Check className="h-5 w-5 text-white drop-shadow" />
@@ -51,13 +101,26 @@ function ThumbnailPicker({ value, onChange }: { value: string; onChange: (url: s
           );
         })}
       </div>
+
       {value && (
-        <div className="mt-2 flex items-center gap-2">
-          <div className="w-10 h-10 rounded-lg bg-[#0a0a0f] border border-primary/30 overflow-hidden">
-            <img src={value} alt="Seleccionado" className="w-full h-full object-cover" />
+        <div className="mt-2 flex items-center gap-3">
+          <div className="w-20 h-20 rounded-lg bg-[#0a0a0f] border border-primary/30 overflow-hidden shrink-0">
+            {selected ? (
+              <video key={selected.video} src={CHAR_PREFIX + selected.video} poster={CHAR_PREFIX + selected.image}
+                autoPlay loop muted playsInline className="w-full h-full object-cover" />
+            ) : (
+              <img src={value} alt="Seleccionado" className="w-full h-full object-cover" />
+            )}
           </div>
-          <span className="text-[10px] font-mono text-primary truncate flex-1">{value.split("/").pop()}</span>
-          <button type="button" onClick={() => onChange("")} className="text-muted-foreground hover:text-red-400 ml-auto shrink-0">
+          <div className="min-w-0 flex-1">
+            <p className="text-xs font-mono text-primary truncate">
+              {selected ? `${selected.number}. ${selected.name}` : value.split("/").pop()}
+            </p>
+            <p className="text-[10px] font-mono text-muted-foreground">
+              {selected ? `Equipo ${selected.team.toUpperCase()} · con video de intro` : "Miniatura antigua (sin video)"}
+            </p>
+          </div>
+          <button type="button" onClick={() => onChange("")} className="text-muted-foreground hover:text-red-400 shrink-0">
             <X className="h-3.5 w-3.5" />
           </button>
         </div>

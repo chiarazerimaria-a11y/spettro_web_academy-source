@@ -1,0 +1,642 @@
+[
+  {
+    "id": "alfa-01",
+    "team": "alfa",
+    "number": 1,
+    "name": "Avar",
+    "image": "/characters/alfa/01-avar.jpg",
+    "video": "/characters/alfa/01-avar.mp4"
+  },
+  {
+    "id": "alfa-02",
+    "team": "alfa",
+    "number": 2,
+    "name": "Zarkh",
+    "image": "/characters/alfa/02-zarkh.jpg",
+    "video": "/characters/alfa/02-zarkh.mp4"
+  },
+  {
+    "id": "alfa-03",
+    "team": "alfa",
+    "number": 3,
+    "name": "Nébhor",
+    "image": "/characters/alfa/03-nebhor.jpg",
+    "video": "/characters/alfa/03-nebhor.mp4"
+  },
+  {
+    "id": "alfa-04",
+    "team": "alfa",
+    "number": 4,
+    "name": "Tharion",
+    "image": "/characters/alfa/04-tharion.jpg",
+    "video": "/characters/alfa/04-tharion.mp4"
+  },
+  {
+    "id": "alfa-05",
+    "team": "alfa",
+    "number": 5,
+    "name": "Vordak",
+    "image": "/characters/alfa/05-vordak.jpg",
+    "video": "/characters/alfa/05-vordak.mp4"
+  },
+  {
+    "id": "alfa-06",
+    "team": "alfa",
+    "number": 6,
+    "name": "Xelthar",
+    "image": "/characters/alfa/06-xelthar.jpg",
+    "video": "/characters/alfa/06-xelthar.mp4"
+  },
+  {
+    "id": "alfa-07",
+    "team": "alfa",
+    "number": 7,
+    "name": "Maelzora",
+    "image": "/characters/alfa/07-maelzora.jpg",
+    "video": "/characters/alfa/07-maelzora.mp4"
+  },
+  {
+    "id": "alfa-08",
+    "team": "alfa",
+    "number": 8,
+    "name": "Dravok",
+    "image": "/characters/alfa/08-dravok.jpg",
+    "video": "/characters/alfa/08-dravok.mp4"
+  },
+  {
+    "id": "alfa-09",
+    "team": "alfa",
+    "number": 9,
+    "name": "Kharven",
+    "image": "/characters/alfa/09-kharven.jpg",
+    "video": "/characters/alfa/09-kharven.mp4"
+  },
+  {
+    "id": "alfa-10",
+    "team": "alfa",
+    "number": 10,
+    "name": "Ozymar",
+    "image": "/characters/alfa/10-ozymar.jpg",
+    "video": "/characters/alfa/10-ozymar.mp4"
+  },
+  {
+    "id": "alfa-11",
+    "team": "alfa",
+    "number": 11,
+    "name": "Velkrum",
+    "image": "/characters/alfa/11-velkrum.jpg",
+    "video": "/characters/alfa/11-velkrum.mp4"
+  },
+  {
+    "id": "alfa-12",
+    "team": "alfa",
+    "number": 12,
+    "name": "Ithrak",
+    "image": "/characters/alfa/12-ithrak.jpg",
+    "video": "/characters/alfa/12-ithrak.mp4"
+  },
+  {
+    "id": "alfa-13",
+    "team": "alfa",
+    "number": 13,
+    "name": "Zenthul",
+    "image": "/characters/alfa/13-zenthul.jpg",
+    "video": "/characters/alfa/13-zenthul.mp4"
+  },
+  {
+    "id": "alfa-14",
+    "team": "alfa",
+    "number": 14,
+    "name": "Arkhemon",
+    "image": "/characters/alfa/14-arkhemon.jpg",
+    "video": "/characters/alfa/14-arkhemon.mp4"
+  },
+  {
+    "id": "alfa-15",
+    "team": "alfa",
+    "number": 15,
+    "name": "Nyxar",
+    "image": "/characters/alfa/15-nyxar.jpg",
+    "video": "/characters/alfa/15-nyxar.mp4"
+  },
+  {
+    "id": "alfa-16",
+    "team": "alfa",
+    "number": 16,
+    "name": "Ghorzath",
+    "image": "/characters/alfa/16-ghorzath.jpg",
+    "video": "/characters/alfa/16-ghorzath.mp4"
+  },
+  {
+    "id": "alfa-17",
+    "team": "alfa",
+    "number": 17,
+    "name": "Eryndor",
+    "image": "/characters/alfa/17-eryndor.jpg",
+    "video": "/characters/alfa/17-eryndor.mp4"
+  },
+  {
+    "id": "alfa-18",
+    "team": "alfa",
+    "number": 18,
+    "name": "Klythos",
+    "image": "/characters/alfa/18-klythos.jpg",
+    "video": "/characters/alfa/18-klythos.mp4"
+  },
+  {
+    "id": "alfa-19",
+    "team": "alfa",
+    "number": 19,
+    "name": "Azrakar",
+    "image": "/characters/alfa/19-azrakar.jpg",
+    "video": "/characters/alfa/19-azrakar.mp4"
+  },
+  {
+    "id": "alfa-20",
+    "team": "alfa",
+    "number": 20,
+    "name": "Avaroth",
+    "image": "/characters/alfa/20-avaroth.jpg",
+    "video": "/characters/alfa/20-avaroth.mp4"
+  },
+  {
+    "id": "alfa-41",
+    "team": "alfa",
+    "number": 41,
+    "name": "Vorakh",
+    "image": "/characters/alfa/41-vorakh.jpg",
+    "video": "/characters/alfa/41-vorakh.mp4"
+  },
+  {
+    "id": "alfa-42",
+    "team": "alfa",
+    "number": 42,
+    "name": "Zyreth",
+    "image": "/characters/alfa/42-zyreth.jpg",
+    "video": "/characters/alfa/42-zyreth.mp4"
+  },
+  {
+    "id": "alfa-43",
+    "team": "alfa",
+    "number": 43,
+    "name": "Krovan",
+    "image": "/characters/alfa/43-krovan.jpg",
+    "video": "/characters/alfa/43-krovan.mp4"
+  },
+  {
+    "id": "alfa-44",
+    "team": "alfa",
+    "number": 44,
+    "name": "Selkira",
+    "image": "/characters/alfa/44-selkira.jpg",
+    "video": "/characters/alfa/44-selkira.mp4"
+  },
+  {
+    "id": "alfa-45",
+    "team": "alfa",
+    "number": 45,
+    "name": "Drakonis",
+    "image": "/characters/alfa/45-drakonis.jpg",
+    "video": "/characters/alfa/45-drakonis.mp4"
+  },
+  {
+    "id": "alfa-46",
+    "team": "alfa",
+    "number": 46,
+    "name": "Myrkhan",
+    "image": "/characters/alfa/46-myrkhan.jpg",
+    "video": "/characters/alfa/46-myrkhan.mp4"
+  },
+  {
+    "id": "alfa-47",
+    "team": "alfa",
+    "number": 47,
+    "name": "Talvex",
+    "image": "/characters/alfa/47-talvex.jpg",
+    "video": "/characters/alfa/47-talvex.mp4"
+  },
+  {
+    "id": "alfa-48",
+    "team": "alfa",
+    "number": 48,
+    "name": "Narzetha",
+    "image": "/characters/alfa/48-narzetha.jpg",
+    "video": "/characters/alfa/48-narzetha.mp4"
+  },
+  {
+    "id": "alfa-49",
+    "team": "alfa",
+    "number": 49,
+    "name": "Qorvan",
+    "image": "/characters/alfa/49-qorvan.jpg",
+    "video": "/characters/alfa/49-qorvan.mp4"
+  },
+  {
+    "id": "alfa-50",
+    "team": "alfa",
+    "number": 50,
+    "name": "Xarvion",
+    "image": "/characters/alfa/50-xarvion.jpg",
+    "video": "/characters/alfa/50-xarvion.mp4"
+  },
+  {
+    "id": "alfa-51",
+    "team": "alfa",
+    "number": 51,
+    "name": "Zorvak",
+    "image": "/characters/alfa/51-zorvak.jpg",
+    "video": "/characters/alfa/51-zorvak.mp4"
+  },
+  {
+    "id": "alfa-52",
+    "team": "alfa",
+    "number": 52,
+    "name": "Elythra",
+    "image": "/characters/alfa/52-elythra.jpg",
+    "video": "/characters/alfa/52-elythra.mp4"
+  },
+  {
+    "id": "alfa-53",
+    "team": "alfa",
+    "number": 53,
+    "name": "Kraxion",
+    "image": "/characters/alfa/53-kraxion.jpg",
+    "video": "/characters/alfa/53-kraxion.mp4"
+  },
+  {
+    "id": "alfa-54",
+    "team": "alfa",
+    "number": 54,
+    "name": "Orexis",
+    "image": "/characters/alfa/54-orexis.jpg",
+    "video": "/characters/alfa/54-orexis.mp4"
+  },
+  {
+    "id": "alfa-55",
+    "team": "alfa",
+    "number": 55,
+    "name": "Valkyra",
+    "image": "/characters/alfa/55-valkyra.jpg",
+    "video": "/characters/alfa/55-valkyra.mp4"
+  },
+  {
+    "id": "alfa-56",
+    "team": "alfa",
+    "number": 56,
+    "name": "Therzul",
+    "image": "/characters/alfa/56-therzul.jpg",
+    "video": "/characters/alfa/56-therzul.mp4"
+  },
+  {
+    "id": "alfa-57",
+    "team": "alfa",
+    "number": 57,
+    "name": "Nexhara",
+    "image": "/characters/alfa/57-nexhara.jpg",
+    "video": "/characters/alfa/57-nexhara.mp4"
+  },
+  {
+    "id": "alfa-58",
+    "team": "alfa",
+    "number": 58,
+    "name": "Graveth",
+    "image": "/characters/alfa/58-graveth.jpg",
+    "video": "/characters/alfa/58-graveth.mp4"
+  },
+  {
+    "id": "alfa-59",
+    "team": "alfa",
+    "number": 59,
+    "name": "Aethron",
+    "image": "/characters/alfa/59-aethron.jpg",
+    "video": "/characters/alfa/59-aethron.mp4"
+  },
+  {
+    "id": "alfa-60",
+    "team": "alfa",
+    "number": 60,
+    "name": "Oblivar",
+    "image": "/characters/alfa/60-oblivar.jpg",
+    "video": "/characters/alfa/60-oblivar.mp4"
+  },
+  {
+    "id": "delta-01",
+    "team": "delta",
+    "number": 1,
+    "name": "Sephran",
+    "image": "/characters/delta/01-sephran.jpg",
+    "video": "/characters/delta/01-sephran.mp4"
+  },
+  {
+    "id": "delta-02",
+    "team": "delta",
+    "number": 2,
+    "name": "Mordax",
+    "image": "/characters/delta/02-mordax.jpg",
+    "video": "/characters/delta/02-mordax.mp4"
+  },
+  {
+    "id": "delta-03",
+    "team": "delta",
+    "number": 3,
+    "name": "Korvex",
+    "image": "/characters/delta/03-korvex.jpg",
+    "video": "/characters/delta/03-korvex.mp4"
+  },
+  {
+    "id": "delta-04",
+    "team": "delta",
+    "number": 4,
+    "name": "Draziel",
+    "image": "/characters/delta/04-draziel.jpg",
+    "video": "/characters/delta/04-draziel.mp4"
+  },
+  {
+    "id": "delta-05",
+    "team": "delta",
+    "number": 5,
+    "name": "Vexoria",
+    "image": "/characters/delta/05-vexoria.jpg",
+    "video": "/characters/delta/05-vexoria.mp4"
+  },
+  {
+    "id": "delta-06",
+    "team": "delta",
+    "number": 6,
+    "name": "Thulgar",
+    "image": "/characters/delta/06-thulgar.jpg",
+    "video": "/characters/delta/06-thulgar.mp4"
+  },
+  {
+    "id": "delta-07",
+    "team": "delta",
+    "number": 7,
+    "name": "Nexarion",
+    "image": "/characters/delta/07-nexarion.jpg",
+    "video": "/characters/delta/07-nexarion.mp4"
+  },
+  {
+    "id": "delta-08",
+    "team": "delta",
+    "number": 8,
+    "name": "Oblyx",
+    "image": "/characters/delta/08-oblyx.jpg",
+    "video": "/characters/delta/08-oblyx.mp4"
+  },
+  {
+    "id": "delta-09",
+    "team": "delta",
+    "number": 9,
+    "name": "Syrkhan",
+    "image": "/characters/delta/09-syrkhan.jpg",
+    "video": "/characters/delta/09-syrkhan.mp4"
+  },
+  {
+    "id": "delta-10",
+    "team": "delta",
+    "number": 10,
+    "name": "Malzeth",
+    "image": "/characters/delta/10-malzeth.jpg",
+    "video": "/characters/delta/10-malzeth.mp4"
+  },
+  {
+    "id": "delta-11",
+    "team": "delta",
+    "number": 11,
+    "name": "Zerath",
+    "image": "/characters/delta/11-zerath.jpg",
+    "video": "/characters/delta/11-zerath.mp4"
+  },
+  {
+    "id": "delta-12",
+    "team": "delta",
+    "number": 12,
+    "name": "Elyzar",
+    "image": "/characters/delta/12-elyzar.jpg",
+    "video": "/characters/delta/12-elyzar.mp4"
+  },
+  {
+    "id": "delta-13",
+    "team": "delta",
+    "number": 13,
+    "name": "Varkhos",
+    "image": "/characters/delta/13-varkhos.jpg",
+    "video": "/characters/delta/13-varkhos.mp4"
+  },
+  {
+    "id": "delta-14",
+    "team": "delta",
+    "number": 14,
+    "name": "Orphion",
+    "image": "/characters/delta/14-orphion.jpg",
+    "video": "/characters/delta/14-orphion.mp4"
+  },
+  {
+    "id": "delta-15",
+    "team": "delta",
+    "number": 15,
+    "name": "Cyrax",
+    "image": "/characters/delta/15-cyrax.jpg",
+    "video": "/characters/delta/15-cyrax.mp4"
+  },
+  {
+    "id": "delta-16",
+    "team": "delta",
+    "number": 16,
+    "name": "Darkhen",
+    "image": "/characters/delta/16-darkhen.jpg",
+    "video": "/characters/delta/16-darkhen.mp4"
+  },
+  {
+    "id": "delta-17",
+    "team": "delta",
+    "number": 17,
+    "name": "Razkiel",
+    "image": "/characters/delta/17-razkiel.jpg",
+    "video": "/characters/delta/17-razkiel.mp4"
+  },
+  {
+    "id": "delta-18",
+    "team": "delta",
+    "number": 18,
+    "name": "Ulthar",
+    "image": "/characters/delta/18-ulthar.jpg",
+    "video": "/characters/delta/18-ulthar.mp4"
+  },
+  {
+    "id": "delta-19",
+    "team": "delta",
+    "number": 19,
+    "name": "Khazor",
+    "image": "/characters/delta/19-khazor.jpg",
+    "video": "/characters/delta/19-khazor.mp4"
+  },
+  {
+    "id": "delta-20",
+    "team": "delta",
+    "number": 20,
+    "name": "Omnivar",
+    "image": "/characters/delta/20-omnivar.jpg",
+    "video": "/characters/delta/20-omnivar.mp4"
+  },
+  {
+    "id": "delta-21",
+    "team": "delta",
+    "number": 21,
+    "name": "Zhakor",
+    "image": "/characters/delta/21-zhakor.jpg",
+    "video": "/characters/delta/21-zhakor.mp4"
+  },
+  {
+    "id": "delta-22",
+    "team": "delta",
+    "number": 22,
+    "name": "Velthar",
+    "image": "/characters/delta/22-velthar.jpg",
+    "video": "/characters/delta/22-velthar.mp4"
+  },
+  {
+    "id": "delta-23",
+    "team": "delta",
+    "number": 23,
+    "name": "Kryzon",
+    "image": "/characters/delta/23-kryzon.jpg",
+    "video": "/characters/delta/23-kryzon.mp4"
+  },
+  {
+    "id": "delta-24",
+    "team": "delta",
+    "number": 24,
+    "name": "Morthiel",
+    "image": "/characters/delta/24-morthiel.jpg",
+    "video": "/characters/delta/24-morthiel.mp4"
+  },
+  {
+    "id": "delta-25",
+    "team": "delta",
+    "number": 25,
+    "name": "Xandrax",
+    "image": "/characters/delta/25-xandrax.jpg",
+    "video": "/characters/delta/25-xandrax.mp4"
+  },
+  {
+    "id": "delta-26",
+    "team": "delta",
+    "number": 26,
+    "name": "Thazira",
+    "image": "/characters/delta/26-thazira.jpg",
+    "video": "/characters/delta/26-thazira.mp4"
+  },
+  {
+    "id": "delta-27",
+    "team": "delta",
+    "number": 27,
+    "name": "Drexul",
+    "image": "/characters/delta/27-drexul.jpg",
+    "video": "/characters/delta/27-drexul.mp4"
+  },
+  {
+    "id": "delta-28",
+    "team": "delta",
+    "number": 28,
+    "name": "Yrkanor",
+    "image": "/characters/delta/28-yrkanor.jpg",
+    "video": "/characters/delta/28-yrkanor.mp4"
+  },
+  {
+    "id": "delta-29",
+    "team": "delta",
+    "number": 29,
+    "name": "Zelkira",
+    "image": "/characters/delta/29-zelkira.jpg",
+    "video": "/characters/delta/29-zelkira.mp4"
+  },
+  {
+    "id": "delta-30",
+    "team": "delta",
+    "number": 30,
+    "name": "Vorthen",
+    "image": "/characters/delta/30-vorthen.jpg",
+    "video": "/characters/delta/30-vorthen.mp4"
+  },
+  {
+    "id": "delta-31",
+    "team": "delta",
+    "number": 31,
+    "name": "Khaeltor",
+    "image": "/characters/delta/31-khaeltor.jpg",
+    "video": "/characters/delta/31-khaeltor.mp4"
+  },
+  {
+    "id": "delta-32",
+    "team": "delta",
+    "number": 32,
+    "name": "Sylvra",
+    "image": "/characters/delta/32-sylvra.jpg",
+    "video": "/characters/delta/32-sylvra.mp4"
+  },
+  {
+    "id": "delta-33",
+    "team": "delta",
+    "number": 33,
+    "name": "Orzeth",
+    "image": "/characters/delta/33-orzeth.jpg",
+    "video": "/characters/delta/33-orzeth.mp4"
+  },
+  {
+    "id": "delta-34",
+    "team": "delta",
+    "number": 34,
+    "name": "Dravyth",
+    "image": "/characters/delta/34-dravyth.jpg",
+    "video": "/characters/delta/34-dravyth.mp4"
+  },
+  {
+    "id": "delta-35",
+    "team": "delta",
+    "number": 35,
+    "name": "Xerkhal",
+    "image": "/characters/delta/35-xerkhal.jpg",
+    "video": "/characters/delta/35-xerkhal.mp4"
+  },
+  {
+    "id": "delta-36",
+    "team": "delta",
+    "number": 36,
+    "name": "Myzorah",
+    "image": "/characters/delta/36-myzorah.jpg",
+    "video": "/characters/delta/36-myzorah.mp4"
+  },
+  {
+    "id": "delta-37",
+    "team": "delta",
+    "number": 37,
+    "name": "Thrykon",
+    "image": "/characters/delta/37-thrykon.jpg",
+    "video": "/characters/delta/37-thrykon.mp4"
+  },
+  {
+    "id": "delta-38",
+    "team": "delta",
+    "number": 38,
+    "name": "Azkheir",
+    "image": "/characters/delta/38-azkheir.jpg",
+    "video": "/characters/delta/38-azkheir.mp4"
+  },
+  {
+    "id": "delta-39",
+    "team": "delta",
+    "number": 39,
+    "name": "Vyndra",
+    "image": "/characters/delta/39-vyndra.jpg",
+    "video": "/characters/delta/39-vyndra.mp4"
+  },
+  {
+    "id": "delta-40",
+    "team": "delta",
+    "number": 40,
+    "name": "Korzhael",
+    "image": "/characters/delta/40-korzhael.jpg",
+    "video": "/characters/delta/40-korzhael.mp4"
+  }
+]
