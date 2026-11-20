@@ -18,7 +18,7 @@
   /* ══════════ CONFIGURACIÓN ══════════ */
   var CFG = {
     // 'modal' = el panel se abre dentro de tu web (recomendado) | 'tab' = pestaña nueva
-    mode: 'modal',
+    mode: 'tab',
     // Botón flotante contextual (abajo a la derecha) cuando no hay host configurado
     float: true,
     // z-index base del botón (el modal usa +1)
