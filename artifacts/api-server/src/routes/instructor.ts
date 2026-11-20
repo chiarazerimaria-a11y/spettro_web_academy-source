@@ -125,8 +125,8 @@ router.post("/instructor/become", async (req, res) => {
   try {
     const uid = getSessionUserId(req);
     if (!uid) { res.status(401).json({ error: "Inicia sesion de nuevo" }); return; }
-    await db.update(usersTable).set({ role: "instructor" }).where(eq(usersTable.id, uid));
-    res.json({ ok: true });
+    // Cerrado: el rol de profesor solo lo concede el admin (aprobando la solicitud).
+    res.status(403).json({ error: "Envia una solicitud de instructor; el admin la aprobara." });
   } catch (e) {
     req.log.error(e);
     res.status(500).json({ error: "Error interno" });
