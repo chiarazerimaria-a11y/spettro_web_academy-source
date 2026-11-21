@@ -32,7 +32,7 @@
       // Botón del PROFESOR: aparece en las páginas cuya URL contiene alguna
       // de estas palabras (el perfil del usuario). Añade/quita a tu gusto.
       instructor: {
-        urls: ['/'],   // toda la web; el filtro real es el rol + las exclusiones de sync()
+        urls: ['/perfil'],   // solo el perfil; ademas el servidor debe confirmar el rol (/api/instructor/me)
         label: '🎓 Panel del Profesor',
         // SIN barra inicial = relativo a donde esté spettro-widget.js (funciona en
         // file://, en subcarpetas y en la raíz). Con barra = raíz del sitio. Con
