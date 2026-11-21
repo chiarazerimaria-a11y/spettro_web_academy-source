@@ -93,6 +93,11 @@ function CourseCard({ course, enrolled, onEnroll, enrolling, userTier, onNavigat
         <div className="text-6xl font-mono font-black opacity-10 select-none" style={{ color: isLocked ? "#555" : hex }}>
           {CAT_ICON[course.category] || course.title.slice(0, 2).toUpperCase()}
         </div>
+        {(course as any).thumbnailUrl && (
+          <img src={(course as any).thumbnailUrl} alt={course.title} loading="lazy"
+            className={`absolute inset-0 h-full w-full object-cover ${isLocked ? "opacity-40 grayscale" : ""}`}
+            onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }} />
+        )}
 
         {/* Badges overlay */}
         <div className="absolute inset-0 flex items-start justify-between p-3">
