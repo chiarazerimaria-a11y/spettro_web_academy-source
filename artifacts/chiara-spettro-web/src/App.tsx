@@ -46,6 +46,7 @@ import Payouts from "@/pages/admin/Payouts";
 import AdminMisiones from "@/pages/admin/AdminMisiones";
 import AdminSquads from "@/pages/admin/AdminSquads";
 import AdminTorneos from "@/pages/admin/AdminTorneos";
+import AccesoCursos from "@/pages/admin/AccesoCursos";
 
 const queryClient = new QueryClient();
 
@@ -71,6 +72,7 @@ function AdminRouter() {
         <Route path="/admin/misiones" component={AdminMisiones} />
         <Route path="/admin/squads" component={AdminSquads} />
         <Route path="/admin/torneos" component={AdminTorneos} />
+        <Route path="/admin/acceso-cursos" component={AccesoCursos} />
         <Route component={NotFound} />
       </Switch>
     </AdminLayout>
