@@ -43,6 +43,8 @@ router.get("/auth/me", async (req, res) => {
 
 // POST /api/subscription/buy — paga con GHC, el usuario sale de la cookie firmada
 router.post("/subscription/buy", async (req, res) => {
+  // La suscripcion se paga con SPC (pendiente). El pago con GHC queda apagado salvo ALLOW_GHC_SUBSCRIPTION=1.
+  if (process.env["ALLOW_GHC_SUBSCRIPTION"] !== "1") return res.status(410).json({ error: "La suscripción se paga con SPC. Próximamente." });
   try {
     const userId = getSessionUserId(req);
     if (!userId) return res.status(401).json({ error: "Inicia sesión de nuevo", code: "LOGIN_REQUIRED" });
