@@ -20,6 +20,7 @@ interface AuthState {
   register: (username: string, email: string, password: string, avatarType: string) => Promise<void>;
   updateProfile: (username: string, avatarUrl?: string | null) => Promise<void>;
   logout: () => void;
+  refreshUser: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthState | null>(null);
@@ -38,15 +39,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setIsLoading(false);
   }, []);
 
+  const refreshUser = async () => {
+    try {
+      const r = await fetch(`${BASE}api/auth/me`, { cache: "no-store" });
+      if (!r.ok) return;
+      const d = await r.json();
+      if (!d?.user) return;
+      setUser(d.user);
+      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(d.user)); } catch {}
+    } catch {}
+  };
+
   useEffect(() => {
-    fetch(`${BASE}api/auth/me`, { cache: "no-store" })
-      .then(r => (r.ok ? r.json() : null))
-      .then(d => {
-        if (!d?.user) return;
-        setUser(d.user);
-        try { localStorage.setItem(STORAGE_KEY, JSON.stringify(d.user)); } catch {}
-      })
-      .catch(() => {});
+    refreshUser();
+    const onFocus = () => { refreshUser(); };
+    window.addEventListener("focus", onFocus);
+    return () => window.removeEventListener("focus", onFocus);
   }, []);
 
   const login = async (email: string, password: string) => {
@@ -93,7 +101,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, isLoading, login, register, updateProfile, logout }}>
+    <AuthContext.Provider value={{ user, isLoading, login, register, updateProfile, logout, refreshUser }}>
       {children}
     </AuthContext.Provider>
   );

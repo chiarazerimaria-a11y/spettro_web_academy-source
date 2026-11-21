@@ -5,6 +5,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/not-found";
 import Home from "@/pages/Home";
 import AdminAccess from "@/components/AdminAccess";
+import AccessFab from "@/components/AccessFab";
 import Lab from "@/pages/Lab";
 import Profile from "@/pages/Profile";
 import Teams from "@/pages/Teams";
@@ -115,6 +116,7 @@ function App() {
           <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
             <Router />
             <AdminAccess />
+            <AccessFab />
           </WouterRouter>
           <Toaster />
         </TooltipProvider>

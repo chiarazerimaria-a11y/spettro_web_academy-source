@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { db } from "@workspace/db";
 import { coursesTable, courseEnrollmentsTable, spettroWalletsTable, spettroTransactionsTable } from "@workspace/db/schema";
+import { getSessionUserId } from "../middleware/requireUser";
 import { eq, and, desc } from "drizzle-orm";
 
 const router = Router();
@@ -98,11 +99,17 @@ router.get("/public/courses/:id", async (req, res) => {
 router.post("/public/courses/:id/enroll", async (req, res) => {
   try {
     const courseId = parseInt(req.params.id);
-    const { userId } = req.body as { userId: number };
-    if (!userId) return res.status(400).json({ error: "userId requerido" });
+    // El usuario sale de la cookie firmada, nunca del cuerpo de la peticion.
+    const userId = getSessionUserId(req);
+    if (!userId) return res.status(401).json({ error: "Inicia sesión de nuevo", code: "LOGIN_REQUIRED" });
 
     const [course] = await db.select().from(coursesTable).where(eq(coursesTable.id, courseId));
     if (!course) return res.status(404).json({ error: "Curso no encontrado" });
+
+    // Cursos de pago de un profesor externo: no se matriculan gratis.
+    if (course.instructorId != null && course.instructorId !== userId && Number(course.price) > 0 && !course.isFree) {
+      return res.status(402).json({ error: "Este curso es de pago. Pide acceso a la administración.", code: "PAYMENT_REQUIRED" });
+    }
 
     const [existing] = await db.select().from(courseEnrollmentsTable)
       .where(and(eq(courseEnrollmentsTable.userId, userId), eq(courseEnrollmentsTable.courseId, courseId)));

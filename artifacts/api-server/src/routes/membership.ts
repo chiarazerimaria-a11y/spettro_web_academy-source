@@ -132,4 +132,43 @@ router.post("/admin/subscription/grant", adminGuard, async (req, res) => {
   }
 });
 
+// GET /api/access/me — que boton flotante le toca al usuario (siempre desde la base de datos)
+router.get("/access/me", async (req, res) => {
+  res.setHeader("Cache-Control", "no-store");
+  try {
+    const id = getSessionUserId(req);
+    const none = { loggedIn: false, isInstructor: false, tier: "libre", hasAccess: false };
+    if (!id) return res.json(none);
+    const [u] = await db.select({
+      role: usersTable.role, tier: usersTable.subscriptionTier, exp: usersTable.subscriptionExpiresAt,
+    }).from(usersTable).where(eq(usersTable.id, id)).limit(1);
+    if (!u) return res.json(none);
+    const tier = effectiveTier(u.tier, u.exp);
+    res.json({ loggedIn: true, isInstructor: u.role === "instructor", tier, hasAccess: tier !== "libre" });
+  } catch (e) {
+    req.log.error(e);
+    res.status(500).json({ error: "Error interno del servidor" });
+  }
+});
+
+// Cuando el admin confirma una solicitud de suscripcion, el plan pasa de verdad al usuario.
+const ACTIVE_STATES = ["active", "activo", "activa", "confirmado", "confirmada", "aprobado", "aprobada", "pagado", "paid"];
+export async function syncSubscriberToUser(s: { email: string; plan: string; status: string; notes: string | null }) {
+  if (!ACTIVE_STATES.includes(String(s.status).toLowerCase())) return;
+  const planText = String(s.plan).toLowerCase();
+  const planKey = planText.includes("elite") ? "elite" : planText.includes("hacker") ? "hacker" : null;
+  if (!planKey) return;
+  const r = await db.execute(sql`SELECT id, subscription_tier AS tier, subscription_expires_at AS exp FROM users WHERE lower(email) = lower(${s.email}) LIMIT 1`);
+  const u = r.rows[0] as { id: number; tier: string; exp: Date | string | null } | undefined;
+  if (!u) return;
+  const exp = u.exp ? new Date(u.exp) : null;
+  const current = effectiveTier(u.tier, exp);
+  if (current !== "libre" && !exp) return;                              // plan permanente
+  if ((PLANS[current]?.rank ?? 0) > PLANS[planKey].rank) return;        // ya tiene uno superior
+  if (current === planKey) return;                                      // ya activo: para renovar usa "grant"
+  const days = /anual/i.test(s.notes ?? "") ? 365 : PERIOD_DAYS;
+  const newExp = new Date(Date.now() + days * DAY);
+  await db.execute(sql`UPDATE users SET subscription_tier = ${planKey}, subscription_expires_at = ${newExp.toISOString()} WHERE id = ${u.id}`);
+}
+
 export default router;

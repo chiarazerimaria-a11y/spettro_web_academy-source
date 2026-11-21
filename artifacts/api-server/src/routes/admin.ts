@@ -138,6 +138,10 @@ router.patch("/admin/subscribers/:id", async (req, res) => {
   const body = UpdateSubscriberBody.parse(req.body);
   const [row] = await db.update(subscribersTable).set(body).where(eq(subscribersTable.id, id)).returning();
   if (!row) return res.status(404).json({ error: "not found" });
+  try {
+    const { syncSubscriberToUser } = await import("./membership");
+    await syncSubscriberToUser(row);
+  } catch (e) { req.log.error(e); }
   res.json(toSubscriber(row));
 });
 router.delete("/admin/subscribers/:id", async (req, res) => {
