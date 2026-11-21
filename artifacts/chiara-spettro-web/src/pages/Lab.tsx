@@ -10,6 +10,8 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { AuthModal } from "@/components/AuthModal";
+import LazyVideo from "@/components/LazyVideo";
+import Pager from "@/components/Pager";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 type Difficulty = "FÁCIL" | "MEDIO" | "DIFÍCIL" | "INSANO";
@@ -94,6 +96,20 @@ function MachineVideoLayer({ src, poster }: { src: string; poster: string | null
     </div>
   );
 }
+
+// ─── Videos de personajes (mapa nombre → archivo en /androids/videos) ────────
+const normName = (s: string) =>
+  s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase().replace(/[^A-Z0-9]/g, "");
+
+let videoManifestPromise: Promise<Record<string, string>> | null = null;
+const loadVideoManifest = () => {
+  if (!videoManifestPromise) {
+    videoManifestPromise = fetch(`${import.meta.env.BASE_URL}androids/videos/manifest.json`)
+      .then(r => (r.ok ? r.json() : {}))
+      .catch(() => ({}));
+  }
+  return videoManifestPromise;
+};
 
 const diffColorMap: Record<string, string> = {
   "FÁCIL": "#ff4db8", "MEDIO": "#f59e0b", "DIFÍCIL": "#9b55f9", "INSANO": "#ef4444",
@@ -944,9 +960,9 @@ const CombatIntel = ({ machine }: { machine: Machine }) => {
 
 // ─── Machine Card (video-game style) ─────────────────────────────────────────
 const GameMachineCard = ({
-  m, onSelect, user, onAuthOpen, exploding, solved,
+  m, onSelect, user, onAuthOpen, exploding, solved, videoBase,
 }: {
-  m: Machine; onSelect: (m: Machine) => void; user: any; onAuthOpen: () => void; exploding: boolean; solved?: boolean;
+  m: Machine; videoBase?: string | null; onSelect: (m: Machine) => void; user: any; onAuthOpen: () => void; exploding: boolean; solved?: boolean;
 }) => {
   const [hovered, setHovered] = useState(false);
   const color = solved ? "#34d399" : (diffColorMap[m.difficulty] ?? "#ff4db8");
@@ -995,14 +1011,22 @@ const GameMachineCard = ({
           <div className="absolute inset-0 flex items-center justify-center p-4"
             style={{ filter: `drop-shadow(0 0 16px ${color}90) drop-shadow(0 0 32px ${color}40)` }}>
             <div className="w-40 h-40">
-              <img
-                src={m.thumbnailUrl || getAndroidImage(m.id)}
-                alt={m.name}
-                className="w-full h-full object-cover rounded-xl"
-                onError={(e) => {
-                  (e.currentTarget as HTMLImageElement).style.display = "none";
-                }}
-              />
+              {videoBase ? (
+                <LazyVideo
+                  base={videoBase}
+                  className="w-full h-full object-cover rounded-xl"
+                  fallback={m.thumbnailUrl || getAndroidImage(m.id)}
+                />
+              ) : (
+                <img
+                  src={m.thumbnailUrl || getAndroidImage(m.id)}
+                  alt={m.name}
+                  className="w-full h-full object-cover rounded-xl"
+                  onError={(e) => {
+                    (e.currentTarget as HTMLImageElement).style.display = "none";
+                  }}
+                />
+              )}
             </div>
           </div>
           {/* Scan line */}
@@ -2296,6 +2320,9 @@ export default function Lab() {
   const [filterOS, setFilterOS] = useState<string>("TODOS");
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState("nombre");
+  const [page, setPage] = useState(1);
+  const [videoMap, setVideoMap] = useState<Record<string, string>>({});
+  useEffect(() => { loadVideoManifest().then(setVideoMap); }, []);
   const [selectedMachine, setSelectedMachine] = useState<Machine | null>(null);
   const [reportOpen, setReportOpen] = useState(false);
   const [guiaOpen, setGuiaOpen] = useState(false);
@@ -2460,6 +2487,14 @@ export default function Lab() {
       return 0;
     });
 
+  const PAGE_SIZE = 20;
+  const totalPages = Math.max(1, Math.ceil(filteredMachines.length / PAGE_SIZE));
+  const currentPage = Math.min(page, totalPages);
+  const pageMachines = filteredMachines.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
+
+  // al cambiar filtros, búsqueda u orden, volver a la página 1
+  useEffect(() => { setPage(1); }, [filterDiff, filterOS, search, sort]);
+
   return (
     <div className="min-h-[100dvh] flex flex-col font-sans bg-background text-foreground overflow-x-hidden">
 
@@ -2598,15 +2633,27 @@ export default function Lab() {
           <motion.div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"
             initial="hidden" animate="show"
             variants={{ hidden: { opacity: 0 }, show: { opacity: 1, transition: { staggerChildren: 0.04 } } }}>
-            {filteredMachines.map(m => (
+            {pageMachines.map(m => (
               <motion.div key={m.id} variants={{ hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0 } }}
                 style={{ zIndex: explodingId === m.id ? 50 : 1 }}>
-                <GameMachineCard m={m} onSelect={handleInitiateMission} user={user}
+                <GameMachineCard m={m}
+                  videoBase={videoMap[normName(m.name)] ? `${import.meta.env.BASE_URL}androids/videos/${videoMap[normName(m.name)]}` : null}
+                  onSelect={handleInitiateMission} user={user}
                   onAuthOpen={() => setAuthOpen(true)} exploding={explodingId === m.id}
                   solved={solvedMachineSlugs.has(m.slug)} />
               </motion.div>
             ))}
           </motion.div>
+        )}
+      {!loading && (
+          <Pager
+            page={currentPage}
+            totalPages={totalPages}
+            onChange={(p) => {
+              setPage(p);
+              document.querySelector("main")?.scrollIntoView({ behavior: "smooth" });
+            }}
+          />
         )}
       </main>
 
