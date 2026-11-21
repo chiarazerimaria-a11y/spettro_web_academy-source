@@ -337,6 +337,19 @@ router.get("/public/courses/:id/lessons", async (req, res) => {
     let lessons = await db.select().from(courseLessonsTable)
       .where(eq(courseLessonsTable.courseId, courseId));
 
+    // Cursos creados por personas (admin o profesor): no se rellenan con la plantilla de ejemplo.
+    // Si no tienen lecciones, se muestra su video del curso como una unica leccion (sin guardar nada).
+    const cursoPropio = course.instructorId != null || (course.videoUrl != null && !["Ph4ntom","R3dD3vil","N3tW4rri0r","Cyph3rX","H4ck3rQueen","N1ghtCrawl3r","B1n4ryGh0st"].includes(course.instructor) && course.id > 8);
+    if (lessons.length === 0 && cursoPropio) {
+      const ytId = (course.videoUrl ?? "").match(/(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/|live\/)|youtu\.be\/)([\w-]{11})/);
+      const embed = ytId ? `https://www.youtube.com/embed/${ytId[1]}` : (course.videoUrl ?? "");
+      res.json(course.videoUrl ? [{
+        id: 0, courseId, order: 1, title: course.title, description: course.description ?? "",
+        videoUrl: embed, videoUrls: { es: embed, en: embed, it: embed, fr: embed },
+        duration: 0, isFree: true, content: null, createdAt: new Date().toISOString(),
+      }] : []);
+      return;
+    }
     if (lessons.length === 0) {
       let seedData: LessonSeed[];
       if (course.category === "fundamentos" && course.instructor === "Ph4ntom") {
