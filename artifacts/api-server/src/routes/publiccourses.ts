@@ -1,4 +1,6 @@
 import { Router } from "express";
+import { courseLessonsTable as lessonsTbl } from "@workspace/db/schema";
+import { inArray as inArr, asc as ascOrd } from "drizzle-orm";
 import { db } from "@workspace/db";
 import { coursesTable, courseEnrollmentsTable, spettroWalletsTable, spettroTransactionsTable } from "@workspace/db/schema";
 import { getSessionUserId } from "../middleware/requireUser";
@@ -66,6 +68,42 @@ const SEED_COURSES = [
 ];
 
 // GET /api/public/courses
+// ── Miniaturas: la del curso, o la de su primer video de YouTube ──────────────
+const YT_RE = /(?:youtube\.com\/(?:watch\?v=|shorts\/|embed\/|live\/)|youtu\.be\/)([\w-]{11})/;
+function ytThumb(u: unknown): string | null {
+  if (typeof u !== "string") return null;
+  const m = u.match(YT_RE);
+  return m ? `https://img.youtube.com/vi/${m[1]}/hqdefault.jpg` : null;
+}
+function firstYtThumb(row: { videoUrl: string | null; videoUrls: string | null }): string | null {
+  const a = ytThumb(row.videoUrl);
+  if (a) return a;
+  if (row.videoUrls) {
+    try {
+      const o = JSON.parse(row.videoUrls) as Record<string, unknown>;
+      for (const k of ["es", "en", "it"]) { const t = ytThumb(o[k]); if (t) return t; }
+      for (const v of Object.values(o)) { const t = ytThumb(v); if (t) return t; }
+    } catch { /* json invalido: se ignora */ }
+  }
+  return null;
+}
+async function withThumbnails<T extends { id: number; thumbnailUrl: string | null; videoUrl: string | null }>(courses: T[]): Promise<T[]> {
+  const missing = courses.filter(c => !c.thumbnailUrl);
+  if (missing.length === 0) return courses;
+  const lessons = await db
+    .select({ courseId: lessonsTbl.courseId, videoUrl: lessonsTbl.videoUrl, videoUrls: lessonsTbl.videoUrls })
+    .from(lessonsTbl)
+    .where(inArr(lessonsTbl.courseId, missing.map(c => c.id)))
+    .orderBy(ascOrd(lessonsTbl.order));
+  const byCourse = new Map<number, string>();
+  for (const l of lessons) {
+    if (byCourse.has(l.courseId)) continue;
+    const t = firstYtThumb(l);
+    if (t) byCourse.set(l.courseId, t);
+  }
+  return courses.map(c => (c.thumbnailUrl ? c : ({ ...c, thumbnailUrl: ytThumb(c.videoUrl) ?? byCourse.get(c.id) ?? null } as T)));
+}
+
 router.get("/public/courses", async (req, res) => {
   try {
     let courses = await db.select().from(coursesTable)
@@ -76,7 +114,7 @@ router.get("/public/courses", async (req, res) => {
       const seeded = await db.insert(coursesTable).values(SEED_COURSES).returning();
       courses = seeded;
     }
-    res.json(courses);
+    res.json(await withThumbnails(courses));
   } catch (err) {
     req.log.error(err);
     res.status(500).json({ error: "Error fetching courses" });
