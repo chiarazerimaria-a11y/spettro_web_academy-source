@@ -249,6 +249,7 @@ export const spettroWalletsTable = pgTable("spettro_wallets", {
   totalEarned: integer("total_earned").notNull().default(0),
   totalSpent: integer("total_spent").notNull().default(0),
   ghcBalance: integer("ghc_balance").notNull().default(0),
+  giftBalance: integer("gift_balance").notNull().default(0),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
@@ -544,5 +545,24 @@ export const examAttemptsTable = pgTable("exam_attempts", {
   userId: integer("user_id").notNull().references(() => usersTable.id),
   score: integer("score").notNull().default(0),
   passed: boolean("passed").notNull().default(false),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+// Saldo de regalo (no retirable): declarado aqui para que push no lo borre.
+export const giftCodesTable = pgTable("gift_codes", {
+  id: serial("id").primaryKey(),
+  codeHash: text("code_hash").notNull().unique(),
+  amount: integer("amount").notNull(),
+  note: text("note"),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  redeemedBy: integer("redeemed_by"),
+  redeemedAt: timestamp("redeemed_at", { withTimezone: true }),
+});
+
+export const giftTransactionsTable = pgTable("gift_transactions", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull(),
+  amount: integer("amount").notNull(),
+  description: text("description").notNull(),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });

@@ -111,3 +111,28 @@ export async function transferGhc(
     return Number((r.rows[0] as { ghc_balance: number }).ghc_balance);
   });
 }
+
+export async function ensureGiftSchema(): Promise<void> {
+  await db.execute(sql`ALTER TABLE spettro_wallets ADD COLUMN IF NOT EXISTS gift_balance integer NOT NULL DEFAULT 0`);
+  await db.execute(sql`
+    CREATE TABLE IF NOT EXISTS gift_codes (
+      id serial PRIMARY KEY,
+      code_hash text NOT NULL,
+      amount integer NOT NULL,
+      note text,
+      created_at timestamptz NOT NULL DEFAULT now(),
+      redeemed_by integer,
+      redeemed_at timestamptz,
+      CONSTRAINT gift_codes_code_hash_unique UNIQUE (code_hash)
+    )
+  `);
+  await db.execute(sql`
+    CREATE TABLE IF NOT EXISTS gift_transactions (
+      id serial PRIMARY KEY,
+      user_id integer NOT NULL,
+      amount integer NOT NULL,
+      description text NOT NULL,
+      created_at timestamptz NOT NULL DEFAULT now()
+    )
+  `);
+}
