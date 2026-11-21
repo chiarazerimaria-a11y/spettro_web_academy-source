@@ -1,3 +1,4 @@
+import { INSTRUCTOR_PANEL_HTML } from "../instructorPanel";
 import { Router, type Request, type Response } from "express";
 import {
   db, usersTable, coursesTable, courseLessonsTable, lessonProgressTable,
@@ -107,6 +108,22 @@ async function refreshLessonCount(courseId: number) {
 }
 
 // ── Quien soy ────────────────────────────────────────────────────────────────
+// GET /api/instructor/panel — panel de control del profesor; solo cuentas con rol instructor
+router.get("/instructor/panel", async (req, res) => {
+  try {
+    const uid = getSessionUserId(req);
+    if (!uid) { res.status(401).type("text/plain").send("Inicia sesión para abrir el panel del profesor."); return; }
+    const [u] = await db.select({ role: usersTable.role }).from(usersTable).where(eq(usersTable.id, uid)).limit(1);
+    if (u?.role !== "instructor") { res.status(403).type("text/plain").send("Solo para profesores."); return; }
+    res.setHeader("Cache-Control", "no-store");
+    res.setHeader("Content-Security-Policy", "default-src 'self'; script-src 'unsafe-inline'; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: https:; media-src 'self' https:; frame-src https:; connect-src 'self'");
+    res.type("html").send(INSTRUCTOR_PANEL_HTML);
+  } catch (e) {
+    req.log.error(e);
+    res.status(500).type("text/plain").send("Error interno");
+  }
+});
+
 router.get("/instructor/me", async (req, res) => {
   try {
     const uid = getSessionUserId(req);
