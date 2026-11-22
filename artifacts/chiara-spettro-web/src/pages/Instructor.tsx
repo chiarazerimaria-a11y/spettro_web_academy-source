@@ -138,6 +138,7 @@ function LessonsTab({ course, onChange }: { course: Course; onChange: () => void
   const [saving, setSaving] = useState(false);
   const [preview, setPreview] = useState<number | null>(null);
   const [f, setF] = useState({ title: "", videoUrl: "", content: "", minutes: "10", isFree: false });
+  const [editId, setEditId] = useState<number | null>(null);
 
   const load = useCallback(() => {
     api<Lesson[]>("/courses/" + course.id + "/lessons").then(setItems)
@@ -149,14 +150,15 @@ function LessonsTab({ course, onChange }: { course: Course; onChange: () => void
     if (!f.title.trim()) { toast({ title: "Falta el título del tema", variant: "destructive" }); return; }
     setSaving(true);
     try {
-      await api("/courses/" + course.id + "/lessons", "POST", {
+      await api(editId ? "/lessons/" + editId : "/courses/" + course.id + "/lessons", editId ? "PATCH" : "POST", {
         title: f.title.trim(), videoUrl: f.videoUrl.trim(), content: f.content,
         durationMinutes: Number(f.minutes) || 0, isFree: f.isFree,
       });
       setF({ title: "", videoUrl: "", content: "", minutes: "10", isFree: false });
+      setEditId(null);
       setAdding(false);
       load(); onChange();
-      toast({ title: "✓ Tema añadido" });
+      toast({ title: editId ? "✓ Tema actualizado" : "✓ Tema añadido" });
     } catch (e) { toast({ title: "No se pudo añadir", description: (e as Error).message, variant: "destructive" }); }
     setSaving(false);
   };
@@ -171,7 +173,7 @@ function LessonsTab({ course, onChange }: { course: Course; onChange: () => void
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <p className="font-mono text-xs text-muted-foreground">{items.length} {items.length === 1 ? "tema" : "temas"}</p>
-        <button onClick={() => setAdding((v) => !v)} style={gradient}
+        <button onClick={() => { if (adding) { setEditId(null); setF({ title: "", videoUrl: "", content: "", minutes: "10", isFree: false }); } setAdding((v) => !v); }} style={gradient}
           className="rounded-lg px-3 py-2 font-mono text-xs font-bold text-black flex items-center gap-1.5">
           {adding ? <X className="h-3.5 w-3.5" /> : <Plus className="h-3.5 w-3.5" />} {adding ? "CERRAR" : "NUEVO TEMA"}
         </button>
@@ -182,7 +184,7 @@ function LessonsTab({ course, onChange }: { course: Course; onChange: () => void
           <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
             <div className="rounded-xl border border-primary/20 bg-black/40 p-4 space-y-3">
               <div>
-                <label className={lbl}>Título del tema *</label>
+                <label className={lbl}>{editId ? "Editando tema" : "Título del tema"} *</label>
                 <input className={inp} value={f.title} onChange={(e) => setF({ ...f, title: e.target.value })} />
               </div>
               <div>
@@ -203,7 +205,7 @@ function LessonsTab({ course, onChange }: { course: Course; onChange: () => void
                 </label>
                 <button onClick={add} disabled={saving} style={gradient}
                   className="ml-auto rounded-lg px-4 py-2 font-mono text-xs font-bold text-black disabled:opacity-50 flex items-center gap-2">
-                  {saving && <Spinner />} GUARDAR TEMA
+                  {saving && <Spinner />} {editId ? "GUARDAR CAMBIOS" : "GUARDAR TEMA"}
                 </button>
               </div>
             </div>
@@ -237,6 +239,9 @@ function LessonsTab({ course, onChange }: { course: Course; onChange: () => void
                       ? <button onClick={() => setPreview(preview === l.id ? null : l.id)} className={ghostBtn + " flex items-center gap-1.5"}><Eye className="h-3.5 w-3.5" /> Ver</button>
                       : <a href={l.videoUrl} target="_blank" rel="noopener noreferrer" className={ghostBtn + " flex items-center gap-1.5"}><FileText className="h-3.5 w-3.5" /> Abrir</a>
                   )}
+                  <button
+                    onClick={() => { setEditId(l.id); setF({ title: l.title, videoUrl: l.videoUrl || "", content: l.content || "", minutes: String(Math.round(l.duration / 60)), isFree: l.isFree }); setAdding(true); window.scrollTo({ top: 0, behavior: "smooth" }); }}
+                    className={ghostBtn + " flex items-center gap-1.5"} title="Editar"><FileText className="h-3.5 w-3.5" /> Editar</button>
                   <button onClick={() => remove(l.id)} className={dangerBtn} title="Borrar"><Trash2 className="h-4 w-4" /></button>
                 </div>
                 {embed && preview === l.id && (
