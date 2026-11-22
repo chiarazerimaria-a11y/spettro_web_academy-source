@@ -80,11 +80,12 @@ export async function runSeed(): Promise<void> {
     // ── Courses: UPSERT — never delete admin-added courses ──────────────────
     for (const c of COURSES) {
       const [title,desc,price,level,cat,instructor,durHours,isFree,isPrem,enrolled,rating,spcRew,published] = c;
+      void [desc,price,level,cat,instructor,durHours,isFree,isPrem,enrolled,rating,published];
       const existing = await client.query("SELECT id FROM courses WHERE title = $1", [title]);
       if (existing.rows.length > 0) {
         await client.query(
-          "UPDATE courses SET description=$2,price=$3,level=$4,category=$5,instructor=$6,duration_hours=$7,is_free=$8,is_premium=$9,enrolled_count=$10,rating=$11,spc_reward=$12,published=$13 WHERE title=$1",
-          [title,desc,price,level,cat,instructor,durHours,isFree,isPrem,enrolled,rating,spcRew,published]
+          "UPDATE courses SET spc_reward=$2 WHERE title=$1",
+          [title,spcRew]
         );
       } else {
         await client.query(

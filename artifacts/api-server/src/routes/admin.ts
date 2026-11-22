@@ -889,6 +889,37 @@ router.patch("/admin/users/:id/role", async (req, res) => {
   res.json({ ok: true, role });
 });
 
+router.get("/admin/course-list", async (_req, res) => {
+  const rows = await db
+    .select({
+      id: coursesTable.id,
+      title: coursesTable.title,
+      instructor: coursesTable.instructor,
+      instructorId: coursesTable.instructorId,
+      published: coursesTable.published,
+    })
+    .from(coursesTable)
+    .orderBy(coursesTable.id);
+  res.json(rows);
+});
+
+router.patch("/admin/courses/:id/instructor", async (req, res) => {
+  const id = Number(req.params.id);
+  const userId = Number((req.body as Record<string, unknown> | undefined)?.userId ?? 0);
+  if (!Number.isInteger(id) || id <= 0 || !Number.isInteger(userId) || userId < 0) {
+    res.status(400).json({ error: "datos invalidos" }); return;
+  }
+  if (userId === 0) {
+    await db.update(coursesTable).set({ instructorId: null }).where(eq(coursesTable.id, id));
+    res.json({ ok: true }); return;
+  }
+  const [u] = await db.select({ username: usersTable.username, role: usersTable.role })
+    .from(usersTable).where(eq(usersTable.id, userId)).limit(1);
+  if (!u || u.role !== "instructor") { res.status(400).json({ error: "ese usuario no es profesor" }); return; }
+  await db.update(coursesTable).set({ instructorId: userId, instructor: u.username }).where(eq(coursesTable.id, id));
+  res.json({ ok: true });
+});
+
 void sql;
 
 export default router;

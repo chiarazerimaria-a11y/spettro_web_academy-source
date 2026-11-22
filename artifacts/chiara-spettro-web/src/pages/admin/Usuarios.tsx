@@ -37,6 +37,61 @@ function fmtDate(iso: string) {
   return new Date(iso).toLocaleString("es-ES", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" });
 }
 
+interface CourseLite { id: number; title: string; instructor: string; instructorId: number | null; published: boolean }
+
+function AssignCourse({ userId }: { userId: number }) {
+  const { data, refetch } = useQuery<CourseLite[]>({
+    queryKey: ["admin-course-list"],
+    queryFn: () => fetch(BASE + "api/admin/course-list").then((r) => r.json()),
+  });
+  const courses = Array.isArray(data) ? data : [];
+  const [pick, setPick] = useState("");
+  const [msg, setMsg] = useState("");
+  const mine = courses.filter((c) => c.instructorId === userId);
+
+  const assign = async (courseId: number, uid: number) => {
+    setMsg("");
+    const r = await fetch(BASE + "api/admin/courses/" + courseId + "/instructor", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ userId: uid }),
+    });
+    if (!r.ok) { const d = await r.json().catch(() => ({})); setMsg((d as { error?: string }).error || "Error"); return; }
+    setPick("");
+    refetch();
+  };
+
+  return (
+    <div className="rounded-lg border border-purple-500/30 p-4 space-y-2">
+      <div className="text-xs font-mono text-purple-300/80 tracking-widest">CURSOS DE ESTE PROFESOR</div>
+      {mine.length === 0 ? (
+        <div className="text-[10px] text-muted-foreground italic">Ninguno asignado</div>
+      ) : mine.map((c) => (
+        <div key={c.id} className="flex justify-between text-[11px] font-mono">
+          <span>{c.title} {c.published ? "" : "(pendiente)"}</span>
+          <button className="text-red-400" onClick={() => assign(c.id, 0)}>quitar</button>
+        </div>
+      ))}
+      <div className="flex gap-2 pt-1">
+        <select className="flex-1 rounded bg-black/50 border border-primary/20 px-2 py-1 text-xs font-mono" value={pick} onChange={(e) => setPick(e.target.value)}>
+          <option value="">Asignar un curso...</option>
+          {courses.filter((c) => c.instructorId !== userId).map((c) => (
+            <option key={c.id} value={c.id}>{c.title} ({c.instructor})</option>
+          ))}
+        </select>
+        <button
+          className="text-[10px] font-mono border border-primary/30 rounded px-2 text-primary hover:bg-primary/10 disabled:opacity-40"
+          disabled={!pick}
+          onClick={() => assign(Number(pick), userId)}
+        >
+          Asignar
+        </button>
+      </div>
+      {msg && <div className="text-[10px] text-red-400 font-mono">{msg}</div>}
+    </div>
+  );
+}
+
 function UserDetailPanel({ userId, onClose }: { userId: number; onClose: () => void }) {
   const { data, isLoading, refetch } = useQuery<UserDetail>({
     queryKey: ["admin-user-detail", userId],
@@ -59,6 +114,7 @@ function UserDetailPanel({ userId, onClose }: { userId: number; onClose: () => v
           <div className="p-8 text-center text-muted-foreground font-mono text-sm">Cargando...</div>
         ) : (
           <div className="p-5 space-y-5">
+            {data.user.role === "instructor" && <AssignCourse userId={data.user.id} />}
             <div className="grid sm:grid-cols-2 gap-4">
               <div className="rounded-lg border border-border/30 p-4 space-y-1.5">
                 <div className="font-mono font-bold text-lg">{data.user.username}</div>
