@@ -1,10 +1,13 @@
 import { Router } from "express";
-import { db, usersTable, coursesTable, courseEnrollmentsTable } from "@workspace/db";
+import { db, usersTable, coursesTable, courseEnrollmentsTable, coursePurchasesTable } from "@workspace/db";
 import { and, desc, eq, or, sql } from "drizzle-orm";
 import { safeInt } from "../middleware/sanitize";
 import { notifyEmail } from "./subscriptions";
 
 const router = Router();
+
+// Parte de la plataforma sobre cada venta de un curso de pago.
+const PLATFORM_FEE = 0.2;
 
 router.get("/admin/course-access/courses", async (req, res) => {
   try {
@@ -60,6 +63,19 @@ router.post("/admin/course-access", async (req, res) => {
     if (existing) { res.json({ ok: true, already: true, username: u.username }); return; }
 
     await db.insert(courseEnrollmentsTable).values({ userId: u.id, courseId });
+    try {
+      const gross = Number(course.price);
+      if (gross > 0 && !course.isFree) {
+        const commission = Math.round(gross * PLATFORM_FEE * 100) / 100;
+        await db.insert(coursePurchasesTable).values({
+          courseId, userId: u.id,
+          gross: gross.toFixed(2),
+          commissionRate: (PLATFORM_FEE * 100).toFixed(2),
+          commission: commission.toFixed(2),
+          net: (gross - commission).toFixed(2),
+        });
+      }
+    } catch (e) { req.log.error(e); }
     await db.update(coursesTable).set({ enrolledCount: course.enrolledCount + 1 }).where(eq(coursesTable.id, courseId));
     try {
       await notifyEmail(u.email, "Acceso concedido", "Hemos confirmado tu pago: ya puedes abrir el curso «" + course.title + "».");

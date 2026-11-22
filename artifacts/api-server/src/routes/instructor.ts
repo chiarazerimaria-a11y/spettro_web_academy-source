@@ -2,7 +2,7 @@ import { INSTRUCTOR_PANEL_HTML } from "../instructorPanel";
 import { Router, type Request, type Response } from "express";
 import {
   db, usersTable, coursesTable, courseLessonsTable, lessonProgressTable,
-  courseEnrollmentsTable, examsTable, examQuestionsTable, examAttemptsTable,
+  courseEnrollmentsTable, examsTable, examQuestionsTable, examAttemptsTable, coursePurchasesTable,
 } from "@workspace/db";
 import { eq, and, asc, desc, inArray, sql } from "drizzle-orm";
 import { getSessionUserId } from "../middleware/requireUser";
@@ -347,6 +347,85 @@ router.delete("/instructor/questions/:id", guarded(async (req, res, me) => {
   if (!q || !(await ownedExam(q.examId, me.id))) { res.status(404).json({ error: "Pregunta no encontrada" }); return; }
   await db.delete(examQuestionsTable).where(eq(examQuestionsTable.id, q.id));
   res.json({ ok: true });
+}));
+
+(async () => {
+  try {
+    await db.execute(sql`CREATE TABLE IF NOT EXISTS course_purchases (
+      id serial PRIMARY KEY,
+      course_id integer NOT NULL,
+      user_id integer NOT NULL,
+      gross numeric(10,2) NOT NULL DEFAULT 0,
+      commission_rate numeric(5,2) NOT NULL DEFAULT 20.00,
+      commission numeric(10,2) NOT NULL DEFAULT 0,
+      net numeric(10,2) NOT NULL DEFAULT 0,
+      created_at timestamptz NOT NULL DEFAULT now()
+    )`);
+  } catch (e) {
+    console.error("[instructor] course_purchases fallo:", e);
+  }
+})();
+
+// ── Alumnos de un curso (solo el profesor dueño; sin email) ──────────────────
+router.get("/instructor/courses/:id/students", guarded(async (req, res, me) => {
+  const c = await ownedCourse(intId(req.params.id), me.id);
+  if (!c) { res.status(404).json({ error: "Curso no encontrado" }); return; }
+
+  const rows = await db
+    .select({
+      userId: usersTable.id,
+      username: usersTable.username,
+      tier: usersTable.subscriptionTier,
+      expiresAt: usersTable.subscriptionExpiresAt,
+      enrolledAt: courseEnrollmentsTable.enrolledAt,
+      progress: courseEnrollmentsTable.progress,
+      completed: courseEnrollmentsTable.completed,
+    })
+    .from(courseEnrollmentsTable)
+    .innerJoin(usersTable, eq(usersTable.id, courseEnrollmentsTable.userId))
+    .where(eq(courseEnrollmentsTable.courseId, c.id))
+    .orderBy(desc(courseEnrollmentsTable.enrolledAt));
+
+  const buys = await db.select().from(coursePurchasesTable).where(eq(coursePurchasesTable.courseId, c.id));
+  const paid = new Map<number, { gross: number; net: number; at: string }>();
+  for (const b of buys) {
+    const prev = paid.get(b.userId);
+    const at = b.createdAt.toISOString();
+    paid.set(b.userId, {
+      gross: (prev?.gross ?? 0) + Number(b.gross),
+      net: (prev?.net ?? 0) + Number(b.net),
+      at: prev && prev.at > at ? prev.at : at,
+    });
+  }
+
+  const now = Date.now();
+  const students = rows.map((r) => {
+    const p = paid.get(r.userId);
+    const exp = r.expiresAt ? r.expiresAt.getTime() : null;
+    return {
+      userId: r.userId,
+      username: r.username,
+      enrolledAt: r.enrolledAt.toISOString(),
+      progress: r.progress,
+      completed: r.completed,
+      tier: r.tier,
+      expiresAt: r.expiresAt ? r.expiresAt.toISOString() : null,
+      subActive: r.tier !== "libre" && (exp === null || exp > now),
+      paid: p ? p.gross : null,
+      net: p ? p.net : null,
+      paidAt: p ? p.at : null,
+    };
+  });
+
+  res.json({
+    summary: {
+      total: students.length,
+      completed: students.filter((s) => s.completed).length,
+      gross: students.reduce((a, s) => a + (s.paid ?? 0), 0),
+      net: students.reduce((a, s) => a + (s.net ?? 0), 0),
+    },
+    students,
+  });
 }));
 
 export default router;

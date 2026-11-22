@@ -566,3 +566,15 @@ export const giftTransactionsTable = pgTable("gift_transactions", {
   description: text("description").notNull(),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
+
+// ─── Compras de cursos (registro del importe, comision y neto del profesor) ──
+export const coursePurchasesTable = pgTable("course_purchases", {
+  id: serial("id").primaryKey(),
+  courseId: integer("course_id").notNull(),
+  userId: integer("user_id").notNull(),
+  gross: numeric("gross", { precision: 10, scale: 2 }).notNull().default("0"),
+  commissionRate: numeric("commission_rate", { precision: 5, scale: 2 }).notNull().default("20.00"),
+  commission: numeric("commission", { precision: 10, scale: 2 }).notNull().default("0"),
+  net: numeric("net", { precision: 10, scale: 2 }).notNull().default("0"),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});

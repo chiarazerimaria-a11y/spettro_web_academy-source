@@ -376,6 +376,81 @@ function ExamsTab({ course }: { course: Course }) {
 }
 
 // ─── Página principal ────────────────────────────────────────────────────────
+interface StudentRow {
+  userId: number; username: string; enrolledAt: string; progress: number; completed: boolean;
+  tier: string; expiresAt: string | null; subActive: boolean;
+  paid: number | null; net: number | null; paidAt: string | null;
+}
+interface StudentsData { summary: { total: number; completed: number; gross: number; net: number }; students: StudentRow[] }
+
+const eur = (n: number) => n.toFixed(2).replace(".", ",") + " €";
+const day = (iso: string) => new Date(iso).toLocaleDateString("es-ES", { day: "2-digit", month: "short", year: "numeric" });
+
+function StudentsTab({ course }: { course: Course }) {
+  const [data, setData] = useState<StudentsData | null>(null);
+  const [err, setErr] = useState("");
+
+  useEffect(() => {
+    setData(null); setErr("");
+    api<StudentsData>("/courses/" + course.id + "/students").then(setData).catch((e) => setErr(e.message));
+  }, [course.id]);
+
+  if (err) return <p className="font-mono text-xs text-red-400">{err}</p>;
+  if (!data) return <div className="p-6 flex justify-center"><Spinner /></div>;
+
+  const kpis = [
+    { label: "ALUMNOS", value: String(data.summary.total) },
+    { label: "COMPLETARON", value: String(data.summary.completed) },
+    { label: "COBRADO", value: eur(data.summary.gross) },
+    { label: "TU PARTE (80%)", value: eur(data.summary.net) },
+  ];
+
+  return (
+    <div className="space-y-4">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+        {kpis.map((k) => (
+          <div key={k.label} className="rounded-xl border border-white/8 bg-white/[0.02] p-3">
+            <p className="font-mono text-base font-bold text-white">{k.value}</p>
+            <p className="font-mono text-[10px] text-muted-foreground tracking-widest">{k.label}</p>
+          </div>
+        ))}
+      </div>
+
+      {data.students.length === 0 ? (
+        <div className="rounded-xl border border-dashed border-white/10 p-8 text-center">
+          <GraduationCap className="h-8 w-8 text-muted-foreground/30 mx-auto mb-2" />
+          <p className="font-mono text-xs text-muted-foreground">Todavía no hay alumnos en este curso.</p>
+        </div>
+      ) : (
+        <div className="space-y-2">
+          {data.students.map((s) => (
+            <div key={s.userId} className="rounded-xl border border-white/8 bg-white/[0.02] p-3 space-y-2">
+              <div className="flex items-center justify-between gap-3 flex-wrap">
+                <p className="font-mono text-sm font-bold text-white">{s.username}</p>
+                <div className="flex items-center gap-2">
+                  {s.completed && <Badge variant="outline" className="border-green-500/30 text-green-400">completado</Badge>}
+                  <Badge variant="outline" className={s.subActive ? "border-purple-500/40 text-purple-300" : ""}>
+                    {s.tier}{s.subActive && s.expiresAt ? " · hasta " + day(s.expiresAt) : s.tier !== "libre" ? " · vencida" : ""}
+                  </Badge>
+                </div>
+              </div>
+              <div className="h-1.5 w-full rounded bg-white/5 overflow-hidden">
+                <div className="h-full" style={{ width: Math.min(100, s.progress) + "%", background: "linear-gradient(90deg, " + PINK + ", " + PURPLE + ")" }} />
+              </div>
+              <div className="flex items-center justify-between gap-3 flex-wrap font-mono text-[10px] text-muted-foreground">
+                <span>Inscrito {day(s.enrolledAt)} · progreso {s.progress}%</span>
+                {s.paid !== null && s.net !== null
+                  ? <span className="text-green-400">pagó {eur(s.paid)} · tú recibes {eur(s.net)} · {day(s.paidAt as string)}</span>
+                  : <span>sin registro de pago</span>}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function Instructor() {
   const { user } = useAuth();
   const { toast } = useToast();
@@ -383,7 +458,7 @@ export default function Instructor() {
   const [courses, setCourses] = useState<Course[]>([]);
   const [loadingCourses, setLoadingCourses] = useState(false);
   const [selId, setSelId] = useState<number | null>(null);
-  const [tab, setTab] = useState<"lessons" | "exams">("lessons");
+  const [tab, setTab] = useState<"lessons" | "exams" | "students">("lessons");
   const [modalOpen, setModalOpen] = useState(false);
 
   const loadCourses = useCallback(async () => {
@@ -545,7 +620,7 @@ export default function Instructor() {
                   {sel.description && <p className="font-sans text-sm text-muted-foreground mt-1 leading-relaxed">{sel.description}</p>}
                 </div>
                 <div className="flex gap-1 p-1 rounded-xl border border-white/8 bg-black/40">
-                  {([["lessons", "TEMAS", <BookOpen key="b" className="h-3.5 w-3.5" />], ["exams", "EXÁMENES", <ClipboardList key="c" className="h-3.5 w-3.5" />]] as const).map(([id, label, icon]) => (
+                  {([["lessons", "TEMAS", <BookOpen key="b" className="h-3.5 w-3.5" />], ["exams", "EXÁMENES", <ClipboardList key="c" className="h-3.5 w-3.5" />], ["students", "ALUMNOS", <GraduationCap key="d" className="h-3.5 w-3.5" />]] as const).map(([id, label, icon]) => (
                     <button key={id} onClick={() => setTab(id)}
                       className={"flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg font-mono text-xs font-bold tracking-wide transition-all " + (tab === id ? "text-black" : "text-muted-foreground hover:text-foreground")}
                       style={tab === id ? gradient : {}}>
@@ -553,7 +628,7 @@ export default function Instructor() {
                     </button>
                   ))}
                 </div>
-                {tab === "lessons" ? <LessonsTab course={sel} onChange={loadCourses} /> : <ExamsTab course={sel} />}
+                {tab === "lessons" ? <LessonsTab course={sel} onChange={loadCourses} /> : tab === "exams" ? <ExamsTab course={sel} /> : <StudentsTab course={sel} />}
               </div>
             )}
           </section>
