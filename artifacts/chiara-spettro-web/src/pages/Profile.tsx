@@ -77,6 +77,14 @@ export default function Profile() {
   const fileRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
   const { user, logout, updateProfile } = useAuth();
+  const [hasCourses, setHasCourses] = useState(false);
+  useEffect(() => {
+    if (!user?.id) { setHasCourses(false); return; }
+    fetch(`${BASE}api/public/enrollments/${user.id}`)
+      .then((r) => (r.ok ? r.json() : []))
+      .then((rows: unknown[]) => setHasCourses(Array.isArray(rows) && rows.length > 0))
+      .catch(() => setHasCourses(false));
+  }, [user?.id]);
 
   const username    = user?.username    || "HACKER";
   const rank        = user?.rank        || "Hacker";
@@ -283,6 +291,16 @@ export default function Profile() {
             style={{ background:`radial-gradient(circle, ${rankCfg.glow}10 0%, transparent 70%)` }} />
           <div className="absolute inset-0 pointer-events-none opacity-[0.018]"
             style={{ backgroundImage:"repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(255,255,255,0.6) 2px,rgba(255,255,255,0.6) 3px)" }} />
+
+          {hasCourses && (
+            <Link href="/cursos" className="absolute bottom-3 right-3 z-20 block">
+              <video
+                src={BASE + "videos/recluta.mp4"}
+                autoPlay loop muted playsInline
+                className="w-36 h-14 md:w-44 md:h-16 object-cover rounded-xl cursor-pointer shadow-[0_0_20px_rgba(255,77,184,0.35)] hover:scale-105 transition-transform"
+              />
+            </Link>
+          )}
 
           <div className="relative z-10 flex flex-col md:flex-row items-center md:items-start gap-8">
 
