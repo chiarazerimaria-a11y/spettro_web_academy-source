@@ -24,6 +24,7 @@ import profileRouter from "./profile";
 import ghcRouter from "./ghc";
 import instructorRouter from "./instructor";
 import courseAccessRouter from "./courseAccess";
+import spcRequestsRouter from "./spcRequests";
 
 const router: IRouter = Router();
 
@@ -51,6 +52,7 @@ router.use(profileRouter);
 router.use(ghcRouter);
 router.use(instructorRouter);
 router.use(courseAccessRouter);
+router.use(spcRequestsRouter);
 router.use(tutoringRouter);
 router.use(tutoringRouter);
 

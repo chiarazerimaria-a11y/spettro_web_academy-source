@@ -200,18 +200,19 @@ export default function Wallet() {
     setSelectedPack(packId);
     setBuyingPack(true);
     try {
-      const r = await fetch(`${BASE}api/spc/purchase`, {
+      const r = await fetch(`${BASE}api/spc/purchase-request`, {
         method: "POST",
+        credentials: "include",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId: user.id, packId }),
+        body: JSON.stringify({ packId, method: payMethod }),
       });
       const d = await r.json();
       if (!r.ok) throw new Error(d.error);
       const pack = SPC_PACKS.find(p => p.id === packId)!;
-      const total = pack.spc + pack.bonus;
-      qc.invalidateQueries({ queryKey: ["wallet", user.id] });
-      playCoinSound("spc-in");
-      toast({ title: `✓ Pack ${pack.label} adquirido`, description: `+${total.toLocaleString()} SPC añadidos a tu wallet` });
+      toast({
+        title: `Solicitud enviada: pack ${pack.label}`,
+        description: `Referencia ${d.reference}. ${d.instructions} Los SPC se añaden cuando se confirme tu pago.`,
+      });
       setTab("wallet");
     } catch (err: any) {
       toast({ title: "Error al comprar", description: err.message, variant: "destructive" });

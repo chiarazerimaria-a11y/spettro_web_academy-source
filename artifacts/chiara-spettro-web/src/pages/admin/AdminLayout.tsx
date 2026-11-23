@@ -21,6 +21,7 @@ const navItems = [
   { href: "/admin/acceso-cursos", label: "Acceso a cursos", icon: Unlock },
   { divider: true, label: "USUARIOS" } as const,
   { href: "/admin/usuarios", label: "Usuarios", icon: IdCard },
+  { href: "/admin/spc-requests", label: "Solicitudes SPC", icon: Coins },
   { href: "/admin/alumnos", label: "Alumnos", icon: GraduationCap },
   { href: "/admin/instructores", label: "Instructores", icon: BookMarked },
   { href: "/admin/affiliates", label: "Afiliados", icon: Users2 },
